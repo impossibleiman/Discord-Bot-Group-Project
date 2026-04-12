@@ -34,18 +34,25 @@ public class AIChatListener extends ListenerAdapter {
                 .replaceAll("<@!?" + event.getJDA().getSelfUser().getId() + ">", "")
                 .trim();
 
+        // include the username so bob knows who hes talking to
+        String username = event.getAuthor().getName();
+        String fullPrompt = username + ": " + prompt;
+
         // if they just mentioned the bot with no message
         if (prompt.isEmpty()) {
-            event.getChannel().sendMessage("Hey! Ask me anything").queue();
+            event.getChannel().sendMessage("what").queue();
             return;
         }
 
         // show typing while we wait for the api
         event.getChannel().sendTyping().queue();
 
+        // get channel id for conversation memory
+        String channelId = event.getChannel().getId();
+
         // use a virtual thread so we dont block the bot while waiting for the api response
         Thread.startVirtualThread(() -> {
-            String reply = aiService.chat(prompt);
+            String reply = aiService.chat(fullPrompt, channelId);
 
             // cut off the message if its too long for discord
             if (reply.length() > MAX_LENGTH) {
