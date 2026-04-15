@@ -25,6 +25,7 @@ public class MinecraftSocietyBot {
         // -------------------------------------------------------------------------------------------------------
         // Commands go here:
         manager.addCommand(new PingCommand()); // Added by Iman for first push - example command
+        manager.addCommand(new StartEventCommand()); // Added by Iman
 
         // -------------------------------------------------------------------------------------------------------
         try {
