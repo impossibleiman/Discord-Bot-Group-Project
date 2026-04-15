@@ -2,6 +2,8 @@ package com.example;
 
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
+import net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions; // New Import
+import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import java.util.List;
 
 public interface ICommand {
@@ -9,4 +11,13 @@ public interface ICommand {
     String getDescription();
     List<OptionData> getOptions();
     void execute(SlashCommandInteractionEvent event);
+
+    // By default, commands are enabled for everyone. Override this to restrict permissions
+    default DefaultMemberPermissions getPermission() {
+        return DefaultMemberPermissions.ENABLED;
+    }
+
+    default void onButtonInteraction(ButtonInteractionEvent event) {
+        // Optional button logic
+    }
 }
