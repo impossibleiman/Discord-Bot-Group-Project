@@ -4,6 +4,7 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions; // New Import
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import java.util.List;
 
 public interface ICommand {
@@ -19,5 +20,9 @@ public interface ICommand {
 
     default void onButtonInteraction(ButtonInteractionEvent event) {
         // Optional button logic
+    }
+
+    default void onMessageReceived(MessageReceivedEvent event) {
+    // By default, do nothing.
     }
 }
