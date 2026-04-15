@@ -28,11 +28,18 @@ public class YourCommandName implements ICommand {
 
     @Override
     public List<OptionData> getOptions() {
-        // If your command needs arguments (like a user to ban, or text to echo), add them here!
+        // If your command needs arguments (like a user to ban, or text to echo), add them here
         // Otherwise, just return an empty list.
         List<OptionData> options = new ArrayList<>();
         // Example: options.add(new OptionData(OptionType.STRING, "text", "The text to echo", true));
         return options;
+    }
+
+    @Override
+    public DefaultMemberPermissions getPermission() {
+        // BY DEFAULT, YOUR COMMAND WILL SHOW TO ALL MEMBERS
+        // The example below hides the command to everyone except those with the 'Manage Roles' permission
+        // return DefaultMemberPermissions.enabledFor(Permission.MANAGE_ROLES);
     }
 
     @Override
