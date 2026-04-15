@@ -3,6 +3,7 @@ package com.example;
 import io.github.cdimascio.dotenv.Dotenv;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
+import net.dv8tion.jda.api.requests.GatewayIntent;
 
 public class MinecraftSocietyBot {
     
@@ -26,10 +27,12 @@ public class MinecraftSocietyBot {
         // Commands go here:
         manager.addCommand(new PingCommand()); // Added by Iman for first push - example command
         manager.addCommand(new StartEventCommand()); // Added by Iman
+        manager.addCommand(new ReactionRoleCommand()); // Added by Iman
 
         // -------------------------------------------------------------------------------------------------------
         try {
             JDA jda = JDABuilder.createLight(token)
+                    .enableIntents(GatewayIntent.MESSAGE_CONTENT)
                     .addEventListeners(manager)
                     .build();
             
