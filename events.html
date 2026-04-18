@@ -4,110 +4,114 @@
 <meta charset="UTF-8">
 <title>Events - Minecraft Society</title>
   
-<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+
 
   <style>
-    body {
-    margin: 0;
-    background: #c2b280;
-    font-family: 'Press Start 2P', cursive;
+:root {
+    --accent: #22c55e;
+    --bg: #0f172a;
+    --card: #1e293b;
+    --text: #e2e8f0;
 }
 
-/* NAVBAR */
+body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Poppins', sans-serif;
+}
+
+/* HEADER */
 header {
+    position: fixed;
+    width: 100%;
+    background: rgba(15,23,42,0.9);
+    backdrop-filter: blur(10px);
+    padding: 15px 30px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: #d4d4d4;
-    padding: 15px 30px;
-    border-bottom: 4px solid black;
 }
 
-header h2 {
-    font-size: 14px;
+.logo {
+    color: var(--accent);
+    font-weight: bold;
 }
 
 nav a {
     margin-left: 20px;
+    color: white;
     text-decoration: none;
-    color: black;
 }
 
 .btn {
-    background: #4ade80;
-    padding: 10px 15px;
-    border: 3px solid black;
+    background: var(--accent);
+    padding: 8px 14px;
+    border-radius: 6px;
+    color: black !important;
 }
 
 /* HERO */
 .hero {
-    background: #8b5e3c;
-    padding: 60px 40px;
-    color: white;
-    border-bottom: 6px solid black;
+    padding: 120px 40px 40px;
 }
 
 .hero h1 {
-    background: white;
-    color: black;
-    display: inline-block;
-    padding: 10px 20px;
-    border: 4px solid black;
+    font-size: 36px;
 }
 
 .hero p {
-    margin-top: 20px;
-    font-size: 12px;
+    color: #94a3b8;
 }
 
 /* EVENTS GRID */
 .container {
-    padding: 50px;
+    padding: 40px;
     display: flex;
-    gap: 30px;
-    justify-content: center;
+    gap: 20px;
     flex-wrap: wrap;
 }
 
 /* CARD */
 .card {
-    background: #e5e5e5;
+    background: var(--card);
+    padding: 20px;
+    border-radius: 12px;
     width: 300px;
-    border: 4px solid black;
+    transition: 0.3s;
+}
+
+.card:hover {
+    transform: translateY(-6px);
 }
 
 .card-header {
-    padding: 15px;
-    border-bottom: 3px solid black;
-    font-size: 12px;
+    color: var(--accent);
+    font-weight: bold;
+    margin-bottom: 10px;
 }
 
-.card-body {
-    padding: 15px;
-    font-size: 10px;
-}
-
-.card-footer {
-    padding: 15px;
-    border-top: 3px solid black;
+.card-body p {
+    font-size: 14px;
+    color: #94a3b8;
 }
 
 .card button {
+    margin-top: 10px;
+    padding: 8px;
     width: 100%;
-    padding: 10px;
-    border: 3px solid black;
-    background: #8b5e3c;
-    color: white;
+    background: var(--accent);
+    border: none;
+    border-radius: 6px;
     cursor: pointer;
 }
-    
-  </style>
+</style>
   </head>
 
 <body>
 
 <header>
-    <h2>MC Society</h2>
+    <h2>Minecraft Society</h2>
     <nav>
         <a href="index.html">Docs</a>
         <a href="events.html">Events</a>
