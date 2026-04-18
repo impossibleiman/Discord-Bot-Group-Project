@@ -2,11 +2,12 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Events - Minecraft Society</title>
-  
 
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
 
-  <style>
+<style>
 :root {
     --accent: #22c55e;
     --bg: #0f172a;
@@ -14,14 +15,20 @@
     --text: #e2e8f0;
 }
 
-body {
+
+* {
     margin: 0;
-    background: var(--bg);
-    color: var(--text);
+    padding: 0;
+    box-sizing: border-box;
     font-family: 'Poppins', sans-serif;
 }
 
-/* HEADER */
+body {
+    background: var(--bg);
+    color: var(--text);
+}
+
+
 header {
     position: fixed;
     width: 100%;
@@ -31,6 +38,7 @@ header {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    z-index: 100;
 }
 
 .logo {
@@ -39,9 +47,14 @@ header {
 }
 
 nav a {
-    margin-left: 20px;
     color: white;
     text-decoration: none;
+    margin-left: 20px;
+    transition: 0.3s;
+}
+
+nav a:hover {
+    color: var(--accent);
 }
 
 .btn {
@@ -51,125 +64,119 @@ nav a {
     color: black !important;
 }
 
-/* HERO */
+
+.main {
+    padding: 120px 40px;
+    max-width: 1100px;
+    margin: auto;
+}
+
+
 .hero {
-    padding: 120px 40px 40px;
+    margin-bottom: 60px;
+    animation: fadeUp 1s ease;
 }
 
 .hero h1 {
-    font-size: 36px;
+    font-size: 40px;
 }
 
 .hero p {
+    margin-top: 10px;
     color: #94a3b8;
 }
 
-/* EVENTS GRID */
-.container {
-    padding: 40px;
+
+.grid {
     display: flex;
-    gap: 20px;
+    gap: 25px;
     flex-wrap: wrap;
 }
 
-/* CARD */
+
 .card {
     background: var(--card);
-    padding: 20px;
+    padding: 25px;
     border-radius: 12px;
     width: 300px;
-    transition: 0.3s;
+    transition: all 0.3s ease;
+
+    opacity: 0;
+    transform: translateY(30px);
 }
 
 .card:hover {
     transform: translateY(-6px);
+    box-shadow: 0 0 35px rgba(34, 197, 94, 0.2);
 }
 
-.card-header {
+.card h3 {
     color: var(--accent);
-    font-weight: bold;
     margin-bottom: 10px;
 }
 
-.card-body p {
-    font-size: 14px;
+.card p {
     color: #94a3b8;
+    margin: 5px 0;
 }
 
+
 .card button {
-    margin-top: 10px;
-    padding: 8px;
+    margin-top: 15px;
     width: 100%;
-    background: var(--accent);
-    border: none;
+    padding: 10px;
     border-radius: 6px;
+    border: none;
+    background: var(--accent);
     cursor: pointer;
 }
-    /* CENTER HERO BETTER */
-.hero {
-    padding: 140px 40px 60px;
-    max-width: 1000px;
-    margin: auto;
-}
 
-/* CENTER CONTAINER */
-.container {
-    max-width: 1100px;
-    margin: auto;
-    justify-content: center;
-}
 
-/* CARD IMPROVEMENTS */
-.card {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-}
-
-/* BUTTON */
-.card button {
-    margin-top: auto;
-}
-
-/* SUGGEST SECTION */
-.suggest-section {
-    margin: 80px auto;
-    max-width: 900px;
+.idea-box {
+    margin-top: 80px;
     text-align: center;
+
+    opacity: 0;
+    transform: translateY(30px);
 }
 
-.suggest-section h2 {
+.idea-box h2 {
     margin-bottom: 10px;
 }
 
-.suggest-section p {
+.idea-box p {
     color: #94a3b8;
     margin-bottom: 20px;
 }
 
-/* INPUT BOX */
-.suggest-box {
-    display: flex;
-    gap: 10px;
-    justify-content: center;
-}
-
-.suggest-box input {
-    padding: 10px;
-    width: 60%;
+.idea-box input {
+    padding: 12px;
+    width: 300px;
     border-radius: 6px;
     border: none;
+    margin-right: 10px;
 }
 
-.suggest-box button {
-    padding: 10px 20px;
-    background: #22c55e;
-    border: none;
+.idea-box button {
+    padding: 12px 20px;
     border-radius: 6px;
-    cursor: pointer;
+    border: none;
+    background: var(--accent);
+}
+
+
+@keyframes fadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(40px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 </style>
-  </head>
+</head>
 
 <body>
 
@@ -179,63 +186,77 @@ nav a {
         <a href="index.html">Docs</a>
         <a href="events.html">Events</a>
         <a href="members.html">Members</a>
-        <a href="#" class="btn">Join Server</a>
+        <a href="https://discord.gg/4qtZHA49dp" class="btn">Join Server</a>
     </nav>
 </header>
 
-<!-- HERO -->
-<div class="hero">
-    <h1>Event Schedule</h1>
-    <p>Mark your calendars. Upcoming Minecraft Society events will be announced soon.</p>
-</div>
+<div class="main">
 
-<!-- EVENTS -->
-<div class="container">
+    <div class="hero">
+        <h1>Event Schedule</h1>
+        <p>Mark your calendars. Upcoming Minecraft Society events will be announced soon.</p>
+    </div>
 
-    <div class="card">
-        <div class="card-header">EVENT 1</div>
-        <div class="card-body">
+    <div class="grid">
+
+        <div class="card">
+            <h3>EVENT 1</h3>
             <p>Date: TBC</p>
             <p>Time: TBC</p>
             <p>Location: TBC</p>
             <p>Description: Coming soon</p>
+            <button>Join Event</button>
         </div>
-        <button>Join Event</button>
-    </div>
 
-    <div class="card">
-        <div class="card-header">EVENT 2</div>
-        <div class="card-body">
+        <div class="card">
+            <h3>EVENT 2</h3>
             <p>Date: TBC</p>
             <p>Time: TBC</p>
             <p>Location: TBC</p>
             <p>Description: Coming soon</p>
+            <button>Join Event</button>
         </div>
-        <button>Join Event</button>
-    </div>
 
-    <div class="card">
-        <div class="card-header">EVENT 3</div>
-        <div class="card-body">
+        <div class="card">
+            <h3>EVENT 3</h3>
             <p>Date: TBC</p>
             <p>Time: TBC</p>
             <p>Location: TBC</p>
             <p>Description: Coming soon</p>
+            <button>Join Event</button>
         </div>
-        <button>Join Event</button>
+
     </div>
 
-</div>
-
-<!-- SUGGEST EVENT SECTION -->
-<div class="suggest-section">
-    <h2>Have an idea for an event?</h2>
-    <p>We are always looking for new community activities. Submit your ideas below.</p>
-
-    <div class="suggest-box">
-        <input type="text" placeholder="What's your idea?" />
+    <div class="idea-box">
+        <h2>Have an idea for an event?</h2>
+        <p>We are always looking for new community activities. Submit your ideas below.</p>
+        <input placeholder="What's your idea?">
         <button>Submit</button>
     </div>
+
 </div>
 
+<script>
+const elements = document.querySelectorAll(".card, .idea-box");
+
+const reveal = () => {
+    const trigger = window.innerHeight * 0.85;
+
+    elements.forEach(el => {
+        const top = el.getBoundingClientRect().top;
+
+        if (top < trigger) {
+            el.style.opacity = "1";
+            el.style.transform = "translateY(0)";
+            el.style.transition = "all 0.6s ease";
+        }
+    });
+};
+
+window.addEventListener("scroll", reveal);
+window.addEventListener("load", reveal);
+</script>
+
 </body>
+</html>
