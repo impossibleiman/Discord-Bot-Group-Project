@@ -2,62 +2,118 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Members - Minecraft Society</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
 
-  <style>
-  :root {
-      --accent: #22c55e
-      --bg: #0f172a
-      --card: #1e293b
-      --text: #e2e8f0
-    }
+<style>
+:root {
+    --accent: #22c55e;
+    --bg: #0f172a;
+    --card: #1e293b;
+    --text: #e2e8f0;
+}
 
-  body {
+
+* {
     margin: 0;
-    background: #0f172a;
-    color: #e2e8f0;
+    padding: 0;
+    box-sizing: border-box;
     font-family: 'Poppins', sans-serif;
 }
 
-/* MAIN */
+body {
+    background: var(--bg);
+    color: var(--text);
+}
+
+
+header {
+    position: fixed;
+    width: 100%;
+    background: rgba(15,23,42,0.9);
+    backdrop-filter: blur(10px);
+    padding: 15px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 100;
+}
+
+.logo {
+    color: var(--accent);
+    font-weight: bold;
+}
+
+nav a {
+    color: white;
+    text-decoration: none;
+    margin-left: 20px;
+    transition: 0.3s;
+}
+
+nav a:hover {
+    color: var(--accent);
+}
+
+.btn {
+    background: var(--accent);
+    padding: 8px 14px;
+    border-radius: 6px;
+    color: black !important;
+}
+
+
 .main {
     padding: 120px 40px;
     max-width: 1100px;
     margin: auto;
 }
 
-/* TITLE */
-h1 {
+
+.hero {
     text-align: center;
-    margin-bottom: 40px;
+    margin-bottom: 60px;
+    animation: fadeUp 1s ease;
 }
 
-/* GRID */
+.hero h1 {
+    font-size: 40px;
+}
+
+.hero p {
+    color: #94a3b8;
+    margin-top: 10px;
+}
+
+
 .grid {
     display: flex;
     flex-wrap: wrap;
-    gap: 20px;
+    gap: 25px;
     justify-content: center;
 }
 
-/* CARD */
+
 .card {
-    background: #1e293b;
+    background: var(--card);
     padding: 25px;
     border-radius: 12px;
-    width: 200px;
+    width: 220px;
     text-align: center;
-    transition: 0.3s;
+    transition: all 0.3s ease;
+
+    opacity: 0;
+    transform: translateY(30px);
 }
 
 .card:hover {
     transform: translateY(-6px);
-    box-shadow: 0 0 25px rgba(34, 197, 94, 0.15);
+    box-shadow: 0 0 35px rgba(34, 197, 94, 0.2);
 }
 
-/* AVATAR */
+
 .avatar {
     width: 70px;
     height: 70px;
@@ -67,7 +123,27 @@ h1 {
     margin-bottom: 15px;
 }
 
-    </style>
+
+.card h3 {
+    margin-bottom: 5px;
+}
+
+.card p {
+    color: #94a3b8;
+}
+
+
+@keyframes fadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(40px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+</style>
 </head>
 
 <body>
@@ -78,12 +154,16 @@ h1 {
         <a href="index.html">Docs</a>
         <a href="events.html">Events</a>
         <a href="members.html">Members</a>
-        <a href="#" class="btn">Join Server</a>
+        <a href="https://discord.gg/YOURCODE" class="btn">Join Server</a>
     </nav>
 </header>
 
 <div class="main">
-    <h1>Team Members</h1>
+
+    <div class="hero">
+        <h1>Team Members</h1>
+        <p>Meet the team behind the Minecraft Society Bot</p>
+    </div>
 
     <div class="grid">
 
@@ -124,7 +204,29 @@ h1 {
         </div>
 
     </div>
+
 </div>
+
+<script>
+const cards = document.querySelectorAll(".card");
+
+const reveal = () => {
+    const trigger = window.innerHeight * 0.85;
+
+    cards.forEach(card => {
+        const top = card.getBoundingClientRect().top;
+
+        if (top < trigger) {
+            card.style.opacity = "1";
+            card.style.transform = "translateY(0)";
+            card.style.transition = "all 0.6s ease";
+        }
+    });
+};
+
+window.addEventListener("scroll", reveal);
+window.addEventListener("load", reveal);
+</script>
 
 </body>
 </html>
