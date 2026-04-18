@@ -50,10 +50,10 @@ public class Purgecommand implements ICommand {
             event.reply("Amount must be between 1 and 100.").setEphemeral(true).queue();
             return;
         }
+        //without this discord will timeout after 3 seconds
+        event.deferReply(true).queue(); //FIX FOR TIMEOUT 
 
-        // Reply immediately so Discord does not time out the interaction while we work
-        // setEphemeral(true) means only the person who used the command can see this reply
-        event.reply("Deleting " + amount + " messages...").setEphemeral(true).queue();
+
 
         // Get the channel the command was used in so we can fetch messages from it
         TextChannel channel = event.getChannel().asTextChannel();
