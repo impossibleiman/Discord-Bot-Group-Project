@@ -111,7 +111,7 @@ nav a {
 <body>
 
 <header>
-    <h2>Minecraft Society</h2>
+    <div class="logo">Minecraft Society</div>
     <nav>
         <a href="index.html">Docs</a>
         <a href="events.html">Events</a>
@@ -120,14 +120,15 @@ nav a {
     </nav>
 </header>
 
+<!-- HERO -->
 <div class="hero">
-    <h1>EVENT SCHEDULE</h1>
-    <p>Mark your calendars. Events will be announced soon.</p>
+    <h1>Event Schedule</h1>
+    <p>Mark your calendars. Upcoming Minecraft Society events will be announced soon.</p>
 </div>
 
+<!-- EVENTS -->
 <div class="container">
 
-    <!-- CARD 1 -->
     <div class="card">
         <div class="card-header">EVENT 1</div>
         <div class="card-body">
@@ -136,12 +137,9 @@ nav a {
             <p>Location: TBC</p>
             <p>Description: Coming soon</p>
         </div>
-        <div class="card-footer">
-            <button>Join Event</button>
-        </div>
+        <button>Join Event</button>
     </div>
 
-    <!-- CARD 2 -->
     <div class="card">
         <div class="card-header">EVENT 2</div>
         <div class="card-body">
@@ -150,12 +148,9 @@ nav a {
             <p>Location: TBC</p>
             <p>Description: Coming soon</p>
         </div>
-        <div class="card-footer">
-            <button>Join Event</button>
-        </div>
+        <button>Join Event</button>
     </div>
 
-    <!-- CARD 3 -->
     <div class="card">
         <div class="card-header">EVENT 3</div>
         <div class="card-body">
@@ -164,13 +159,20 @@ nav a {
             <p>Location: TBC</p>
             <p>Description: Coming soon</p>
         </div>
-        <div class="card-footer">
-            <button>Join Event</button>
-        </div>
+        <button>Join Event</button>
     </div>
 
 </div>
 
-</body>
-</html>
+<!-- SUGGEST EVENT SECTION -->
+<div class="suggest-section">
+    <h2>Have an idea for an event?</h2>
+    <p>We are always looking for new community activities. Submit your ideas below.</p>
 
+    <div class="suggest-box">
+        <input type="text" placeholder="What's your idea?" />
+        <button>Submit</button>
+    </div>
+</div>
+
+</body>
