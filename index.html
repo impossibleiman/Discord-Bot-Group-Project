@@ -171,6 +171,28 @@ nav a:hover {
     color: #22c55e;
     transform: translateX(5px);
 }
+    /* HERO FADE IN */
+.hero {
+    animation: fadeUp 1s ease;
+}
+
+/* SECTION DEFAULT (hidden before animation) */
+section {
+    opacity: 0;
+    transform: translateY(30px);
+}
+
+/* ANIMATION KEYFRAMES */
+@keyframes fadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(40px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
 </style>
 </head>
 
