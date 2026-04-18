@@ -1,249 +1,217 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Minecraft Society Bot | Technical Documentation</title>
-    <style>
-        :root {
-            --header-height: 60px;
-            --sidebar-width: 260px;
-            --discord-blurple: #5865F2;
-            --bg-dark: #36393f;
-            --bg-darker: #2f3136;
-            --text-normal: #dcddde;
-            --text-header: #ffffff;
-            --border-color: #4f545c;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Minecraft Society Bot</title>
 
-        body {
-            margin: 0;
-            background-color: var(--bg-dark);
-            color: var(--text-normal);
-            font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
-            line-height: 1.5;
-        }
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
 
-        /* --- Header --- */
-        header {
-            height: var(--header-height);
-            background-color: var(--bg-darker);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 24px;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 100;
-            border-bottom: 1px solid var(--border-color);
-        }
+<style>
+:root {
+    --accent: #22c55e;
+    --bg: #0f172a;
+    --card: #1e293b;
+    --text: #e2e8f0;
+}
 
-        header .logo {
-            font-weight: 700;
-            font-size: 1.1rem;
-            letter-spacing: 0.5px;
-            color: var(--text-header);
-        }
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+}
 
-        header nav a {
-            color: var(--text-normal);
-            text-decoration: none;
-            margin-left: 20px;
-            font-size: 0.85rem;
-            font-weight: 500;
-        }
+body {
+    background: var(--bg);
+    color: var(--text);
+}
 
-        .btn-invite {
-            background-color: var(--discord-blurple);
-            padding: 8px 16px;
-            border-radius: 4px;
-            color: white !important;
-            transition: background 0.2s;
-        }
+/* HEADER */
+header {
+    position: fixed;
+    width: 100%;
+    background: rgba(15,23,42,0.9);
+    backdrop-filter: blur(10px);
+    padding: 15px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 100;
+}
 
-        .btn-invite:hover { background-color: #4752c4; }
+.logo {
+    font-weight: bold;
+    color: var(--accent);
+}
 
-        /* --- Sidebar --- */
-        .sidebar {
-            width: var(--sidebar-width);
-            height: calc(100vh - var(--header-height));
-            background-color: var(--bg-darker);
-            position: fixed;
-            top: var(--header-height);
-            left: 0;
-            padding: 30px 20px;
-            box-sizing: border-box;
-            overflow-y: auto;
-        }
+nav a {
+    color: white;
+    text-decoration: none;
+    margin-left: 20px;
+}
 
-        .sidebar h4 { 
-            color: #8e9297; 
-            text-transform: uppercase; 
-            font-size: 0.7rem; 
-            letter-spacing: 1px;
-            margin-bottom: 12px;
-        }
+.btn-invite {
+    background: var(--accent);
+    padding: 8px 14px;
+    border-radius: 6px;
+    color: black !important;
+}
 
-        .sidebar a {
-            display: block;
-            color: var(--text-normal);
-            text-decoration: none;
-            margin: 8px 0;
-            font-size: 0.9rem;
-            padding: 6px 10px;
-            border-radius: 4px;
-        }
+/* SIDEBAR */
+.sidebar {
+    position: fixed;
+    top: 70px;
+    left: 0;
+    width: 240px;
+    height: 100%;
+    background: #020617;
+    padding: 20px;
+}
 
-        .sidebar a:hover { 
-            background-color: #42464d;
-            color: var(--text-header); 
-        }
+.sidebar a {
+    display: block;
+    margin: 10px 0;
+    color: #94a3b8;
+    text-decoration: none;
+    transition: 0.2s;
+}
 
-        /* --- Content Area --- */
-        main {
-            margin-left: var(--sidebar-width);
-            margin-top: var(--header-height);
-            padding: 60px 80px;
-            max-width: 900px;
-        }
+.sidebar a:hover {
+    color: white;
+}
 
-        section { margin-bottom: 80px; scroll-margin-top: 100px; }
-        h1 { font-size: 2.2rem; margin-bottom: 10px; }
-        h2 { font-size: 1.6rem; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; margin-top: 40px; }
-        
-        /* --- Command Table Layout --- */
-        .command-box {
-            background-color: var(--bg-darker);
-            border-radius: 6px;
-            padding: 24px;
-            margin-top: 20px;
-        }
+/* MAIN */
+main {
+    margin-left: 260px;
+    padding: 100px 40px;
+}
 
-        .command-header {
-            font-family: 'Courier New', monospace;
-            color: var(--discord-blurple);
-            font-size: 1.2rem;
-            font-weight: bold;
-            margin-bottom: 10px;
-        }
+/* HERO */
+.hero {
+    margin-bottom: 60px;
+}
 
-        .property-grid {
-            display: grid;
-            grid-template-columns: 120px 1fr;
-            gap: 10px;
-            margin-top: 15px;
-        }
+.hero h1 {
+    font-size: 40px;
+}
 
-        .label { font-weight: bold; color: #8e9297; font-size: 0.85rem; }
-        .value { font-size: 0.9rem; }
+.hero p {
+    margin-top: 10px;
+    color: #94a3b8;
+}
 
-        .arg-list {
-            list-style: none;
-            padding: 0;
-            margin: 5px 0 0 0;
-        }
+/* CARDS */
+.command-box {
+    background: var(--card);
+    padding: 25px;
+    border-radius: 12px;
+    margin-top: 20px;
+    transition: 0.3s;
+}
 
-        .arg-item {
-            background: #40444b;
-            padding: 4px 8px;
-            border-radius: 3px;
-            font-size: 0.8rem;
-            margin-right: 5px;
-            display: inline-block;
-        }
+.command-box:hover {
+    transform: translateY(-5px);
+}
 
-        .wizard-steps {
-            margin-top: 20px;
-            padding-left: 20px;
-        }
+/* TEXT */
+h2 {
+    margin-top: 40px;
+    border-bottom: 1px solid #334155;
+    padding-bottom: 10px;
+}
 
-        .wizard-steps li { margin-bottom: 10px; }
-    </style>
+.command-header {
+    color: var(--accent);
+    font-family: monospace;
+}
+
+/* GRID */
+.property-grid {
+    display: grid;
+    grid-template-columns: 120px 1fr;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.label {
+    color: #64748b;
+}
+
+.value {
+    color: white;
+}
+</style>
 </head>
+
 <body>
 
-    <header>
-        <div class="logo">MINECRAFT SOCIETY BOT</div>
-        <nav>
-            <a href="#">HELP</a>
-            <a href="#">FAQ</a>
-            <a href="YOUR_BOT_INVITE_URL" class="btn-invite">INVITE BOT</a>
-        </nav>
-    </header>
+<header>
+    <div class="logo">Minecraft Society</div>
+    <nav>
+        <a href="#intro">Docs</a>
+        <a href="#reactionrole">Commands</a>
+        <a href="#" class="btn-invite">Invite Bot</a>
+    </nav>
+</header>
 
-    <div class="sidebar">
-        <h4>DOCUMENTATION</h4>
-        <a href="#intro">Introduction</a>
-        <h4>COMMAND LIST</h4>
-        <a href="#reactionrole">reactionrole</a>
-        <a href="#event">event</a>
+<div class="sidebar">
+    <h4>DOCUMENTATION</h4>
+    <a href="#intro">Introduction</a>
+
+    <h4>COMMANDS</h4>
+    <a href="#reactionrole">Reaction Roles</a>
+    <a href="#event">Event System</a>
+</div>
+
+<main>
+
+<div class="hero">
+    <h1>Minecraft Society Bot</h1>
+    <p>Advanced Discord bot for community management 🚀</p>
+</div>
+
+<section id="intro">
+    <h2>Introduction</h2>
+   <p>
+The Minecraft Society Bot is a group project developed for Manchester Metropolitan University (MMU). 
+It is designed to enhance server moderation, automate community management, and improve user interaction within the Minecraft Society Discord server.
+</p>
+</section>
+
+<section id="reactionrole">
+    <h2>Reaction Roles</h2>
+
+    <div class="command-box">
+        <div class="command-header">/reactionrole</div>
+
+        <div class="property-grid">
+            <div class="label">Description</div>
+            <div class="value">Creates interactive role selection buttons.</div>
+
+            <div class="label">Permissions</div>
+            <div class="value">Manage Roles</div>
+        </div>
     </div>
+</section>
 
-    <main>
-        <section id="intro">
-            <h1>Documentation</h1>
-            <p>The Minecraft Society Bot is a group project made to efficiently assist in the moderation of the Minecraft Society at MMU.</p>
-            <p>**Fill in roles later</p>
-            <p>Maybe discuss each div for each command (title, description, arguments, permissions...)</p>
-        </section>
+<section id="event">
+    <h2>Event System</h2>
 
-        <section id="reactionrole">
-            <h2>Reaction Roles</h2>
-            <div class="command-box">
-                <div class="command-header">/reactionrole</div>
-                <div class="property-grid">
-                    <div class="label">Description</div>
-                    <div class="value">Starts an interactive 5-step wizard to create a message with self-assignable role buttons.</div>
-                    
-                    <div class="label">Arguments</div>
-                    <div class="value">None (Interactive Wizard)</div>
-                    
-                    <div class="label">Permissions</div>
-                    <div class="value">Manage Roles</div>
-                </div>
+    <div class="command-box">
+        <div class="command-header">/event</div>
 
-                <h3>Wizard Workflow</h3>
-                <ol class="wizard-steps">
-                    <li><b>Target Channel:</b> Staff selects the destination text channel from an auto-filled dropdown.</li>
-                    <li><b>Message Body:</b> Staff types the text content for the role post in chat.</li>
-                    <li><b>Role Selection:</b> Staff selects the role to be granted from a role dropdown.</li>
-                    <li><b>Button Label:</b> Staff types the text to be displayed on the button.</li>
-                    <li><b>Emoji:</b> Staff provides the emoji to be displayed on the button.</li>
-                </ol>
-                <p>Upon completion, a preview is generated with options to <b>Add Another Button</b> or <b>Confirm and Send</b>.</p>
-            </div>
-        </section>
+        <div class="property-grid">
+            <div class="label">Description</div>
+            <div class="value">Manage temporary event channels.</div>
 
-        <section id="event">
-            <h2>Event Management Module</h2>
-            <div class="command-box">
-                <div class="command-header">/event</div>
-                <div class="property-grid">
-                    <div class="label">Description</div>
-                    <div class="value">A suite of tools to create, expand, or clean up temporary event voice channels.</div>
-                    
-                    <div class="label">Permissions</div>
-                    <div class="value">Manage Channels</div>
-                </div>
+            <div class="label">Permissions</div>
+            <div class="value">Manage Channels</div>
+        </div>
+    </div>
+</section>
 
-                <div class="property-grid" style="margin-top: 20px; border-top: 1px solid #40444b; padding-top: 15px;">
-                    <div class="label">Argument: action</div>
-                    <div class="value">Determines the function: <b>start</b> (create), <b>append</b> (add), or <b>end</b> (delete).</div>
-                    
-                    <div class="label">Argument: category</div>
-                    <div class="value">The Discord category where the channels should be managed.</div>
-                    
-                    <div class="label">Argument: count </div>
-                    <div class="value">The number of voice channels to generate (Range: 1-10). Default value of 1</div>
-                    
-                    <div class="label">Argument: limit (optional)</div>
-                    <div class="value">Optional user limit for channels created during the "append" action. Default value 2</div>
-                </div>
-            </div>
-        </section>
-    </main>
+</main>
 
 </body>
 </html>
