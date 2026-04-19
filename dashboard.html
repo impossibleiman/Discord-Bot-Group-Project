@@ -220,10 +220,20 @@ td code { background: #08101a; padding: 4px 8px; border-radius: 4px; color: var(
   </div>
 </header>
 
+
 <div class="sidebar">
   <div class="sidebar-label">Management</div>
-  <button class="nav-tab active" onclick="switchTab('tab-general', this)"><span class="sidebar-dot"></span>General Settings</button>
-  <button class="nav-tab" onclick="switchTab('tab-invites', this)"><span class="sidebar-dot"></span>Magic Invites</button>
+<button class="nav-tab active" onclick="switchTab('tab-minecraft', this)">
+  <span class="sidebar-dot"></span>Live Server
+</button>
+
+<button class="nav-tab" onclick="switchTab('tab-general', this)">
+  <span class="sidebar-dot"></span>General Settings
+</button>
+
+<button class="nav-tab" onclick="switchTab('tab-invites', this)">
+  <span class="sidebar-dot"></span>Magic Invites
+</button>
 </div>
 
 <main>
@@ -237,7 +247,56 @@ td code { background: #08101a; padding: 4px 8px; border-radius: 4px; color: var(
   </div>
 
   <div id="settings-container" style="display: none;">
-    <div id="tab-general" class="tab-content active">
+
+    <div id="tab-minecraft" class="tab-content active">
+
+  <div class="section-title">
+    <h2>Live Minecraft Server</h2>
+    <span class="tag">Real-time Sync</span>
+  </div>
+
+  <div class="status-card" style="margin-bottom: 24px;">
+    <div class="stat">
+      <div class="stat-label">Server Status</div>
+      <div class="stat-value green" id="mc-online-status">● Online</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Players</div>
+      <div class="stat-value" id="mc-players">0 / 0</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">World Time</div>
+      <div class="stat-value" id="mc-time">Day 0 (00:00)</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">⚔️ Top Player Kills</div>
+      <div id="leaderboard-pk" style="font-size: 13px; margin-top: 10px; line-height: 1.8;">
+        Loading...
+      </div>
+    </div>
+  </div>
+
+  <div class="command-box">
+    <div class="sidebar-label" style="margin-bottom: 15px;">Global Chat Feed</div>
+    
+    <div id="mc-chat-box" style="height: 300px; overflow-y: auto; background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 20px; font-family: 'JetBrains Mono', monospace; font-size: 13px; margin-bottom: 18px; line-height: 1.6;">
+      <div style="color: var(--muted)">Connecting to bridge...</div>
+    </div>
+    
+    <div style="display: flex; gap: 12px;">
+      <input type="text" id="mc-chat-input" placeholder="Type a message to the server..." 
+        style="flex: 1; background: var(--surface); border: 1px solid var(--border); color: var(--white); padding: 12px; border-radius: 8px;">
+      
+      <button onclick="sendToGame()" class="btn-invite" style="border: none; cursor: pointer; height: 45px;">
+        Send
+      </button>
+    </div>
+  </div>
+
+</div>
+
+
+    <div id="tab-general" class="tab-content">
       <div class="command-box">
         <h3>Server Identity</h3>
       <div class="input-group">
@@ -321,7 +380,6 @@ td code { background: #08101a; padding: 4px 8px; border-radius: 4px; color: var(
     </div>
 
     </div>    
-</div>
 
     <div id="tab-invites" class="tab-content">
       <div class="command-box">
@@ -364,47 +422,6 @@ td code { background: #08101a; padding: 4px 8px; border-radius: 4px; color: var(
     <button class="btn-primary" style="width: 100%;" onclick="closeHelpModal()">Understood</button>
   </div>
 </div>
-
-<div class="section-title">
-  <h2>Live Minecraft Server</h2>
-  <span class="tag">Real-time Sync</span>
-</div>
-
-<div class="status-card" style="margin-bottom: 24px;">
-  <div class="stat">
-    <div class="stat-label">Server Status</div>
-    <div class="stat-value green" id="mc-online-status">● Online</div>
-  </div>
-  <div class="stat">
-    <div class="stat-label">Players</div>
-    <div class="stat-value" id="mc-players">0 / 0</div>
-  </div>
-  <div class="stat">
-    <div class="stat-label">World Time</div>
-    <div class="stat-value" id="mc-time">Day 0 (00:00)</div>
-  </div>
-<div class="stat">
-  <div class="stat-label">⚔️ Top Player Kills</div>
-  <div id="leaderboard-pk" style="font-size: 13px; margin-top: 10px; line-height: 1.8;">
-    Loading...
-  </div>
-</div>
-</div>
-
-
-<div class="command-box">
-  <div class="sidebar-label" style="margin-bottom: 15px;">Global Chat Feed</div>
-  <div id="mc-chat-box" style="height: 300px; overflow-y: auto; background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 20px; font-family: 'JetBrains Mono', monospace; font-size: 13px; margin-bottom: 18px; line-height: 1.6;">
-    <div style="color: var(--muted)">Connecting to bridge...</div>
-  </div>
-  
-  <div style="display: flex; gap: 12px;">
-    <input type="text" id="mc-chat-input" placeholder="Type a message to the server..." 
-           style="flex: 1; background: var(--surface); border: 1px solid var(--border); color: var(--white); padding: 12px; border-radius: 8px;">
-    <button onclick="sendToGame()" class="btn-invite" style="border: none; cursor: pointer; height: 45px;">Send</button>
-  </div>
-</div>
-
 
 <script>
   // Simple functions to open and close the modal

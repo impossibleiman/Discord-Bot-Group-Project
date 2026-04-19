@@ -364,48 +364,77 @@ async function refreshMinecraftData() {
     try {
         const res = await fetch(`${API_BASE}/mc-data`);
         if (!res.ok) throw new Error("Offline");
-        
-        // This is the variable the error was looking for
+
         const data = await res.json();
 
-        // 1. Update Basic Stats
+        // --- STATUS ---
         document.getElementById('mc-online-status').innerText = "● Online";
-        document.getElementById('mc-players').innerText = `${data.status.online || 0} / ${data.status.max || 0}`;
 
-        const ticks = data.status.time || 0;
+        const online = data.status?.online ?? 0;
+        const max = data.status?.max ?? 0;
+        document.getElementById('mc-players').innerText = `${online} / ${max}`;
+
+        const ticks = data.status?.time ?? 0;
+        const day = data.status?.day ?? 0;
+
         const hours = Math.floor((ticks / 1000 + 6) % 24);
         const minutes = Math.floor((ticks % 1000) * 0.06);
         const timeStr = `${hours}:${minutes < 10 ? '0' : ''}${minutes}`;
-        document.getElementById('mc-time').innerText = `Day ${data.status.day || 0} (${timeStr})`;
 
-        // 2. Update Chat (Your screenshot shows this part works!)
+        document.getElementById('mc-time').innerText = `Day ${day} (${timeStr})`;
+
+        // --- CHAT (FIXED: player/content) ---
         const chatBox = document.getElementById('mc-chat-box');
+
         if (data.chat && data.chat.length > 0) {
             chatBox.innerHTML = data.chat.map(m => `
                 <div style="margin-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.03); padding-bottom: 5px;">
                     <span class="pill" style="background: rgba(74, 222, 128, 0.1); color: var(--green); border: 1px solid rgba(74, 222, 128, 0.2);">
-                        ${sanitize(m.user)}
+                        ${sanitize(m.player)}
                     </span> 
-                    <span style="color: var(--white); margin-left: 8px;">${sanitize(m.text)}</span>
+                    <span style="color: var(--white); margin-left: 8px;">
+                        ${sanitize(m.content)}
+                    </span>
                 </div>
             `).join('');
         }
 
-        // 3. Update Leaderboards (MOVE THIS INSIDE THE FUNCTION)
-        if (data.status.leaderboards) {
-        // 1. Update Player Kills (using the 'player_kills' key from your Java plugin)
-            const pKills = data.status.leaderboards.player_kills || [];
-            document.getElementById('leaderboard-pk').innerHTML = pKills.length > 0 
-                ? pKills.map((p, i) => `<div><span style="color:var(--muted)">${i+1}.</span> ${sanitize(p)}</div>`).join('')
+        // --- LEADERBOARDS (FIXED: object parsing) ---
+        const leaderboards = data.status?.leaderboards || {};
+
+        // Player Kills
+        const pKills = leaderboards.player_kills || [];
+        document.getElementById('leaderboard-pk').innerHTML =
+            pKills.length > 0
+                ? pKills.map((p, i) => `
+                    <div style="display:flex; justify-content:space-between;">
+                        <span>
+                            <span style="color:var(--muted)">${i + 1}.</span>
+                            ${sanitize(p.player)}
+                        </span>
+                        <span style="color:var(--green)">${p.value}</span>
+                    </div>
+                `).join('')
                 : "No kills recorded yet.";
 
-            // 2. Update Deaths (remains the same)
-            const deaths = data.status.leaderboards.deaths || [];
-            document.getElementById('leaderboard-deaths').innerHTML = deaths.length > 0 
-                ? deaths.map((p, i) => `<div><span style="color:var(--muted)">${i+1}.</span> ${sanitize(p)}</div>`).join('')
-                : "No deaths recorded yet.";
-    }
-        
+        // Deaths (only if element exists)
+        const deathsEl = document.getElementById('leaderboard-deaths');
+        if (deathsEl) {
+            const deaths = leaderboards.deaths || [];
+            deathsEl.innerHTML =
+                deaths.length > 0
+                    ? deaths.map((p, i) => `
+                        <div style="display:flex; justify-content:space-between;">
+                            <span>
+                                <span style="color:var(--muted)">${i + 1}.</span>
+                                ${sanitize(p.player)}
+                            </span>
+                            <span style="color:#ef4444">${p.value}</span>
+                        </div>
+                    `).join('')
+                    : "No deaths recorded yet.";
+        }
+
     } catch (e) {
         console.error("Sync Error:", e);
         document.getElementById('mc-online-status').innerText = "○ Offline";
