@@ -191,31 +191,31 @@ public class MinecraftSocietyBot {
                 return;
             }
 
-            // Use a CompletableFuture to tell Javalin to wait for the Discord response
-            java.util.concurrent.CompletableFuture<String> future = new java.util.concurrent.CompletableFuture<>();
+            try {
+                // THE FIX: Use .complete() instead of .queue(). 
+                // This forces Javalin to wait for Discord to hand over the code.
+                var invite = targetChannel.createInvite()
+                        .setMaxAge(0)
+                        .setMaxUses(0)
+                        .setUnique(true)
+                        .complete();
 
-            targetChannel.createInvite()
-                    .setMaxAge(0)
-                    .setMaxUses(0)
-                    .setUnique(true)
-                    .queue(invite -> {
-                        // 1. Update the configuration mapping
-                        ServerConfig config = guildConfigs.getOrDefault(guildId, new ServerConfig());
-                        if (config.inviteAliases == null) config.inviteAliases = new java.util.HashMap<>();
-                        
-                        config.inviteAliases.put(invite.getCode(), requestedAlias.trim());
-                        
-                        guildConfigs.put(guildId, config);
-                        saveConfigs(); 
+                // 1. Update the configuration mapping
+                ServerConfig config = guildConfigs.getOrDefault(guildId, new ServerConfig());
+                if (config.inviteAliases == null) config.inviteAliases = new java.util.HashMap<>();
+                
+                config.inviteAliases.put(invite.getCode(), requestedAlias.trim());
+                
+                guildConfigs.put(guildId, config);
+                saveConfigs(); 
 
-                        // 2. Complete the future with the new code
-                        future.complete(invite.getCode());
-                    }, throwable -> {
-                        future.completeExceptionally(throwable);
-                    });
-
-            // Javalin will now wait for 'future' to be completed
-            ctx.future(() -> future);
+                // 2. Send the guaranteed code back to the dashboard
+                ctx.result(invite.getCode());
+                
+            } catch (Exception e) {
+                System.err.println("Failed to create invite: " + e.getMessage());
+                ctx.status(500).result("Failed to communicate with Discord.");
+            }
         });
 
         app.delete("/delete-invite/{guildId}/{code}", ctx -> {
@@ -328,29 +328,6 @@ public class MinecraftSocietyBot {
             ServerConfig config = guildConfigs.getOrDefault(guildId, new ServerConfig());
             ctx.json(config);
         });
-
-        app.post("/config/{guildId}", ctx -> {
-            String sessionId = ctx.header("Authorization");
-            if (!activeSessions.containsKey(sessionId)) {
-                ctx.status(401).result("Unauthorized");
-                return;
-            }
-
-            String guildId = ctx.pathParam("guildId");
-            ServerConfig newConfig = ctx.bodyAsClass(ServerConfig.class);
-            
-            guildConfigs.put(guildId, newConfig);
-            saveConfigs(); // Permanent save!
-
-            // Apply the nickname change in Discord immediately
-            var guild = jdaHolder[0].getGuildById(guildId);
-            if (guild != null) {
-                guild.getSelfMember().modifyNickname(newConfig.nickname).queue();
-            }
-
-            ctx.result("Config updated and applied!");
-        });
-
 
         app.get("/my-guilds", ctx -> {
             String sessionId = ctx.header("Authorization");
