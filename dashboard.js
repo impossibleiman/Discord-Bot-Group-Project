@@ -103,7 +103,6 @@ function selectServer(guildId, buttonElement) {
     loadServerConfig();
 }
 
-// Load Settings for Selected Server
 async function loadServerConfig() {
     if (!currentGuildId) return;
     const response = await fetch(`${API_BASE}/config/${currentGuildId}`, {
@@ -111,54 +110,38 @@ async function loadServerConfig() {
     });
     const config = await response.json();
     
-    // Set Nickname
-    const nickEl = document.getElementById('config-nickname');
-    if (nickEl) nickEl.value = config.nickname || "";
+    let embedData = {};
+    try { embedData = JSON.parse(config.welcomeMessage || "{}"); } 
+    catch (e) { embedData = { desc: config.welcomeMessage || "" }; }
 
-    // Safely get the embed object
-    const emb = config.welcomeEmbed || {};
+    document.getElementById('emb-title').value = embedData.title || "";
+    document.getElementById('emb-desc').value = embedData.desc || "";
+    document.getElementById('emb-color').value = embedData.color || "";
+    document.getElementById('emb-thumb').value = embedData.thumb || "";
+    document.getElementById('emb-image').value = embedData.image || "";
+    document.getElementById('emb-footer').value = embedData.footer || "";
 
-    // Populate Embed Fields exactly mapping to ServerConfig properties
-    document.getElementById('emb-author').value = emb.authorName || "";
-    document.getElementById('emb-author-icon').value = emb.authorIcon || "";
-    document.getElementById('emb-title').value = emb.title || "";
-    document.getElementById('emb-desc').value = emb.description || "";
-    document.getElementById('emb-color').value = emb.color || "";
-    document.getElementById('emb-thumb').value = emb.thumbnail || "";
-    document.getElementById('emb-image').value = emb.image || "";
-    document.getElementById('emb-footer').value = emb.footerText || "";
-
-    // Render tables and preview
     renderAliasTable(config.inviteAliases || {});
     updatePreview(); 
 }
 
-// Save Settings
 async function saveServerConfig() {
     if (!currentGuildId) return;
     const token = localStorage.getItem('admin_session');
     const btn = document.getElementById('save-general-btn');
-    
-    if (btn) {
-        btn.innerText = "Saving...";
-        btn.disabled = true;
-    }
+    if (btn) { btn.innerText = "Saving..."; btn.disabled = true; }
     
     try {
-        // Create a strict, clean payload matching ServerConfig.java exactly
-        const payload = {
-            nickname: document.getElementById('config-nickname').value,
-            welcomeEmbed: {
-                authorName: document.getElementById('emb-author').value,
-                authorIcon: document.getElementById('emb-author-icon').value,
-                title: document.getElementById('emb-title').value,
-                description: document.getElementById('emb-desc').value,
-                color: document.getElementById('emb-color').value,
-                thumbnail: document.getElementById('emb-thumb').value,
-                image: document.getElementById('emb-image').value,
-                footerText: document.getElementById('emb-footer').value
-            }
+        const embedData = {
+            title: document.getElementById('emb-title').value,
+            desc: document.getElementById('emb-desc').value,
+            color: document.getElementById('emb-color').value,
+            thumb: document.getElementById('emb-thumb').value,
+            image: document.getElementById('emb-image').value,
+            footer: document.getElementById('emb-footer').value
         };
+
+        const payload = { welcomeMessage: JSON.stringify(embedData) };
 
         const postRes = await fetch(`${API_BASE}/config/${currentGuildId}`, {
             method: 'POST',
@@ -166,18 +149,12 @@ async function saveServerConfig() {
             body: JSON.stringify(payload)
         });
 
-        if (postRes.ok) {
-            showToast("Identity settings saved successfully!");
-        } else {
-            showToast("Failed to save settings. Check bot terminal.", "error");
-        }
+        if (postRes.ok) showToast("Embed settings saved successfully!");
+        else showToast("Failed to save settings.", "error");
     } catch (err) {
         showToast("Network error.", "error");
     } finally {
-        if (btn) {
-            btn.innerText = "Save Identity Settings";
-            btn.disabled = false;
-        }
+        if (btn) { btn.innerText = "Save Identity Settings"; btn.disabled = false; }
     }
 }
 
