@@ -1,138 +1,217 @@
 const API_BASE = "https://api.mmuminecraftsociety.co.uk";
+let currentGuildId = null;
 
-// 1. Capture Session on Load
 document.addEventListener("DOMContentLoaded", () => {
     const urlParams = new URLSearchParams(window.location.search);
     const sessionToken = urlParams.get('session');
 
     if (sessionToken) {
-        // Store it securely in the browser
         localStorage.setItem('admin_session', sessionToken);
-        log("New session saved!");
-        
-        // Clean the URL (remove the ?session=xxx part)
         window.history.replaceState({}, document.title, "/dashboard.html");
     }
-
     verifySession();
 });
 
-// 2. Verify Session with the Backend
+// Toast System (Replaces Alerts)
+function showToast(message, type = 'success') {
+    const container = document.getElementById('toast-container');
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    // Simple icon check based on type
+    const icon = type === 'success' ? '✓' : '✕';
+    toast.innerHTML = `<span style="font-size: 16px;">${icon}</span> ${message}`;
+    
+    container.appendChild(toast);
+    setTimeout(() => {
+        toast.classList.add('fade-out');
+        setTimeout(() => toast.remove(), 300);
+    }, 3500);
+}
+
+// Tab Switching Logic
+function switchTab(tabId, buttonElement) {
+    document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+    document.querySelectorAll('.nav-tab').forEach(btn => btn.classList.remove('active'));
+    
+    document.getElementById(tabId).classList.add('active');
+    buttonElement.classList.add('active');
+}
+
 async function verifySession() {
     const token = localStorage.getItem('admin_session');
     if (!token) {
-        document.getElementById('session-info').innerHTML = "❌ No active session. <a href='/login.html' style='color:white;'>Login here</a>";
+        document.getElementById('session-info').innerHTML = "No active session.";
         return;
     }
-
     try {
         const response = await fetch(`${API_BASE}/check-session?session=${token}`);
-        
         if (response.ok) {
-            const text = await response.text();
-            document.getElementById('session-info').innerHTML = "✅ " + text;
-            log("Session verified with server.");
-            
-            // Trigger data loading now that we are authenticated
+            document.getElementById('session-info').innerHTML = "Session Valid";
             loadGuilds(); 
             checkBotStatus();
         } else {
-            document.getElementById('session-info').innerHTML = "⚠️ Session expired. Please login again.";
+            document.getElementById('session-info').innerHTML = "Session Expired";
             localStorage.removeItem('admin_session');
-            log("Session expired or invalid.");
+            window.location.href = '/login.html';
         }
     } catch (err) {
-        log("Error: Could not reach API server.");
+        showToast("Could not connect to API.", "error");
     }
 }
 
-// 3. Fetch servers where the bot is present
 async function loadGuilds() {
     const token = localStorage.getItem('admin_session');
-    log("Fetching manageable servers...");
-
     try {
-        const response = await fetch(`${API_BASE}/my-guilds`, {
-            headers: { 'Authorization': token }
-        });
-
-        if (!response.ok) {
-            log("Failed to load servers (Status: " + response.status + ")");
-            return;
-        }
+        const response = await fetch(`${API_BASE}/my-guilds`, { headers: { 'Authorization': token } });
+        if (!response.ok) return showToast("Failed to load servers.", "error");
 
         const guilds = await response.json();
-        const selector = document.getElementById('guild-selector');
-        
-        // Clear existing options except the placeholder
-        selector.innerHTML = '<option value="">-- Choose a Server --</option>';
+        const serverBar = document.getElementById('server-bar');
+        serverBar.innerHTML = '';
 
         if (guilds.length === 0) {
-            log("No servers found where the bot is present.");
+            serverBar.innerHTML = '<span style="color:var(--muted); font-size:14px;">No managed servers found.</span>';
             return;
         }
 
-        guilds.forEach(g => {
-            let opt = document.createElement('option');
-            opt.value = g.id;
-            opt.innerHTML = g.name;
-            selector.appendChild(opt);
+        guilds.forEach((g, index) => {
+            const btn = document.createElement('button');
+            btn.className = 'server-pill';
+            btn.innerText = g.name;
+            btn.onclick = () => selectServer(g.id, btn);
+            serverBar.appendChild(btn);
+
+            // Auto-select the first server
+            if (index === 0) {
+                selectServer(g.id, btn);
+            }
         });
-        
-        log("Loaded " + guilds.length + " servers.");
     } catch (err) {
-        log("Error fetching server list.");
-        console.error(err);
+        showToast("Error fetching server list.", "error");
     }
 }
 
-// 4. Load specific server settings
-async function loadServerConfig() {
-    const guildId = document.getElementById('guild-selector').value;
-    if (!guildId) return;
+function selectServer(guildId, buttonElement) {
+    currentGuildId = guildId;
+    
+    // Update active pill styling
+    document.querySelectorAll('.server-pill').forEach(btn => btn.classList.remove('active'));
+    buttonElement.classList.add('active');
 
-    const response = await fetch(`${API_BASE}/config/${guildId}`, {
+    // Show settings container
+    document.getElementById('settings-container').style.display = "block";
+    loadServerConfig();
+}
+
+async function loadServerConfig() {
+    if (!currentGuildId) return;
+    const response = await fetch(`${API_BASE}/config/${currentGuildId}`, {
         headers: { 'Authorization': localStorage.getItem('admin_session') }
     });
     const config = await response.json();
     
     document.getElementById('config-nickname').value = config.nickname || "";
     document.getElementById('config-welcome').value = config.welcomeMessage || "";
-    document.getElementById('settings-form').style.display = "block";
-
-    // Build the alias table
     renderAliasTable(config.inviteAliases || {});
 }
 
+async function saveServerConfig() {
+    if (!currentGuildId) return;
+    const token = localStorage.getItem('admin_session');
+    const btn = document.getElementById('save-general-btn');
+    
+    btn.innerText = "Saving...";
+    btn.disabled = true;
+    
+    try {
+        // Fetch current config to preserve aliases
+        const getRes = await fetch(`${API_BASE}/config/${currentGuildId}`, { headers: { 'Authorization': token } });
+        const config = await getRes.json();
+
+        config.nickname = document.getElementById('config-nickname').value;
+        config.welcomeMessage = document.getElementById('config-welcome').value;
+
+        const postRes = await fetch(`${API_BASE}/config/${currentGuildId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': token },
+            body: JSON.stringify(config)
+        });
+
+        if (postRes.ok) {
+            showToast("Identity settings saved successfully!");
+        } else {
+            showToast("Failed to save settings.", "error");
+        }
+    } catch (err) {
+        showToast("Network error.", "error");
+    } finally {
+        btn.innerText = "Save Identity Settings";
+        btn.disabled = false;
+    }
+}
+
+async function checkBotStatus() {
+    const statusEl = document.getElementById('bot-status');
+    try {
+        const response = await fetch(`${API_BASE}/status`);
+        if (response.ok) {
+            statusEl.innerText = "● Bot Online";
+            statusEl.style.color = "var(--green)";
+            statusEl.style.background = "rgba(74,222,128,.1)";
+            statusEl.style.borderColor = "rgba(74,222,128,.25)";
+        } else {
+            throw new Error("Bad status");
+        }
+    } catch (err) {
+        statusEl.innerText = "● Bot Offline";
+        statusEl.style.color = "#e74c3c";
+        statusEl.style.background = "rgba(231,76,60,.1)";
+        statusEl.style.borderColor = "rgba(231,76,60,.25)";
+    }
+}
 
 async function createMagicInvite() {
-    const guildId = document.getElementById('guild-selector').value;
-    const alias = document.getElementById('new-magic-alias').value.trim();
+    const aliasInput = document.getElementById('new-magic-alias');
+    const alias = aliasInput.value.trim();
+    const btn = document.getElementById('generate-magic-btn');
 
-    if (!guildId) return alert("Please select a server first.");
-    if (!alias) return alert("Please type an alias name.");
+    if (!currentGuildId) return showToast("Please select a server first.", "error");
+    if (!alias) return showToast("Please type an alias name.", "error");
 
-    log("Requesting magic invite for alias: " + alias);
     const token = localStorage.getItem('admin_session');
+    
+    // Visual Loading State (Prevents empty console logs)
+    btn.innerText = "Generating...";
+    btn.disabled = true;
+    aliasInput.disabled = true;
 
     try {
-        const response = await fetch(`${API_BASE}/create-magic-invite/${guildId}?alias=${encodeURIComponent(alias)}`, {
+        const response = await fetch(`${API_BASE}/create-magic-invite/${currentGuildId}?alias=${encodeURIComponent(alias)}`, {
             headers: { 'Authorization': token }
         });
 
         if (response.ok) {
             const newCode = await response.text();
-            log("Success: Created and mapped " + alias + " to discord.gg/" + newCode);
             
-            // Clear input and refresh UI
-            document.getElementById('new-magic-alias').value = "";
+            // Safety check against empty string returns
+            if (!newCode || newCode.trim() === "") {
+                throw new Error("Bot returned an empty invite code.");
+            }
+
+            showToast(`Success! Mapped ${alias} to discord.gg/${newCode}`);
+            aliasInput.value = "";
             loadServerConfig(); 
         } else {
             const error = await response.text();
-            log("Error from server: " + error);
+            showToast(error, "error");
         }
     } catch (err) {
-        log("Connection failed while creating magic invite.");
+        showToast("Failed to generate magic invite.", "error");
+        console.error(err);
+    } finally {
+        btn.innerText = "Generate Invite";
+        btn.disabled = false;
+        aliasInput.disabled = false;
     }
 }
 
@@ -140,189 +219,43 @@ function renderAliasTable(aliases) {
     const tbody = document.getElementById('alias-list');
     tbody.innerHTML = "";
     
-    if (!aliases || Object.keys(aliases).length === 0) {
-        tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; padding: 30px; color: #888;">No magic invites found. Use the creator above to generate one.</td></tr>';
-        return;
-    }
-
-    // Correct sorting logic: a and b are the Alias Name strings
-    const sortedEntries = Object.entries(aliases).sort((a, b) => {
-        return String(a).localeCompare(String(b));
-    });
+    const sortedEntries = Object.entries(aliases).sort((a, b) => String(a).localeCompare(String(b)));
 
     for (const [code, alias] of sortedEntries) {
         tbody.innerHTML += `
-            <tr style="border-bottom: 1px solid #333;">
-                <td style="padding: 12px;"><strong>${alias}</strong></td>
-                <td style="padding: 12px;">
-                    <code style="background: #111; padding: 4px 8px; border-radius: 4px; color: #7289da;">
-                        https://discord.gg/${code}
-                    </code>
-                </td>
-                <td style="padding: 12px; text-align: right;">
-                    <button onclick="deleteAlias('${code}')" style="background:#e74c3c; padding:6px 12px; border-radius:4px; border:none; color:white; cursor:pointer; font-size: 0.8rem;">
-                        Delete
-                    </button>
+            <tr>
+                <td><strong>${alias}</strong></td>
+                <td><code>discord.gg/${code}</code></td>
+                <td style="text-align: right;">
+                    <button class="btn-danger" onclick="deleteAlias('${code}')">Delete</button>
                 </td>
             </tr>`;
     }
-}
-
-async function addInviteAlias() {
-    const guildId = document.getElementById('guild-selector').value;
-    const code = document.getElementById('new-invite-code').value.trim();
-    const alias = document.getElementById('new-invite-alias').value.trim();
-
-    if (!code || !alias) return alert("Please enter both a code and an alias.");
-
-    const token = localStorage.getItem('admin_session');
     
-    // 1. Fetch current config
-    const response = await fetch(`${API_BASE}/config/${guildId}`, {
-        headers: { 'Authorization': token }
-    });
-    const config = await response.json();
-    
-    // 2. SAFETY CHECK: Ensure the map exists before we try to add to it
-    if (!config.inviteAliases) {
-        config.inviteAliases = {};
+    if (Object.keys(aliases).length === 0) {
+        tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; padding: 30px; color: var(--muted);">No magic invites found.</td></tr>';
     }
-
-    // 3. Add the new alias
-    config.inviteAliases[code] = alias;
-
-    // 4. Save the full updated object
-    await saveFullConfig(guildId, config);
-    
-    // 5. Reset and refresh
-    document.getElementById('new-invite-code').value = "";
-    document.getElementById('new-invite-alias').value = "";
-    loadServerConfig(); 
 }
 
 async function deleteAlias(code) {
-    const guildId = document.getElementById('guild-selector').value;
-    if (!confirm("Are you sure you want to delete this invite? It will be revoked on Discord as well.")) {
-        return;
-    }
+    if (!currentGuildId) return;
+    if (!confirm("Delete this invite? It will be revoked on Discord as well.")) return;
 
     const token = localStorage.getItem('admin_session');
-    log("Deleting invite: " + code);
-
+    
     try {
-        const response = await fetch(`${API_BASE}/delete-invite/${guildId}/${code}`, {
+        const response = await fetch(`${API_BASE}/delete-invite/${currentGuildId}/${code}`, {
             method: 'DELETE',
             headers: { 'Authorization': token }
         });
 
         if (response.ok) {
-            log("Successfully deleted invite.");
-            // Refresh the table to show it's gone
+            showToast("Invite deleted from Discord.");
             loadServerConfig();
         } else {
-            const error = await response.text();
-            alert("Error: " + error);
+            showToast("Error deleting invite.", "error");
         }
     } catch (err) {
-        log("Failed to communicate with the bot to delete the invite.");
-        console.error(err);
+        showToast("Failed to connect to server.", "error");
     }
-}
-
-// Helper to save the whole config object
-async function saveFullConfig(guildId, config) {
-    await fetch(`${API_BASE}/config/${guildId}`, {
-        method: 'POST',
-        headers: { 
-            'Content-Type': 'application/json',
-            'Authorization': localStorage.getItem('admin_session') 
-        },
-        body: JSON.stringify(config)
-    });
-}
-
-// 5. Save settings back to the bot
-async function saveServerConfig() {
-    const guildId = document.getElementById('guild-selector').value;
-    const token = localStorage.getItem('admin_session');
-    
-    // 1. Fetch the CURRENT full config first (to keep the aliases safe!)
-    const getRes = await fetch(`${API_BASE}/config/${guildId}`, {
-        headers: { 'Authorization': token }
-    });
-    const config = await getRes.json();
-
-    // 2. Only update the fields from the text boxes
-    config.nickname = document.getElementById('config-nickname').value;
-    config.welcomeMessage = document.getElementById('config-welcome').value;
-
-    // 3. Send the WHOLE object (aliases included) back to the bot
-    const postRes = await fetch(`${API_BASE}/config/${guildId}`, {
-        method: 'POST',
-        headers: { 
-            'Content-Type': 'application/json',
-            'Authorization': token 
-        },
-        body: JSON.stringify(config)
-    });
-
-    if (postRes.ok) {
-        alert("Everything saved!");
-        loadServerConfig(); // Refresh the UI
-    }
-}
-
-async function generateBotInvite() {
-    const guildId = document.getElementById('guild-selector').value;
-    if (!guildId) return alert("Please select a server first!");
-
-    log("Requesting new permanent invite from bot...");
-    const token = localStorage.getItem('admin_session');
-
-    try {
-        const response = await fetch(`${API_BASE}/create-invite/${guildId}`, {
-            headers: { 'Authorization': token }
-        });
-
-        if (response.ok) {
-            const newCode = await response.text();
-            // Automatically fill the code box for the user
-            document.getElementById('new-invite-code').value = newCode;
-            log("Invite created: " + newCode);
-        } else {
-            const error = await response.text();
-            alert("Error: " + error);
-        }
-    } catch (err) {
-        log("Failed to communicate with bot for invite creation.");
-    }
-}
-
-
-// 6. Check Bot Health
-async function checkBotStatus() {
-    try {
-        const response = await fetch(`${API_BASE}/status`);
-        const statusEl = document.getElementById('bot-status');
-        
-        if (response.ok) {
-            statusEl.innerText = "Online";
-            statusEl.className = "status-badge online";
-            log("Bot heartbeat detected.");
-        } else {
-            statusEl.innerText = "Offline";
-            statusEl.className = "status-badge offline";
-        }
-    } catch (err) {
-        log("Failed to fetch bot status.");
-    }
-}
-
-function log(msg) {
-    const out = document.getElementById('log-output');
-    if (out) {
-        out.innerHTML += `<br>> ${msg}`;
-        out.scrollTop = out.scrollHeight;
-    }
-    console.log(msg);
 }

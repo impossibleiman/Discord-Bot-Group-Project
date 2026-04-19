@@ -279,6 +279,19 @@ public class MinecraftSocietyBot {
             ctx.result("Config updated and applied!");
         });
 
+        app.get("/my-guilds", ctx -> {
+            String sessionId = ctx.header("Authorization");
+            if (!activeSessions.containsKey(sessionId)) { 
+                ctx.status(401).result("Unauthorized"); 
+                return; 
+            }
+
+            // Return a list of guilds the bot is in
+            var guilds = jdaHolder[0].getGuilds().stream()
+                .map(g -> java.util.Map.of("id", g.getId(), "name", g.getName()))
+                .toList();
+            ctx.json(guilds);
+        });
 
         app.get("/test-env", ctx -> {
             String clientId = dotenv.get("DISCORD_CLIENT_ID");

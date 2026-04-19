@@ -1,161 +1,184 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MMU Minecraft Society | Admin Dashboard</title>
-    <style>
-        :root {
-            --mc-green: #3c8527;
-            --mc-dark: #1e1e1e;
-            --mc-gray: #313131;
-            --text: #ffffff;
-        }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--mc-dark);
-            color: var(--text);
-            margin: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        header {
-            background-color: var(--mc-green);
-            width: 100%;
-            padding: 1rem 0;
-            text-align: center;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-        }
-        .container {
-            max-width: 800px;
-            width: 90%;
-            margin-top: 2rem;
-        }
-        .card {
-            background-color: var(--mc-gray);
-            border-radius: 8px;
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
-            border-left: 5px solid var(--mc-green);
-        }
-        .status-badge {
-            display: inline-block;
-            padding: 5px 10px;
-            border-radius: 4px;
-            font-weight: bold;
-            font-size: 0.8rem;
-        }
-        .online { background: #2ecc71; }
-        .offline { background: #e74c3c; }
-        button {
-            background: var(--mc-green);
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-        button:hover { filter: brightness(1.2); }
-        #log-output {
-            background: black;
-            color: #00ff00;
-            padding: 10px;
-            font-family: monospace;
-            height: 100px;
-            overflow-y: auto;
-            border-radius: 4px;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard — Minecraft Society Bot</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --green: #4ade80; --bg: #050a0f; --surface: #0b1420; --card: #0f1e30;
+  --border: #1a3347; --text: #cbd5e1; --muted: #475569; --white: #f1f5f9;
+  --sidebar-w: 260px; --header-h: 64px;
+}
+
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+body {
+  background: var(--bg); color: var(--text); font-family: 'Syne', sans-serif;
+  min-height: 100vh; overflow-x: hidden;
+}
+body::before {
+  content:''; position:fixed; inset:0;
+  background-image: linear-gradient(rgba(74,222,128,.03) 1px, transparent 1px), linear-gradient(90deg, rgba(74,222,128,.03) 1px, transparent 1px);
+  background-size: 40px 40px; pointer-events:none; z-index:0;
+}
+
+/* HEADER */
+header {
+  position:fixed; top:0; left:0; right:0; height:var(--header-h);
+  background:rgba(5,10,15,.85); backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--border);
+  display:flex; align-items:center; justify-content:space-between; padding:0 32px; z-index:200;
+}
+.logo { display:flex; align-items:center; gap:10px; font-weight:800; font-size:17px; color:var(--white); text-decoration:none; }
+.logo-icon { width:32px; height:32px; background:var(--green); border-radius:6px; display:grid; grid-template-columns:1fr 1fr; grid-template-rows:1fr 1fr; gap:2px; padding:5px; }
+.logo-icon span { background:#052e16; border-radius:2px; }
+.logo-icon span:nth-child(2) { background:#14532d; }
+.logo-icon span:nth-child(3) { background:#166534; }
+.logo-icon span:nth-child(4) { background:#052e16; }
+
+/* SIDEBAR (TABS) */
+.sidebar {
+  position:fixed; top:var(--header-h); left:0; width:var(--sidebar-w);
+  height:calc(100vh - var(--header-h)); background:var(--surface);
+  border-right:1px solid var(--border); padding:32px 20px; z-index:100;
+}
+.sidebar-label { font-family:'Space Mono', monospace; font-size:10px; letter-spacing:2px; color:var(--muted); text-transform:uppercase; margin-bottom:10px; padding-left:12px; }
+.nav-tab {
+  display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:8px;
+  color:var(--text); text-decoration:none; font-size:14px; font-weight:600;
+  transition:all .2s; margin-bottom:4px; cursor:pointer; border:none; background:transparent; width:100%; text-align:left;
+}
+.nav-tab:hover { background:rgba(74,222,128,.07); color:var(--green); padding-left:16px; }
+.nav-tab.active { background:rgba(74,222,128,.12); color:var(--green); }
+.sidebar-dot { width:6px; height:6px; border-radius:50%; background:var(--muted); flex-shrink:0; transition:background .2s; }
+.nav-tab:hover .sidebar-dot, .nav-tab.active .sidebar-dot { background:var(--green); box-shadow:0 0 6px var(--green); }
+
+/* MAIN CONTENT */
+main { margin-left:var(--sidebar-w); padding:calc(var(--header-h) + 40px) 60px 80px; position:relative; z-index:1; }
+
+/* HORIZONTAL SERVER BAR */
+.server-bar-wrapper { margin-bottom: 40px; }
+.server-bar-label { font-family:'Space Mono', monospace; font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:12px; display:block; }
+.server-bar { display:flex; gap:12px; flex-wrap:wrap; }
+.server-pill {
+  background:var(--card); border:1px solid var(--border); color:var(--text);
+  padding:10px 20px; border-radius:999px; font-weight:600; font-size:14px; cursor:pointer;
+  transition:all .2s; font-family:'Syne', sans-serif; display:flex; align-items:center; gap:8px;
+}
+.server-pill:hover { border-color:var(--green); color:var(--white); }
+.server-pill.active { background:rgba(74,222,128,.1); border-color:var(--green); color:var(--green); }
+.server-pill.active::before { content:''; width:8px; height:8px; border-radius:50%; background:var(--green); box-shadow:0 0 8px var(--green); }
+
+/* TAB CONTENT AREAS */
+.tab-content { display: none; animation:fadeUp .4s ease both; }
+.tab-content.active { display: block; }
+
+/* FORMS & CARDS */
+.command-box { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:28px 32px; margin-bottom:24px; }
+.command-box h3 { font-size: 18px; color: var(--white); margin-bottom: 16px; }
+.input-group { margin-bottom: 20px; display: flex; flex-direction: column; gap: 8px; }
+.input-group label { font-family:'Space Mono', monospace; font-size:12px; color:var(--muted); }
+input[type="text"], textarea {
+  background: #08101a; border: 1px solid var(--border); color: var(--white);
+  padding: 12px 16px; border-radius: 8px; font-family: 'Space Mono', monospace; font-size: 13px;
+  width: 100%; transition: border-color 0.2s;
+}
+input[type="text"]:focus, textarea:focus { outline: none; border-color: var(--green); }
+textarea { resize: vertical; min-height: 100px; }
+
+/* BUTTONS */
+.btn-primary {
+  background: var(--green); color: #052e16; padding: 10px 20px; border-radius: 8px;
+  font-weight: 700; font-family: 'Syne', sans-serif; border: none; cursor: pointer; transition: all 0.2s;
+}
+.btn-primary:hover { background: #3bca70; transform: translateY(-1px); }
+.btn-primary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+.btn-danger { background: rgba(231, 76, 60, 0.1); border: 1px solid #e74c3c; color: #e74c3c; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: bold; transition: all 0.2s; }
+.btn-danger:hover { background: #e74c3c; color: white; }
+
+/* TABLE */
+table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+th { text-align: left; padding: 12px; font-family: 'Space Mono', monospace; font-size: 11px; color: var(--muted); text-transform: uppercase; border-bottom: 1px solid var(--border); }
+td { padding: 16px 12px; border-bottom: 1px solid var(--border); font-size: 14px; }
+td code { background: #08101a; padding: 4px 8px; border-radius: 4px; color: var(--green); font-family: 'Space Mono', monospace; font-size: 12px; }
+
+/* TOASTS */
+#toast-container { position: fixed; bottom: 30px; right: 30px; display: flex; flex-direction: column; gap: 10px; z-index: 1000; }
+.toast { background: var(--card); border-left: 4px solid var(--green); color: var(--white); padding: 16px 24px; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); font-size: 14px; font-weight: 600; animation: slideIn 0.3s ease forwards; display: flex; align-items: center; gap: 12px; }
+.toast.error { border-left-color: #e74c3c; }
+.toast.fade-out { animation: fadeOut 0.3s ease forwards; }
+
+@keyframes fadeUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+@keyframes slideIn { from{opacity:0;transform:translateX(50px)} to{opacity:1;transform:translateX(0)} }
+@keyframes fadeOut { from{opacity:1;transform:translateX(0)} to{opacity:0;transform:translateX(50px)} }
+</style>
 </head>
 <body>
 
 <header>
-    <h1>Society Bot Dashboard</h1>
+  <a href="#" class="logo">
+    <div class="logo-icon"><span></span><span></span><span></span><span></span></div>
+    Dashboard
+  </a>
+  <div id="session-info" style="font-family: 'Space Mono', monospace; font-size: 12px; color: var(--muted);">Verifying session...</div>
 </header>
 
-<div class="container">
-    <div class="card">
-        <h2>Session Status</h2>
-        <div id="session-info">Checking session...</div>
-    </div>
-
-    <div class="card">
-        <h2>Bot Quick Actions</h2>
-        <button onclick="checkBotStatus()">Refresh Bot Stats</button>
-        <p>Bot Status: <span id="bot-status" class="status-badge offline">Unknown</span></p>
-    </div>
-
-    <div class="card">
-        <h2>Console Log</h2>
-        <div id="log-output">Initialized dashboard...</div>
-    </div>
+<div class="sidebar">
+  <div class="sidebar-label">Management</div>
+  <button class="nav-tab active" onclick="switchTab('tab-general', this)"><span class="sidebar-dot"></span>General Settings</button>
+  <button class="nav-tab" onclick="switchTab('tab-invites', this)"><span class="sidebar-dot"></span>Magic Invites</button>
 </div>
 
-<div class="card">
-    <h2>Server Settings</h2>
-    <p>Select a server to manage:</p>
-    <select id="guild-selector" onchange="loadServerConfig()">
-        <option value="">-- Choose a Server --</option>
-    </select>
+<main>
+  <div class="server-bar-wrapper">
+    <span class="server-bar-label">Select Server</span>
+    <div id="server-bar" class="server-bar">
+      </div>
+  </div>
 
-    <div id="settings-form" style="display:none; margin-top: 20px;">
-        <label>Bot Nickname (for this server):</label><br>
-        <input type="text" id="config-nickname" style="width:100%; padding:8px; margin: 10px 0;"><br>
-
-        <label>Welcome Message:</label><br>
-        <textarea id="config-welcome" rows="4" style="width:100%; padding:8px; margin: 10px 0;"></textarea>
-        <p style="font-size: 0.8rem; color: #aaa;">Use <b>$USER</b> for mention and <b>$GUILD</b> for server name.</p>
-
-        <button onclick="saveServerConfig()">Save Settings</button>
-    </div>
-</div>
-
-
-<div class="card">
-    <h2>Invite Aliases</h2>
-    <p>Map Discord invite codes to friendly names (e.g., Instagram, TikTok).</p>
-    
-    <table id="alias-table" style="width:100%; text-align:left; margin-bottom:15px;">
-        <thead>
-            <tr>
-                <th>Invite Code</th>
-                <th>Alias Name</th>
-                <th>Action</th>
-            </tr>
-        </thead>
-        <tbody id="alias-list">
-            </tbody>
-    </table>
-
-<div class="card">
-    <h2>Invite Aliases</h2>
-    <p>Type your desired name (e.g. TikTok) and click create. The bot handles the rest!</p>
-    
-    <div style="display:flex; gap:10px; margin-bottom: 20px; align-items: center;">
-        <input type="text" id="new-magic-alias" placeholder="Invite Alias (e.g. Instagram)" style="flex:1; padding:10px; border-radius: 4px; border: 1px solid #444; background: #222; color: white;">
-        
-        <button onclick="createMagicInvite()" style="background-color: #7289da; padding: 10px 20px; font-weight: bold; border-radius: 4px; border: none; cursor: pointer;">
-            Create Magic Invite
-        </button>
+  <div id="settings-container" style="display: none;">
+    <div id="tab-general" class="tab-content active">
+      <div class="command-box">
+        <h3>Server Identity</h3>
+        <div class="input-group">
+          <label>Bot Nickname</label>
+          <input type="text" id="config-nickname" placeholder="e.g. Society Bot">
+        </div>
+        <div class="input-group">
+          <label>Welcome Message</label>
+          <textarea id="config-welcome" placeholder="Welcome $USER to $GUILD!"></textarea>
+          <label style="margin-top: 4px;">Variables: $USER, $GUILD, $INVITE_ALIAS</label>
+        </div>
+        <button class="btn-primary" id="save-general-btn" onclick="saveServerConfig()">Save Identity Settings</button>
+      </div>
     </div>
 
-    <table id="alias-table" style="width:100%; text-align:left; border-collapse: collapse;">
-        <thead>
-            <tr style="border-bottom: 2px solid #444;">
-                <th style="padding: 10px;">Alias Name</th>
-                <th style="padding: 10px;">Discord Link</th>
-                <th style="padding: 10px;">Action</th>
-            </tr>
-        </thead>
-        <tbody id="alias-list">
-            </tbody>
-    </table>
-</div>
+    <div id="tab-invites" class="tab-content">
+      <div class="command-box">
+        <h3>Create Magic Invite</h3>
+        <p style="color: var(--muted); font-size: 14px; margin-bottom: 16px;">Generate permanent invites mapped to friendly names.</p>
+        <div style="display:flex; gap:10px; align-items: flex-end;">
+          <div class="input-group" style="flex:1; margin-bottom:0;">
+            <label>Alias Name (e.g. TikTok)</label>
+            <input type="text" id="new-magic-alias" placeholder="Enter source name...">
+          </div>
+          <button class="btn-primary" id="generate-magic-btn" onclick="createMagicInvite()">Generate Invite</button>
+        </div>
+      </div>
 
-<button onclick="saveServerConfig()" style="margin-top: 10px; background-color: #2ecc71;">Save All Server Settings</button>
+      <div class="command-box">
+        <h3>Active Links</h3>
+        <table>
+          <thead><tr><th>Alias Name</th><th>Discord Link</th><th style="text-align:right;">Action</th></tr></thead>
+          <tbody id="alias-list"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</main>
 
+<div id="toast-container"></div>
 
 <script src="dashboard.js"></script>
 </body>
