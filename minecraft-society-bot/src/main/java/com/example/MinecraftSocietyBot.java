@@ -31,10 +31,13 @@ public class MinecraftSocietyBot {
         manager.addCommand(new Purgecommand());//added by Jack
 
         // -------------------------------------------------------------------------------------------------------
+
+        MinecraftSocietyListener listener = new MinecraftSocietyListener();
+
         try {
-            JDA jda = JDABuilder.createLight(token)
-                    .enableIntents(GatewayIntent.MESSAGE_CONTENT)
-                    .addEventListeners(manager)
+            JDA jda = JDABuilder.createDefault(token)
+                    .enableIntents(GatewayIntent.MESSAGE_CONTENT, GatewayIntent.GUILD_MEMBERS, GatewayIntent.GUILD_MESSAGES) // Needed for some commands
+                    .addEventListeners(manager, listener)
                     .build();
             
             jda.awaitReady();

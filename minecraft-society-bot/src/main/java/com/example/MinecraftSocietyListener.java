@@ -1,14 +1,12 @@
-package com.minecraftsociety;
+package com.example;
 
 import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
-import net.dv8tion.jda.api.events.session.ReadyEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
-import net.dv8tion.jda.api.interactions.components.buttons.Button;
-import net.dv8tion.jda.api.requests.GatewayIntent;
+import net.dv8tion.jda.api.components.buttons.Button;
+import net.dv8tion.jda.api.components.actionrow.ActionRow;
 
 import java.awt.*;
 import java.time.Duration;
@@ -121,7 +119,7 @@ public class MinecraftSocietyListener extends ListenerAdapter {
         embed.setTimestamp(Instant.now());
 
         channel.sendMessageEmbeds(embed.build())
-                .setActionRow(Button.success("verify_button", "Enter Server 🚀"))
+                .addComponents(ActionRow.of(Button.success("verify_button", "Enter Server 🚀")))
                 .queue();
     }
 }
