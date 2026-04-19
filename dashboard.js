@@ -393,16 +393,18 @@ async function refreshMinecraftData() {
 
         // 3. Update Leaderboards (MOVE THIS INSIDE THE FUNCTION)
         if (data.status.leaderboards) {
-            const mobs = data.status.leaderboards.mob_kills || [];
-            document.getElementById('leaderboard-mobs').innerHTML = mobs.length > 0 
-                ? mobs.map((p, i) => `<div><span style="color:var(--muted)">${i+1}.</span> ${sanitize(p)}</div>`).join('')
-                : "No data yet.";
+        // 1. Update Player Kills (using the 'player_kills' key from your Java plugin)
+            const pKills = data.status.leaderboards.player_kills || [];
+            document.getElementById('leaderboard-pk').innerHTML = pKills.length > 0 
+                ? pKills.map((p, i) => `<div><span style="color:var(--muted)">${i+1}.</span> ${sanitize(p)}</div>`).join('')
+                : "No kills recorded yet.";
 
+            // 2. Update Deaths (remains the same)
             const deaths = data.status.leaderboards.deaths || [];
             document.getElementById('leaderboard-deaths').innerHTML = deaths.length > 0 
                 ? deaths.map((p, i) => `<div><span style="color:var(--muted)">${i+1}.</span> ${sanitize(p)}</div>`).join('')
-                : "No data yet.";
-        }
+                : "No deaths recorded yet.";
+    }
         
     } catch (e) {
         console.error("Sync Error:", e);
