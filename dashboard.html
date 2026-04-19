@@ -130,6 +130,16 @@
     </table>
 
     <div style="display:flex; gap:10px;">
+        <div style="display:flex; gap:10px; align-items: center;">
+            <input type="text" id="new-invite-code" placeholder="Code (e.g. ABC123)" style="flex:1; padding:8px;">
+            
+            <button onclick="generateBotInvite()" style="background-color: #7289da; padding: 8px 12px;" title="Generate a permanent invite via the bot">
+                Generate
+            </button>
+
+            <input type="text" id="new-invite-alias" placeholder="Alias (e.g. Instagram)" style="flex:1; padding:8px;">
+            <button onclick="addInviteAlias()">Add Alias</button>
+        </div>
         <input type="text" id="new-invite-code" placeholder="Code (e.g. ABC123)" style="flex:1; padding:8px;">
         <input type="text" id="new-invite-alias" placeholder="Alias (e.g. Instagram)" style="flex:1; padding:8px;">
         <button onclick="addInviteAlias()">Add Alias</button>

@@ -4,6 +4,7 @@ import io.github.cdimascio.dotenv.Dotenv;
 import io.javalin.Javalin;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
+import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import okhttp3.*;
 
@@ -84,7 +85,9 @@ public class MinecraftSocietyBot {
             
             jdaHolder[0].awaitReady();
             System.out.println("Bot is online!");
-            
+            for (Guild guild : jdaHolder[0].getGuilds()) {
+                listener.updateInviteCache(guild);
+                }
         // Catch all other errors
         } catch (Exception e) {
             System.err.println("Failed to start bot:");
@@ -163,6 +166,43 @@ public class MinecraftSocietyBot {
             } catch (Exception e) {
                 ctx.status(500).result("Error during auth: " + e.getMessage());
             }
+        });
+
+        app.get("/create-invite/{guildId}", ctx -> {
+            String sessionId = ctx.header("Authorization");
+            if (!activeSessions.containsKey(sessionId)) {
+                ctx.status(401).result("Unauthorized");
+                return;
+            }
+
+            String guildId = ctx.pathParam("guildId");
+            var guild = jdaHolder[0].getGuildById(guildId);
+
+            if (guild == null) {
+                ctx.status(404).result("Guild not found");
+                return;
+            }
+
+            // Find a suitable channel to create the invite (Welcome channel or System channel)
+            var channels = guild.getTextChannelsByName("test-welcome", true);
+            var targetChannel = !channels.isEmpty() ? channels.get(0) : guild.getSystemChannel();
+
+            if (targetChannel == null) {
+                ctx.status(400).result("No suitable channel found to create invite.");
+                return;
+            }
+
+            // Create a permanent invite (0 age, 0 uses = never expires)
+            targetChannel.createInvite()
+                    .setMaxAge(0)
+                    .setMaxUses(0)
+                    .setUnique(true)
+                    .queue(invite -> {
+                        // Send the code back to the dashboard
+                        ctx.result(invite.getCode());
+                    }, throwable -> {
+                        ctx.status(500).result("Discord failed to create invite: " + throwable.getMessage());
+                    });
         });
 
         app.get("/test-env", ctx -> {

@@ -205,6 +205,33 @@ async function saveServerConfig() {
     }
 }
 
+async function generateBotInvite() {
+    const guildId = document.getElementById('guild-selector').value;
+    if (!guildId) return alert("Please select a server first!");
+
+    log("Requesting new permanent invite from bot...");
+    const token = localStorage.getItem('admin_session');
+
+    try {
+        const response = await fetch(`${API_BASE}/create-invite/${guildId}`, {
+            headers: { 'Authorization': token }
+        });
+
+        if (response.ok) {
+            const newCode = await response.text();
+            // Automatically fill the code box for the user
+            document.getElementById('new-invite-code').value = newCode;
+            log("Invite created: " + newCode);
+        } else {
+            const error = await response.text();
+            alert("Error: " + error);
+        }
+    } catch (err) {
+        log("Failed to communicate with bot for invite creation.");
+    }
+}
+
+
 // 6. Check Bot Health
 async function checkBotStatus() {
     try {
