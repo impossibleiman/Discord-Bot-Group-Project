@@ -98,7 +98,7 @@
           </descriptorRefs>
           <archive>
             <manifest>
-              <mainClass>com.example.minecraftsocietybot.Main</mainClass>
+              <mainClass>com.example.minecraftsocietybot.MinecraftSocietyBot</mainClass>
             </manifest>
           </archive>
         </configuration>
