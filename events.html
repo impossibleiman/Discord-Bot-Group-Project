@@ -5,7 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Events — Minecraft Society</title>
 
-<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
 
 <style>
 :root {
@@ -25,7 +27,7 @@ html { scroll-behavior:smooth; }
 
 body {
   background:var(--bg); color:var(--text);
-  font-family:'Syne', sans-serif;
+  font-family:'Inter', sans-serif;
   min-height:100vh; overflow-x:hidden;
 }
 
@@ -90,7 +92,7 @@ main {
   display:inline-flex; align-items:center; gap:7px;
   background:rgba(74,222,128,.1); border:1px solid rgba(74,222,128,.25);
   border-radius:999px; padding:5px 14px;
-  font-family:'Space Mono', monospace; font-size:12px;
+  font-family:'JetBrains Mono', monospace; font-size:12px;
   color:var(--green); margin-bottom:20px;
 }
 .hero-badge::before {
@@ -106,7 +108,7 @@ main {
 .section-title { display:flex; align-items:center; gap:12px; margin-bottom:28px; }
 .section-title h2 { font-size:22px; font-weight:800; color:var(--white); letter-spacing:-.5px; }
 .section-title .tag {
-  font-family:'Space Mono', monospace; font-size:11px;
+  font-family:'JetBrains Mono', monospace; font-size:11px;
   background:rgba(74,222,128,.1); color:var(--green);
   border:1px solid rgba(74,222,128,.2); padding:3px 10px; border-radius:999px;
 }
@@ -131,12 +133,12 @@ main {
 .card:hover { border-color:rgba(74,222,128,.3); box-shadow:0 8px 40px rgba(74,222,128,.08); transform:translateY(-4px); }
 .card:hover::before { opacity:1; }
 
-.card-number { font-family:'Space Mono', monospace; font-size:11px; color:var(--muted); letter-spacing:2px; text-transform:uppercase; margin-bottom:12px; }
+.card-number { font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--muted); letter-spacing:2px; text-transform:uppercase; margin-bottom:12px; }
 .card h3 { font-size:18px; font-weight:800; color:var(--white); margin-bottom:18px; letter-spacing:-.3px; }
 
 .card-meta { display:flex; flex-direction:column; gap:9px; margin-bottom:22px; flex-grow:1; }
 .meta-row { display:flex; align-items:center; gap:10px; font-size:13px; }
-.meta-label { font-family:'Space Mono', monospace; font-size:10px; color:var(--muted); width:68px; flex-shrink:0; }
+.meta-label { font-family:'JetBrains Mono', monospace; font-size:10px; color:var(--muted); width:68px; flex-shrink:0; }
 .meta-value { color:var(--text); font-weight:600; }
 .tbc { color:var(--muted); font-style:italic; font-weight:400; }
 
@@ -144,7 +146,7 @@ main {
   width:100%; padding:11px; border-radius:9px;
   border:1px solid rgba(74,222,128,.25);
   background:rgba(74,222,128,.07); color:var(--green);
-  font-family:'Syne', sans-serif; font-size:14px; font-weight:700;
+  font-family:'Inter', sans-serif; font-size:14px; font-weight:700;
   cursor:pointer; transition:background .2s, border-color .2s, transform .15s;
 }
 .card-btn:hover { background:rgba(74,222,128,.15); border-color:rgba(74,222,128,.5); transform:translateY(-1px); }
@@ -172,7 +174,7 @@ main {
 .idea-form input {
   padding:12px 18px; width:320px; border-radius:10px;
   border:1px solid var(--border); background:var(--surface);
-  color:var(--white); font-family:'Syne', sans-serif; font-size:14px;
+  color:var(--white); font-family:'Inter', sans-serif; font-size:14px;
   outline:none; transition:border-color .2s;
 }
 .idea-form input::placeholder { color:var(--muted); }
@@ -181,7 +183,7 @@ main {
 .idea-form button {
   padding:12px 26px; border-radius:10px; border:none;
   background:var(--green); color:#052e16;
-  font-family:'Syne', sans-serif; font-size:14px; font-weight:700;
+  font-family:'Inter', sans-serif; font-size:14px; font-weight:700;
   cursor:pointer; transition:opacity .2s, transform .15s;
 }
 .idea-form button:hover { opacity:.88; transform:translateY(-1px); }
@@ -223,7 +225,7 @@ footer {
 .discord-btn:hover { background: rgba(74,222,128,.18); border-color: rgba(74,222,128,.5); }
 
 .footer-col h4 {
-  font-family: 'Space Mono', monospace;
+  font-family: 'JetBrains Mono', monospace;
   font-size: 10px; letter-spacing: 2px;
   text-transform: uppercase; color: var(--muted); margin-bottom: 18px;
 }
@@ -238,7 +240,7 @@ footer {
   display: flex; align-items: center; justify-content: space-between;
   flex-wrap: wrap; gap: 10px;
 }
-.footer-bottom p { font-family: 'Space Mono', monospace; font-size: 11px; color: var(--muted); }
+.footer-bottom p { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--muted); }
 .footer-bottom span { color: var(--green); }
 
 @keyframes fadeUp { from{opacity:0;transform:translateY(30px)} to{opacity:1;transform:translateY(0)} }
