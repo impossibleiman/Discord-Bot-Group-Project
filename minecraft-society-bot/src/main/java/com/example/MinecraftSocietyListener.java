@@ -29,11 +29,10 @@ public class MinecraftSocietyListener extends ListenerAdapter {
         }
     }
 
-    @Override
+ @Override
     public void onGuildMemberJoin(GuildMemberJoinEvent event) {
         Guild guild = event.getGuild();
 
-        // 1. Find the best channel to send the welcome message
         TextChannel welcomeChannel = null;
         for (TextChannel c : guild.getTextChannels()) {
             if (c.getName().toLowerCase().contains("welcome")) {
@@ -41,29 +40,30 @@ public class MinecraftSocietyListener extends ListenerAdapter {
             }
         }
         if (welcomeChannel == null) welcomeChannel = guild.getSystemChannel();
-        if (welcomeChannel == null) return; // No suitable channel found
+        if (welcomeChannel == null) return; 
         
         final TextChannel targetChannel = welcomeChannel;
 
-        // 2. Fetch current invites to find which one was used
         if (guild.getSelfMember().hasPermission(net.dv8tion.jda.api.Permission.MANAGE_SERVER)) {
             guild.retrieveInvites().queue(currentInvites -> {
                 Map<String, Integer> cachedInvites = inviteCache.getOrDefault(guild.getId(), new HashMap<>());
                 Invite usedInvite = null;
 
                 for (Invite invite : currentInvites) {
-                    Integer cachedUses = cachedInvites.get(invite.getCode());
-                    if (cachedUses != null && invite.getUses() > cachedUses) {
+                    // THE FIX: If the invite is brand new, default its previous uses to 0.
+                    // Now, a new invite going from 0 to 1 will successfully trigger!
+                    int cachedUses = cachedInvites.getOrDefault(invite.getCode(), 0);
+                    if (invite.getUses() > cachedUses) {
                         usedInvite = invite;
                         break;
                     }
                 }
 
-                updateInviteCache(guild); // Update the cache for the next person
+                updateInviteCache(guild); 
                 sendWelcomeMessage(event, targetChannel, usedInvite);
             });
         } else {
-            sendWelcomeMessage(event, targetChannel, null); // Send without invite data if missing perms
+            sendWelcomeMessage(event, targetChannel, null); 
         }
     }
 
@@ -77,38 +77,37 @@ public class MinecraftSocietyListener extends ListenerAdapter {
         try { embedData = new JSONObject(config.welcomeMessage); } 
         catch (Exception e) { embedData = new JSONObject().put("desc", config.welcomeMessage); }
 
-        // Determine Invite Variables
         String inviteVar = "Unknown";
-        String inviterVar = "";
+        String inviterVar = "Unknown";
 
         if (usedInvite != null) {
             String code = usedInvite.getCode();
             String alias = config.inviteAliases != null ? config.inviteAliases.get(code) : null;
 
             if (alias != null) {
-                // If it's a magic invite, show both
+                // Magic Link
                 inviteVar = alias + " (discord.gg/" + code + ")";
-                inviterVar = ""; // Hide inviter as requested
+                inviterVar = "Magic Link"; 
             } else {
-                // If it's a normal invite
+                // Normal Link
                 inviteVar = "discord.gg/" + code;
                 if (usedInvite.getInviter() != null) {
-                    inviterVar = "\nInvited by: " + usedInvite.getInviter().getAsMention();
+                    inviterVar = usedInvite.getInviter().getAsMention();
                 }
             }
         }
 
-        // Native Discord Timestamp (Displays local time for each user)
         String timeVar = "<t:" + (System.currentTimeMillis() / 1000) + ":f>";
 
-        // Replace Variables
-        String desc = embedData.optString("desc", "")
-            .replace("$USER", event.getUser().getAsMention())
-            .replace("$GUILD", guild.getName())
-            .replace("$MEMBER_COUNT", String.valueOf(guild.getMemberCount()))
-            .replace("$INVITE", inviteVar)
-            .replace("$INVITER", inviterVar)
-            .replace("$TIME", timeVar);
+        String desc = embedData.optString("desc", "");
+        
+        // THE FIX: \b ensures the code looks for the EXACT word. $INVITE will no longer break $INVITER.
+        desc = desc.replaceAll("(?i)\\$USER\\b", java.util.regex.Matcher.quoteReplacement(event.getUser().getAsMention()));
+        desc = desc.replaceAll("(?i)\\$GUILD\\b", java.util.regex.Matcher.quoteReplacement(guild.getName()));
+        desc = desc.replaceAll("(?i)\\$MEMBER_COUNT\\b", String.valueOf(guild.getMemberCount()));
+        desc = desc.replaceAll("(?i)\\$INVITER\\b", java.util.regex.Matcher.quoteReplacement(inviterVar));
+        desc = desc.replaceAll("(?i)\\$INVITE\\b", java.util.regex.Matcher.quoteReplacement(inviteVar));
+        desc = desc.replaceAll("(?i)\\$TIME\\b", java.util.regex.Matcher.quoteReplacement(timeVar));
 
         EmbedBuilder eb = new EmbedBuilder();
         eb.setDescription(desc);
@@ -128,7 +127,7 @@ public class MinecraftSocietyListener extends ListenerAdapter {
         if (!image.isEmpty()) eb.setImage(image);
 
         String footer = embedData.optString("footer", "")
-            .replace("$MEMBER_COUNT", String.valueOf(guild.getMemberCount()));
+            .replaceAll("(?i)\\$MEMBER_COUNT\\b", String.valueOf(guild.getMemberCount()));
         if (!footer.isEmpty()) eb.setFooter(footer);
 
         channel.sendMessageEmbeds(eb.build()).queue();

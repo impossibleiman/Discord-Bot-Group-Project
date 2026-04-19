@@ -285,20 +285,20 @@ function updatePreview() {
         titleEl.style.display = 'none'; 
     }
 
-    // 3. Description (With Live Variable Mockups!)
+// 3. Description (With Live Variable Mockups!)
     const descEl = document.getElementById('emb-desc');
     let desc = descEl ? descEl.value.trim() : '';
     
     if (!desc) {
-        desc = 'Hello <span style="color:#c9cdfb; background:rgba(88,101,242,.3); padding:0 2px; border-radius:3px;">@User</span>, welcome to the server!\nJoined via: TikTok (discord.gg/abcd123)\nTime: Today at 12:00 PM';
+        desc = 'Hello <span style="color:#c9cdfb; background:rgba(88,101,242,.3); padding:0 2px; border-radius:3px;">@User</span>, welcome to the server!\nJoined via: discord.gg/abcd123\nInvited by: <span style="color:#c9cdfb; background:rgba(88,101,242,.3); padding:0 2px; border-radius:3px;">@Friend</span>\nTime: Today at 12:00 PM';
     } else {
-        // Swap out the variables to show what it will actually look like in Discord
-        desc = desc.replace(/\$USER/g, '<span style="color:#c9cdfb; background:rgba(88,101,242,.3); padding:0 2px; border-radius:3px;">@User</span>')
-                   .replace(/\$GUILD/g, 'MMU Minecraft Society')
-                   .replace(/\$MEMBER_COUNT/g, '42')
-                   .replace(/\$INVITE/g, 'TikTok (discord.gg/abcd123)')
-                   .replace(/\$INVITER/g, '\nInvited by: <span style="color:#c9cdfb; background:rgba(88,101,242,.3); padding:0 2px; border-radius:3px;">@Friend</span>')
-                   .replace(/\$TIME/g, 'Today at 12:00 PM');
+        // The \b ensures $INVITE doesn't accidentally overwrite $INVITER
+        desc = desc.replace(/\$USER\b/gi, '<span style="color:#c9cdfb; background:rgba(88,101,242,.3); padding:0 2px; border-radius:3px;">@User</span>')
+                   .replace(/\$GUILD\b/gi, 'MMU Minecraft Society')
+                   .replace(/\$MEMBER_COUNT\b/gi, '42')
+                   .replace(/\$INVITER\b/gi, '<span style="color:#c9cdfb; background:rgba(88,101,242,.3); padding:0 2px; border-radius:3px;">@Friend</span>')
+                   .replace(/\$INVITE\b/gi, 'discord.gg/abcd123')
+                   .replace(/\$TIME\b/gi, 'Today at 12:00 PM');
     }
     // We use innerHTML here instead of innerText so the blue @User tags render properly
     document.getElementById('prev-desc').innerHTML = desc.replace(/\n/g, '<br>');
