@@ -111,10 +111,24 @@ async function loadServerConfig() {
     const config = await response.json();
     
     document.getElementById('config-nickname').value = config.nickname || "";
-    document.getElementById('config-welcome').value = config.welcomeMessage || "";
+    
+    // Load Embed Data
+    const embed = config.welcomeEmbed || {};
+    document.getElementById('embed-author-name').value = embed.authorName || "";
+    document.getElementById('embed-author-icon').value = embed.authorIcon || "";
+    document.getElementById('embed-title').value = embed.title || "";
+    document.getElementById('embed-url').value = embed.url || "";
+    document.getElementById('embed-description').value = embed.description || "";
+    document.getElementById('embed-color').value = embed.color || "";
+    document.getElementById('embed-thumbnail').value = embed.thumbnail || "";
+    document.getElementById('embed-image').value = embed.image || "";
+    document.getElementById('embed-footer-text').value = embed.footerText || "";
+    document.getElementById('embed-footer-icon').value = embed.footerIcon || "";
+
     renderAliasTable(config.inviteAliases || {});
 }
 
+// Save Settings (Now with Embed Builder)
 async function saveServerConfig() {
     if (!currentGuildId) return;
     const token = localStorage.getItem('admin_session');
@@ -124,13 +138,28 @@ async function saveServerConfig() {
     btn.disabled = true;
     
     try {
-        // Fetch current config to preserve aliases
+        // 1. Fetch current config to safely preserve magic invite aliases
         const getRes = await fetch(`${API_BASE}/config/${currentGuildId}`, { headers: { 'Authorization': token } });
         const config = await getRes.json();
 
+        // 2. Set the bot nickname
         config.nickname = document.getElementById('config-nickname').value;
-        config.welcomeMessage = document.getElementById('config-welcome').value;
 
+        // 3. Package the complete Embed Builder data
+        config.welcomeEmbed = {
+            authorName: document.getElementById('embed-author-name').value.trim(),
+            authorIcon: document.getElementById('embed-author-icon').value.trim(),
+            title: document.getElementById('embed-title').value.trim(),
+            url: document.getElementById('embed-url').value.trim(),
+            description: document.getElementById('embed-description').value.trim(),
+            color: document.getElementById('embed-color').value.trim(),
+            thumbnail: document.getElementById('embed-thumbnail').value.trim(),
+            image: document.getElementById('embed-image').value.trim(),
+            footerText: document.getElementById('embed-footer-text').value.trim(),
+            footerIcon: document.getElementById('embed-footer-icon').value.trim()
+        };
+
+        // 4. Send the updated config to the Java Bot
         const postRes = await fetch(`${API_BASE}/config/${currentGuildId}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Authorization': token },
@@ -138,7 +167,7 @@ async function saveServerConfig() {
         });
 
         if (postRes.ok) {
-            showToast("Identity settings saved successfully!");
+            showToast("Embed settings saved successfully!");
         } else {
             showToast("Failed to save settings.", "error");
         }

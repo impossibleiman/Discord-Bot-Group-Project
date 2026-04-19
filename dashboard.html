@@ -185,10 +185,59 @@ td code { background: #08101a; padding: 4px 8px; border-radius: 4px; color: var(
           <label>Bot Nickname</label>
           <input type="text" id="config-nickname" placeholder="e.g. Society Bot">
         </div>
-        <div class="input-group">
-          <label>Welcome Message</label>
-          <textarea id="config-welcome" placeholder="Welcome $USER to $GUILD!"></textarea>
-          <label style="margin-top: 4px;">Variables: $USER, $GUILD, $INVITE_ALIAS</label>
+        <div class="command-box">
+        <h3>Welcome Embed Builder</h3>
+        <p style="color: var(--muted); font-size: 14px; margin-bottom: 16px;">
+            Design a rich welcome embed. Available variables: <code>$USER</code>, <code>$GUILD</code>, <code>$MEMBER_COUNT</code>
+        </p>
+
+        <div class="property-grid" style="grid-template-columns: 1fr 1fr; gap: 16px;">
+            <div class="input-group">
+                <label>Author Name</label>
+                <input type="text" id="embed-author-name" placeholder="e.g. Welcome to $GUILD!">
+                </div>
+                <div class="input-group">
+                <label>Author Icon URL</label>
+                <input type="text" id="embed-author-icon" placeholder="https://...">
+                </div>
+                
+                <div class="input-group">
+                <label>Title</label>
+                <input type="text" id="embed-title" placeholder="Main header text">
+                </div>
+                <div class="input-group">
+                <label>Title URL</label>
+                <input type="text" id="embed-url" placeholder="Makes the title clickable">
+                </div>
+
+                <div class="input-group" style="grid-column: 1 / -1;">
+                <label>Description (Required)</label>
+                <textarea id="embed-description" placeholder="Hello $USER, please read the rules..."></textarea>
+                </div>
+
+                <div class="input-group">
+                <label>Sidebar Color (Hex)</label>
+                <input type="text" id="embed-color" placeholder="#4ade80">
+                </div>
+                <div class="input-group">
+                <label>Thumbnail URL (Top Right)</label>
+                <input type="text" id="embed-thumbnail" placeholder="https://...">
+                </div>
+
+                <div class="input-group" style="grid-column: 1 / -1;">
+                <label>Main Image URL (Bottom)</label>
+                <input type="text" id="embed-image" placeholder="https://...">
+                </div>
+
+                <div class="input-group">
+                <label>Footer Text</label>
+                <input type="text" id="embed-footer-text" placeholder="You are member #$MEMBER_COUNT">
+                </div>
+                <div class="input-group">
+                <label>Footer Icon URL</label>
+                <input type="text" id="embed-footer-icon" placeholder="https://...">
+                </div>
+            </div>
         </div>
         <button class="btn-primary" id="save-general-btn" onclick="saveServerConfig()">Save Identity Settings</button>
       </div>
