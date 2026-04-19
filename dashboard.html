@@ -61,12 +61,12 @@ main { margin-left:var(--sidebar-w); padding:calc(var(--header-h) + 40px) 60px 8
 
 /* HORIZONTAL SERVER BAR */
 .server-bar-wrapper { margin-bottom: 40px; }
-.server-bar-label {
+.server-bar-label, .sidebar-label {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 1.5px;
-  color: #94a3b8;
+  font-size: 12px;           /* Increased from 10px */
+  font-weight: 600;          /* Made it bolder */
+  letter-spacing: 1.5px;     /* Slightly tightened to balance the larger size */
+  color: #94a3b8;            /* Brightened from var(--muted) for better contrast */
   text-transform: uppercase;
 }
 .server-bar { display:flex; gap:12px; flex-wrap:wrap; }
@@ -83,20 +83,9 @@ main { margin-left:var(--sidebar-w); padding:calc(var(--header-h) + 40px) 60px 8
 .tab-content { display: none; animation:fadeUp .4s ease both; }
 .tab-content.active { display: block; }
 
-/* CARDS & STATUS */
-.status-card { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
-.stat { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:20px 24px; transition:border-color .25s; }
-.stat:hover { border-color:rgba(74,222,128,.3); }
-.stat-label { font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:8px; }
-.stat-value { font-size:20px; font-weight:800; color:var(--white); }
-.stat-value.green { color:var(--green); }
-
+/* FORMS & CARDS */
 .command-box { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:28px 32px; margin-bottom:24px; }
-.section-title { display:flex; align-items:center; gap:12px; margin-bottom:20px; }
-.section-title h2 { font-size:20px; font-weight:800; color:var(--white); letter-spacing:-.5px; }
-.tag { font-family:'JetBrains Mono', monospace; font-size:11px; background:rgba(74,222,128,.1); color:var(--green); border:1px solid rgba(74,222,128,.2); padding:3px 10px; border-radius:999px; }
-
-/* INPUTS */
+.command-box h3 { font-size: 18px; color: var(--white); margin-bottom: 16px; }
 .input-group { margin-bottom: 20px; display: flex; flex-direction: column; gap: 8px; }
 .input-group label { font-family:'JetBrains Mono', monospace; font-size:12px; color:var(--muted); }
 input[type="text"], textarea {
@@ -105,45 +94,113 @@ input[type="text"], textarea {
   width: 100%; transition: border-color 0.2s;
 }
 input[type="text"]:focus, textarea:focus { outline: none; border-color: var(--green); }
+textarea { resize: vertical; min-height: 100px; }
 
-/* PILLS & BUTTONS */
+/* BUTTONS */
+.btn-primary {
+  background: var(--green); color: #052e16; padding: 10px 20px; border-radius: 8px;
+  font-weight: 700; font-family: 'Inter', sans-serif; border: none; cursor: pointer; transition: all 0.2s;
+}
+.btn-primary:hover { background: #3bca70; transform: translateY(-1px); }
+.btn-primary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+.btn-danger { background: rgba(231, 76, 60, 0.1); border: 1px solid #e74c3c; color: #e74c3c; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: bold; transition: all 0.2s; }
+.btn-danger:hover { background: #e74c3c; color: white; }
+
+/* TABLE */
+table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+th { text-align: left; padding: 12px; font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--muted); text-transform: uppercase; border-bottom: 1px solid var(--border); }
+td { padding: 16px 12px; border-bottom: 1px solid var(--border); font-size: 14px; }
+td code { background: #08101a; padding: 4px 8px; border-radius: 4px; color: var(--green); font-family: 'JetBrains Mono', monospace; font-size: 12px; }
+
+/* TOASTS */
+#toast-container { position: fixed; bottom: 30px; right: 30px; display: flex; flex-direction: column; gap: 10px; z-index: 1000; }
+.toast { background: var(--card); border-left: 4px solid var(--green); color: var(--white); padding: 16px 24px; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); font-size: 14px; font-weight: 600; animation: slideIn 0.3s ease forwards; display: flex; align-items: center; gap: 12px; }
+.toast.error { border-left-color: #e74c3c; }
+.toast.fade-out { animation: fadeOut 0.3s ease forwards; }
+
+@keyframes fadeUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+@keyframes slideIn { from{opacity:0;transform:translateX(50px)} to{opacity:1;transform:translateX(0)} }
+@keyframes fadeOut { from{opacity:1;transform:translateX(0)} to{opacity:0;transform:translateX(50px)} }
+
+/* MODAL STYLES */
+.help-icon {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 16px; height: 16px; border-radius: 50%; background: rgba(74,222,128,0.1);
+  color: var(--green); font-size: 10px; font-weight: bold; cursor: pointer;
+  margin-left: 8px; border: 1px solid rgba(74,222,128,0.3); transition: all 0.2s;
+}
+.help-icon:hover { background: var(--green); color: #052e16; }
+
+.modal-overlay {
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(5, 10, 15, 0.8); backdrop-filter: blur(4px);
+  display: none; justify-content: center; align-items: center; z-index: 1000;
+  animation: fadeIn 0.2s ease;
+}
+.modal-overlay.active { display: flex; }
+.modal {
+  background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+  padding: 32px; max-width: 400px; width: 100%; position: relative;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+}
+.modal h3 { color: var(--white); margin-bottom: 12px; font-size: 18px; }
+.close-btn {
+  position: absolute; top: 16px; right: 16px; background: none; border: none;
+  color: var(--muted); font-size: 24px; cursor: pointer; transition: color 0.2s;
+}
+.close-btn:hover { color: var(--white); }
+
+/* EMBED BUILDER GRID */
+.embed-builder-grid { 
+  display: grid; 
+  grid-template-columns: 1fr 1fr; 
+  gap: 40px; 
+  align-items: start; 
+}
+
+@media (max-width: 960px) { 
+  .embed-builder-grid { grid-template-columns: 1fr; } 
+}
+
+/* LIVE DISCORD PREVIEW STYLES */
+.embed-preview-container {
+  background: #313338; /* Exact Discord background */
+  border-radius: 8px;
+  padding: 16px;
+  position: sticky;
+  top: 100px; /* Keeps the preview in view when scrolling down the inputs */
+}
+
+.discord-message-header { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+.discord-avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--green); display: flex; align-items: center; justify-content: center; color: #052e16; font-weight: bold; }
+.discord-bot-name { color: #f2f3f5; font-size: 16px; font-weight: 600; display: flex; align-items: center; gap: 6px; }
+.discord-bot-tag { background: #5865F2; color: white; font-size: 10px; padding: 2px 4px; border-radius: 3px; font-weight: 600; text-transform: uppercase; }
+
+.discord-embed {
+  background: #2b2d31;
+  border-radius: 4px;
+  border-left: 4px solid #1e1f22;
+  padding: 12px 16px 16px 16px;
+  display: flex; flex-direction: column; gap: 8px;
+  max-width: 432px; margin-left: 52px;
+}
+
+.embed-author { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; color: #ffffff; display: none; }
+.embed-author-img { width: 24px; height: 24px; border-radius: 50%; object-fit: cover; display: none; }
+.embed-title { font-size: 16px; font-weight: 700; color: #00a8fc; display: none; }
+.embed-description { font-size: 14px; line-height: 1.375; color: #dbdee1; white-space: pre-wrap; }
+.embed-main-image { max-width: 100%; border-radius: 4px; margin-top: 8px; display: none; }
+.embed-thumbnail { width: 80px; height: 80px; border-radius: 4px; object-fit: cover; display: none; float: right; margin-left: 16px; }
+.embed-footer { display: flex; align-items: center; gap: 8px; font-size: 12px; color: #949ba4; margin-top: 8px; display: none; }
+.embed-footer-img { width: 20px; height: 20px; border-radius: 50%; object-fit: cover; display: none; }
+
 .pill {
   display:inline-flex; align-items:center; gap:5px;
   background:rgba(251,191,36,.08); border:1px solid rgba(251,191,36,.2);
   color:#fbbf24; border-radius:999px; padding:3px 10px;
   font-size:12px; font-family:'JetBrains Mono', monospace;
 }
-.btn-primary {
-  background: var(--green); color: #052e16; padding: 10px 20px; border-radius: 8px;
-  font-weight: 700; font-family: 'Inter', sans-serif; border: none; cursor: pointer; transition: all 0.2s;
-}
-.btn-invite {
-  background:var(--green); color:#052e16; padding:8px 18px;
-  border-radius:8px; font-weight:700; border:none; cursor:pointer;
-}
 
-/* CHAT BOX */
-#mc-chat-box {
-  scrollbar-width: thin;
-  scrollbar-color: var(--border) transparent;
-}
-#mc-chat-box::-webkit-scrollbar { width: 6px; }
-#mc-chat-box::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
-
-@keyframes fadeUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
-
-/* MODAL */
-.modal-overlay {
-  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(5, 10, 15, 0.8); backdrop-filter: blur(4px);
-  display: none; justify-content: center; align-items: center; z-index: 1000;
-}
-.modal-overlay.active { display: flex; }
-.modal { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 32px; max-width: 400px; width: 100%; position: relative; }
-
-/* EMBED PREVIEW */
-.embed-preview-container { background: #313338; border-radius: 8px; padding: 16px; }
-.discord-embed { background: #2b2d31; border-radius: 4px; border-left: 4px solid #1e1f22; padding: 12px 16px; margin-left: 52px; }
 </style>
 </head>
 <body>
@@ -154,143 +211,196 @@ input[type="text"]:focus, textarea:focus { outline: none; border-color: var(--gr
     Dashboard
   </a>
   <div style="display:flex; align-items:center; gap:16px;">
-    <div id="bot-status" style="font-family:'JetBrains Mono', monospace; font-size:11px; padding:4px 10px; border-radius:99px; border:1px solid var(--border); color:var(--muted);">Checking Bot...</div>
+    
+    <div id="bot-status" style="font-family:'JetBrains Mono', monospace; font-size:11px; padding:4px 10px; border-radius:99px; border:1px solid var(--border); color:var(--muted);">
+      Checking Bot...
+    </div>
+
     <div id="session-info" style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--muted);">Verifying session...</div>
   </div>
 </header>
 
 <div class="sidebar">
-  <div class="sidebar-label">Game Server</div>
-  <button class="nav-tab active" onclick="switchTab('tab-server', this)"><span class="sidebar-dot"></span>Live Server</button>
-  
-  <div class="sidebar-label" style="margin-top: 24px;">Discord Management</div>
-  <button class="nav-tab" onclick="switchTab('tab-general', this)"><span class="sidebar-dot"></span>General Settings</button>
+  <div class="sidebar-label">Management</div>
+  <button class="nav-tab active" onclick="switchTab('tab-general', this)"><span class="sidebar-dot"></span>General Settings</button>
   <button class="nav-tab" onclick="switchTab('tab-invites', this)"><span class="sidebar-dot"></span>Magic Invites</button>
 </div>
 
 <main>
   <div class="server-bar-wrapper">
     <div style="display: flex; align-items: center; margin-bottom: 12px;">
-      <span class="server-bar-label">Select Server</span>
-      <span style="cursor:pointer; margin-left:8px; opacity:0.5;" onclick="openHelpModal()">?</span>
+      <span class="server-bar-label" style="margin-bottom: 0;">Select Server</span>
+      <span class="help-icon" onclick="openHelpModal()" title="Where is my server?">?</span>
     </div>
-    <div id="server-bar" class="server-bar"></div>
+    <div id="server-bar" class="server-bar">
+      </div>
   </div>
 
-  <div id="tab-server" class="tab-content active">
-    <div class="section-title">
-      <h2>Live Minecraft Server</h2>
-      <span class="tag">Real-time Sync</span>
-    </div>
-
-    <div class="status-card">
-      <div class="stat">
-        <div class="stat-label">Server Status</div>
-        <div class="stat-value green" id="mc-online-status">● Online</div>
-      </div>
-      <div class="stat">
-        <div class="stat-label">Players</div>
-        <div class="stat-value" id="mc-players">0 / 0</div>
-      </div>
-      <div class="stat">
-        <div class="stat-label">World Time</div>
-        <div class="stat-value" id="mc-time">Day 0 (00:00)</div>
-      </div>
-    </div>
-
-    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 24px; align-items: start;">
+  <div id="settings-container" style="display: none;">
+    <div id="tab-general" class="tab-content active">
       <div class="command-box">
-        <div class="sidebar-label" style="margin-bottom: 15px;">Global Chat Feed</div>
-        <div id="mc-chat-box" style="height: 350px; overflow-y: auto; background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 20px; font-family: 'JetBrains Mono', monospace; font-size: 13px; margin-bottom: 18px; line-height: 1.6;">
-          <div style="color: var(--muted)">Connecting to bridge...</div>
-        </div>
-        <div style="display: flex; gap: 12px;">
-          <input type="text" id="mc-chat-input" placeholder="Type a message to the server..." style="flex: 1;">
-          <button onclick="sendToGame()" class="btn-invite">Send</button>
-        </div>
-      </div>
-
-      <div style="display: flex; flex-direction: column; gap: 24px;">
-        <div class="stat">
-          <div class="stat-label">Top Mob Kills</div>
-          <div id="leaderboard-mobs" style="font-size: 13px; margin-top: 10px; line-height: 1.8;">Loading...</div>
-        </div>
-        <div class="stat">
-          <div class="stat-label">Most Deaths</div>
-          <div id="leaderboard-deaths" style="font-size: 13px; margin-top: 10px; line-height: 1.8;">Loading...</div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div id="tab-general" class="tab-content">
-    <div class="command-box">
-      <h3>Server Identity</h3>
+        <h3>Server Identity</h3>
       <div class="input-group">
         <label>Bot Nickname</label>
         <input type="text" id="config-nickname" placeholder="e.g. Society Bot" oninput="updatePreview()">
       </div>
-      <div class="command-box">
-        <h3>Welcome Embed Builder</h3>
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:40px;">
-          <div>
-            <p style="color:var(--muted); font-size:13px; margin-bottom:20px;">Variables: <span class="pill">$USER</span> <span class="pill">$GUILD</span></p>
-            <div class="input-group"><label>Title</label><input type="text" id="emb-title" oninput="updatePreview()"></div>
-            <div class="input-group"><label>Description <span style="color:#ef4444;">(Required)</span></label><textarea id="emb-desc" oninput="updatePreview()"></textarea></div>
-            <div class="input-group"><label>Sidebar Color (Hex)</label><input type="text" id="emb-color" oninput="updatePreview()"></div>
-          </div>
-          <div class="embed-preview-container">
-            <span class="server-bar-label">Live Preview</span>
-            <div class="discord-embed" id="prev-container">
-              <div class="embed-title" id="prev-title"></div>
-              <div class="embed-description" id="prev-desc">Welcome message preview...</div>
-            </div>
-          </div>
+        <div class="command-box">
+  <h3>Welcome Embed Builder</h3>
+  <div class="embed-builder-grid">
+    
+    <div class="embed-form">
+    <p style="color: var(--muted); font-size: 13px; margin-bottom: 24px; display: flex; align-items: center; flex-wrap: wrap; gap: 8px;">
+    Variables: 
+    <span class="pill">$USER</span> 
+    <span class="pill">$GUILD</span> 
+    <span class="pill">$MEMBER_COUNT</span> 
+    <span class="pill">$INVITE</span> 
+    <span class="pill">$TIME</span>
+  </p>
+
+    <div class="input-group">
+        <label>Title</label>
+        <input type="text" id="emb-title" placeholder="Main header text" oninput="updatePreview()">
+    </div>
+    <div class="input-group">
+        <label>Description <span style="color: #ef4444;">(Required)</span></label>
+        <textarea id="emb-desc" placeholder="Hello $USER, welcome to the server!&#10;Joined via: $INVITE $INVITER&#10;Time: $TIME" oninput="updatePreview()"></textarea>
+    </div>
+    <div class="input-group">
+        <label>Sidebar Color (Hex)</label>
+        <input type="text" id="emb-color" placeholder="#4ade80" oninput="updatePreview()">
+    </div>
+    <div class="input-group">
+        <label>Thumbnail URL (Top Right)</label>
+        <input type="text" id="emb-thumb" placeholder="https://..." oninput="updatePreview()">
+    </div>
+    <div class="input-group">
+        <label>Main Image URL (Bottom)</label>
+        <input type="text" id="emb-image" placeholder="https://..." oninput="updatePreview()">
+    </div>
+    <div class="input-group" style="margin-bottom: 0;">
+        <label>Footer Text</label>
+        <input type="text" id="emb-footer" placeholder="You are member #$MEMBER_COUNT" oninput="updatePreview()">
+    </div>
+    </div>
+
+<div class="embed-preview-container">
+      <span class="server-bar-label" style="margin-bottom: 16px;">Live Preview</span>
+      
+      <div class="discord-message-header">
+        <img class="discord-avatar" src="https://cdn.discordapp.com/app-icons/1493768627256688772/92a33a206de225c5086eea041cd0ee77.png" style="object-fit: cover;">
+        
+        <div class="discord-bot-name">
+          <span id="prev-bot-name">Society Bot</span> 
+          <span class="discord-bot-tag">✓ BOT</span>
         </div>
       </div>
-      <button class="btn-primary" onclick="saveServerConfig()">Save Identity Settings</button>
+
+      <div class="discord-embed" id="prev-container">
+        
+        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+          
+          <div style="flex: 1;">
+            <div class="embed-title" id="prev-title"></div>
+            <div class="embed-description" id="prev-desc">Hello $USER, please read the rules...</div>
+          </div>
+          
+          <img src="" class="embed-thumbnail" id="prev-thumb">
+        </div>
+
+        <img src="" class="embed-main-image" id="prev-image">
+
+        <div class="embed-footer" id="prev-footer-wrap">
+          <span id="prev-footer-text"></span>
+        </div>
+      </div>
     </div>
   </div>
-
-  <div id="tab-invites" class="tab-content">
-    <div class="command-box">
-      <h3>Create Magic Invite</h3>
-      <div style="display:flex; gap:10px; align-items:flex-end;">
-        <div class="input-group" style="flex:1; margin-bottom:0;">
-          <label>Alias Name (e.g. TikTok)</label>
-          <input type="text" id="new-magic-alias" placeholder="Enter source name...">
-        </div>
-        <button class="btn-primary" onclick="createMagicInvite()">Generate Invite</button>
-      </div>
+</div>
+    <button class="btn-primary" style="margin-top: 32px;" onclick="saveServerConfig()">Save Identity Settings</button>
     </div>
-    <div class="command-box">
-      <h3>Active Links</h3>
-      <table>
-        <thead><tr><th>Alias Name</th><th>Discord Link</th><th style="text-align:right;">Action</th></tr></thead>
-        <tbody id="alias-list"></tbody>
-      </table>
+
+    </div>    
+</div>
+
+    <div id="tab-invites" class="tab-content">
+      <div class="command-box">
+        <h3>Create Magic Invite</h3>
+        <p style="color: var(--muted); font-size: 14px; margin-bottom: 16px;">Generate permanent invites mapped to friendly names.</p>
+        <div style="display:flex; gap:10px; align-items: flex-end;">
+          <div class="input-group" style="flex:1; margin-bottom:0;">
+            <label>Alias Name (e.g. TikTok)</label>
+            <input type="text" id="new-magic-alias" placeholder="Enter source name...">
+          </div>
+          <button class="btn-primary" id="generate-magic-btn" onclick="createMagicInvite()">Generate Invite</button>
+        </div>
+      </div>
+
+      <div class="command-box">
+        <h3>Active Links</h3>
+        <table>
+          <thead><tr><th>Alias Name</th><th>Discord Link</th><th style="text-align:right;">Action</th></tr></thead>
+          <tbody id="alias-list"></tbody>
+        </table>
+      </div>
     </div>
   </div>
 </main>
 
 <div id="toast-container"></div>
-<script src="dashboard.js"></script>
 
+<script src="dashboard.js"></script>
 <div class="modal-overlay" id="help-modal" onclick="closeHelpModal()">
   <div class="modal" onclick="event.stopPropagation()">
+    <button class="close-btn" onclick="closeHelpModal()">&times;</button>
     <h3>Where is my server?</h3>
-    <p style="color: var(--muted); font-size: 14px; line-height: 1.6;">You must be an Admin and the bot must be invited to the server.</p>
-    <button class="btn-primary" style="width:100%; margin-top:20px;" onclick="closeHelpModal()">Close</button>
+    <p style="color: var(--muted); font-size: 14px; line-height: 1.6; margin-bottom: 16px;">
+      If you don't see your server in the list above, please check the following:
+    </p>
+    <ul style="color: var(--text); font-size: 14px; line-height: 1.8; padding-left: 20px; margin-bottom: 24px;">
+      <li>You must have the <strong>Manage Server</strong> or <strong>Administrator</strong> permission in Discord.</li>
+      <li>The <strong>Minecraft Society Bot</strong> must already be invited and inside the server.</li>
+    </ul>
+    <button class="btn-primary" style="width: 100%;" onclick="closeHelpModal()">Understood</button>
   </div>
 </div>
 
+<div class="section-title">
+  <h2>Live Minecraft Server</h2>
+  <span class="tag">Real-time Sync</span>
+</div>
+
+<div class="status-card" style="margin-bottom: 24px;">
+  <div class="stat">
+    <div class="stat-label">Server Status</div>
+    <div class="stat-value green" id="mc-online-status">● Online</div>
+  </div>
+  <div class="stat">
+    <div class="stat-label">Players</div>
+    <div class="stat-value" id="mc-players">0 / 0</div>
+  </div>
+  <div class="stat">
+    <div class="stat-label">World Time</div>
+    <div class="stat-value" id="mc-time">Day 0 (00:00)</div>
+  </div>
+</div>
+
+<div class="command-box">
+  <div class="sidebar-label" style="margin-bottom: 15px;">Global Chat Feed</div>
+  <div id="mc-chat-box" style="height: 300px; overflow-y: auto; background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 20px; font-family: 'JetBrains Mono', monospace; font-size: 13px; margin-bottom: 18px; line-height: 1.6;">
+    <div style="color: var(--muted)">Connecting to bridge...</div>
+  </div>
+  
+  <div style="display: flex; gap: 12px;">
+    <input type="text" id="mc-chat-input" placeholder="Type a message to the server..." 
+           style="flex: 1; background: var(--surface); border: 1px solid var(--border); color: var(--white); padding: 12px; border-radius: 8px;">
+    <button onclick="sendToGame()" class="btn-invite" style="border: none; cursor: pointer; height: 45px;">Send</button>
+  </div>
+</div>
+
+
 <script>
-  function switchTab(tabId, element) {
-    document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-    document.querySelectorAll('.nav-tab').forEach(btn => btn.classList.remove('active'));
-    document.getElementById(tabId).classList.add('active');
-    element.classList.add('active');
-  }
+  // Simple functions to open and close the modal
   function openHelpModal() { document.getElementById('help-modal').classList.add('active'); }
   function closeHelpModal() { document.getElementById('help-modal').classList.remove('active'); }
 </script>
