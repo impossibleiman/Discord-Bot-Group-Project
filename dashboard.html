@@ -113,6 +113,30 @@
 </div>
 
 
+<div class="card">
+    <h2>Invite Aliases</h2>
+    <p>Map Discord invite codes to friendly names (e.g., Instagram, TikTok).</p>
+    
+    <table id="alias-table" style="width:100%; text-align:left; margin-bottom:15px;">
+        <thead>
+            <tr>
+                <th>Invite Code</th>
+                <th>Alias Name</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody id="alias-list">
+            </tbody>
+    </table>
+
+    <div style="display:flex; gap:10px;">
+        <input type="text" id="new-invite-code" placeholder="Code (e.g. ABC123)" style="flex:1; padding:8px;">
+        <input type="text" id="new-invite-alias" placeholder="Alias (e.g. Instagram)" style="flex:1; padding:8px;">
+        <button onclick="addInviteAlias()">Add Alias</button>
+    </div>
+</div>
+
+
 <script src="dashboard.js"></script>
 </body>
 </html>

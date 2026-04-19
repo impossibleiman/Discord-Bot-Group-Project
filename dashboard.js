@@ -89,26 +89,78 @@ async function loadGuilds() {
 // 4. Load specific server settings
 async function loadServerConfig() {
     const guildId = document.getElementById('guild-selector').value;
-    if (!guildId) {
-        document.getElementById('settings-form').style.display = "none";
-        return;
-    }
+    if (!guildId) return;
 
-    log("Loading settings for guild: " + guildId);
-    const token = localStorage.getItem('admin_session');
+    const response = await fetch(`${API_BASE}/config/${guildId}`, {
+        headers: { 'Authorization': localStorage.getItem('admin_session') }
+    });
+    const config = await response.json();
+    
+    document.getElementById('config-nickname').value = config.nickname || "";
+    document.getElementById('config-welcome').value = config.welcomeMessage || "";
+    document.getElementById('settings-form').style.display = "block";
 
-    try {
-        const response = await fetch(`${API_BASE}/config/${guildId}`, {
-            headers: { 'Authorization': token }
-        });
-        const config = await response.json();
-        
-        document.getElementById('config-nickname').value = config.nickname || "";
-        document.getElementById('config-welcome').value = config.welcomeMessage || "";
-        document.getElementById('settings-form').style.display = "block";
-    } catch (err) {
-        log("Error loading server config.");
+    // Build the alias table
+    renderAliasTable(config.inviteAliases || {});
+}
+
+function renderAliasTable(aliases) {
+    const tbody = document.getElementById('alias-list');
+    tbody.innerHTML = "";
+    
+    for (const [code, alias] of Object.entries(aliases)) {
+        tbody.innerHTML += `
+            <tr>
+                <td><code>${code}</code></td>
+                <td>${alias}</td>
+                <td><button onclick="deleteAlias('${code}')" style="background:#e74c3c; padding:5px 10px;">Delete</button></td>
+            </tr>`;
     }
+}
+
+async function addInviteAlias() {
+    const guildId = document.getElementById('guild-selector').value;
+    const code = document.getElementById('new-invite-code').value.trim();
+    const alias = document.getElementById('new-invite-alias').value.trim();
+
+    if (!code || !alias) return alert("Please enter both a code and an alias.");
+
+    // Fetch current config, add new alias, then save
+    const response = await fetch(`${API_BASE}/config/${guildId}`, {
+        headers: { 'Authorization': localStorage.getItem('admin_session') }
+    });
+    const config = await response.json();
+    
+    config.inviteAliases[code] = alias;
+
+    await saveFullConfig(guildId, config);
+    document.getElementById('new-invite-code').value = "";
+    document.getElementById('new-invite-alias').value = "";
+    loadServerConfig(); // Refresh table
+}
+
+async function deleteAlias(code) {
+    const guildId = document.getElementById('guild-selector').value;
+    const response = await fetch(`${API_BASE}/config/${guildId}`, {
+        headers: { 'Authorization': localStorage.getItem('admin_session') }
+    });
+    const config = await response.json();
+    
+    delete config.inviteAliases[code];
+    await saveFullConfig(guildId, config);
+    loadServerConfig();
+}
+
+// Helper to save the whole config object
+async function saveFullConfig(guildId, config) {
+    await fetch(`${API_BASE}/config/${guildId}`, {
+        method: 'POST',
+        headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': localStorage.getItem('admin_session') 
+        },
+        body: JSON.stringify(config)
+    });
 }
 
 // 5. Save settings back to the bot

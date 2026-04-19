@@ -95,7 +95,9 @@ public class MinecraftSocietyBot {
         var app = Javalin.create(config -> {
             // We have to go through 'bundledPlugins' to find the CORS settings
             config.bundledPlugins.enableCors(cors -> {
-                cors.addRule(it -> it.allowHost("https://mmuminecraftsociety.co.uk"));
+                cors.addRule(it -> {
+                    it.allowHost("https://mmuminecraftsociety.co.uk");
+                });
             });
         }).start(8080);
 
