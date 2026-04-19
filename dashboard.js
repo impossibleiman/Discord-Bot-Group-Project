@@ -104,17 +104,69 @@ async function loadServerConfig() {
     renderAliasTable(config.inviteAliases || {});
 }
 
+// Add/Replace this in dashboard.js
+
+async function createMagicInvite() {
+    const guildId = document.getElementById('guild-selector').value;
+    const alias = document.getElementById('new-magic-alias').value.trim();
+
+    if (!guildId) return alert("Please select a server first!");
+    if (!alias) return alert("Please type an alias name (e.g. Instagram)!");
+
+    log(`Requesting magic invite for alias: '${alias}'...`);
+    const token = localStorage.getItem('admin_session');
+
+    try {
+        // Send the alias as a query parameter (?alias=Instagram)
+        const response = await fetch(`${API_BASE}/create-magic-invite/${guildId}?alias=${encodeURIComponent(alias)}`, {
+            headers: { 'Authorization': token }
+        });
+
+        if (response.ok) {
+            const newCode = await response.text();
+            log(`✨ Success! Created and mapped: ${alias} -> ${newCode}`);
+            
+            // Clear input box
+            document.getElementById('new-magic-alias').value = "";
+            
+            // Reload settings immediately to show the new entry in the table
+            loadServerConfig(); 
+            
+            alert(`Magic Invite Created!\n\n${alias} -> discord.gg/${newCode}`);
+        } else {
+            const error = await response.text();
+            alert("Error: " + error);
+            log("Server rejected invite creation: " + error);
+        }
+    } catch (err) {
+        log("Failed to communicate with bot for magic invite.");
+        console.error(err);
+    }
+}
+
+// Update your existing renderAliasTable function to show links
 function renderAliasTable(aliases) {
     const tbody = document.getElementById('alias-list');
     tbody.innerHTML = "";
     
-    for (const [code, alias] of Object.entries(aliases)) {
+    // Sort aliases alphabetically by name
+    const sortedEntries = Object.entries(aliases).sort((a, b) => a.localeCompare(b));
+
+    for (const [code, alias] of sortedEntries) {
         tbody.innerHTML += `
-            <tr>
-                <td><code>${code}</code></td>
-                <td>${alias}</td>
-                <td><button onclick="deleteAlias('${code}')" style="background:#e74c3c; padding:5px 10px;">Delete</button></td>
+            <tr style="border-bottom: 1px solid #333;">
+                <td style="padding: 10px;"><b>${alias}</b></td>
+                <td style="padding: 10px;"><code>discord.gg/${code}</code></td>
+                <td style="padding: 10px;">
+                    <button onclick="deleteAlias('${code}')" style="background:#e74c3c; padding:5px 10px; border-radius:4px; border:none; color:white; font-weight:bold; cursor:pointer;">
+                        Delete
+                    </button>
+                </td>
             </tr>`;
+    }
+    
+    if (Object.keys(aliases).length === 0) {
+        tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; padding: 20px; color: #aaa;">No magic invites created yet.</td></tr>';
     }
 }
 
