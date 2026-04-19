@@ -181,6 +181,11 @@ section.visible { opacity:1; transform:translateY(0); }
   background:rgba(74,222,128,.1); color:var(--green);
   border:1px solid rgba(74,222,128,.2); padding:3px 10px; border-radius:999px;
 }
+.section-title .tag-auto {
+  font-family:'JetBrains Mono', monospace; font-size:11px;
+  background:rgba(147,197,253,.08); color:#93c5fd;
+  border:1px solid rgba(147,197,253,.2); padding:3px 10px; border-radius:999px;
+}
 
 /* CARDS */
 .command-box {
@@ -205,6 +210,7 @@ section.visible { opacity:1; transform:translateY(0); }
   border-radius:8px; padding:6px 14px; margin-bottom:20px;
 }
 .command-header::before { content:'/'; opacity:.5; }
+.command-header.auto::before { content:'⚡'; font-style:normal; opacity:.7; font-size:13px; }
 
 .property-grid { display:grid; grid-template-columns:130px 1fr; gap:12px 16px; }
 
@@ -234,6 +240,13 @@ section.visible { opacity:1; transform:translateY(0); }
   display:inline-flex; align-items:center; gap:5px;
   background:rgba(251,191,36,.08); border:1px solid rgba(251,191,36,.2);
   color:#fbbf24; border-radius:999px; padding:3px 10px;
+  font-size:12px; font-family:'JetBrains Mono', monospace;
+}
+
+.pill-blue {
+  display:inline-flex; align-items:center; gap:5px;
+  background:rgba(147,197,253,.08); border:1px solid rgba(147,197,253,.2);
+  color:#93c5fd; border-radius:999px; padding:3px 10px;
   font-size:12px; font-family:'JetBrains Mono', monospace;
 }
 
@@ -348,7 +361,7 @@ footer {
     <div class="logo-icon"><span></span><span></span><span></span><span></span></div>
     Minecraft Society
   </a>
-<nav>
+  <nav>
     <a href="index.html" class="active">Docs</a>
     <a href="events.html">Events</a>
     <a href="members.html">Members</a>
@@ -364,9 +377,19 @@ footer {
     <a href="#overview"><span class="sidebar-dot"></span>Server Overview</a>
   </div>
   <div class="sidebar-section">
+    <div class="sidebar-label">Automatic</div>
+    <a href="#welcome"><span class="sidebar-dot"></span>Welcome System</a>
+    <a href="#verification"><span class="sidebar-dot"></span>Verification</a>
+  </div>
+  <div class="sidebar-section">
     <div class="sidebar-label">Commands</div>
     <a href="#reactionrole"><span class="sidebar-dot"></span>Reaction Roles</a>
     <a href="#event"><span class="sidebar-dot"></span>Event System</a>
+    <a href="#ticket"><span class="sidebar-dot"></span>Ticket System</a>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-label">Bots</div>
+    <a href="#aichat"><span class="sidebar-dot"></span>AI Chat Bot</a>
   </div>
 </div>
 
@@ -383,7 +406,7 @@ footer {
       The <strong>Minecraft Society Bot</strong> is a collaborative project developed at Manchester Metropolitan University (MMU).
       It is designed to automate moderation, streamline onboarding, and enhance community interaction within the Minecraft Society Discord server.
       <br><br>
-      The system includes <strong>verification</strong>, <strong>invite tracking</strong>, <strong>role management</strong>, and <strong>event tools</strong> to support a growing community of students.
+      The system includes <strong>verification</strong>, <strong>invite tracking</strong>, <strong>role management</strong>, <strong>event tools</strong>, a <strong>ticket system</strong>, and an <strong>AI chat bot</strong> to support a growing community of students.
     </div>
   </section>
 
@@ -399,6 +422,32 @@ footer {
         <div class="label">University</div><div class="value">Manchester Metropolitan University (MMU)</div>
         <div class="label">Platform</div><div class="value">Discord</div>
         <div class="label">Access</div><div class="value">Verification required on join</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="welcome">
+    <div class="section-title"><h2>Welcome System</h2><span class="tag-auto">Automatic</span></div>
+    <div class="command-box">
+      <div class="command-header auto">Welcome &amp; Invite Tracking</div>
+      <div class="property-grid">
+        <div class="label">Description</div><div class="value">Automatically fires when a new member joins. Sends a welcome embed to <strong>#test-welcome</strong> showing who invited them, which invite code was used, and how old their Discord account is.</div>
+        <div class="label">Trigger</div><div class="value">Member joins the server</div>
+        <div class="label">Channel</div><div class="value">#test-welcome</div>
+        <div class="label">Info shown</div><div class="value">Invite code · Inviter · Account age</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="verification">
+    <div class="section-title"><h2>Verification</h2><span class="tag-auto">Automatic</span></div>
+    <div class="command-box">
+      <div class="command-header auto">Button Verification</div>
+      <div class="property-grid">
+        <div class="label">Description</div><div class="value">Sends a verification embed in <strong>#verify</strong>. New members click the <em>Enter Server</em> button to receive the <strong>Member</strong> role and unlock full server access.</div>
+        <div class="label">Trigger</div><div class="value">Member clicks the verify button</div>
+        <div class="label">Channel</div><div class="value">#verify</div>
+        <div class="label">Role granted</div><div class="value">Member</div>
       </div>
     </div>
   </section>
@@ -426,6 +475,32 @@ footer {
       </div>
     </div>
   </section>
+
+  <section id="ticket">
+    <div class="section-title"><h2>Ticket System</h2><span class="tag">Command</span></div>
+    <div class="command-box">
+      <div class="command-header">ticket</div>
+      <div class="property-grid">
+        <div class="label">Description</div><div class="value">Opens a private support ticket channel for the member. Staff can view and respond to tickets, and close them once resolved.</div>
+        <div class="label">Permissions</div><div class="value"><span class="pill">⚙ Manage Channels</span></div>
+        <div class="label">Usage</div><div class="value">/ticket</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="aichat">
+    <div class="section-title"><h2>AI Chat Bot</h2><span class="tag-auto">Passive</span></div>
+    <div class="command-box">
+      <div class="command-header auto">AI Chat</div>
+      <div class="property-grid">
+        <div class="label">Description</div><div class="value">An AI bot that listens in designated channels and replies to messages automatically. No command needed — just type and it will respond.</div>
+        <div class="label">Trigger</div><div class="value">Any message in the designated channel</div>
+        <div class="label">Usage</div><div class="value">Just type a message</div>
+        <div class="label">Note</div><div class="value"><span class="pill-blue">ℹ Availability depends on bot uptime</span></div>
+      </div>
+    </div>
+  </section>
+
 </main>
 
 <footer>
@@ -448,8 +523,12 @@ footer {
       <div class="footer-col">
         <h4>Docs</h4>
         <a href="index.html#intro">Introduction</a>
+        <a href="index.html#welcome">Welcome System</a>
+        <a href="index.html#verification">Verification</a>
         <a href="index.html#reactionrole">Reaction Roles</a>
         <a href="index.html#event">Event System</a>
+        <a href="index.html#ticket">Ticket System</a>
+        <a href="index.html#aichat">AI Chat Bot</a>
       </div>
     </div>
     <div class="footer-bottom">
