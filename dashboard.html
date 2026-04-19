@@ -231,56 +231,85 @@ td code { background: #08101a; padding: 4px 8px; border-radius: 4px; color: var(
           <input type="text" id="config-nickname" placeholder="e.g. Society Bot">
         </div>
         <div class="command-box">
-        <h3>Welcome Embed Builder</h3>
-        <p style="color: var(--muted); font-size: 14px; margin-bottom: 24px;">Design a rich welcome embed. Available variables: $USER, $GUILD, $MEMBER_COUNT</p>
+  <h3>Welcome Embed Builder</h3>
+  <p style="color: var(--muted); font-size: 14px; margin-bottom: 24px;">Design a rich welcome embed. Available variables: $USER, $GUILD, $MEMBER_COUNT</p>
 
-        <div class="embed-builder-grid">
-            
-            <div class="embed-form">
-        <div class="input-group">
-            <label>Bot Nickname</label>
-            <input type="text" id="config-nickname" placeholder="e.g. Society Bot">
-        </div>
+  <div class="embed-builder-grid">
+    
+    <div class="embed-form">
+      <div class="input-group">
+        <label>Bot Nickname</label>
+        <input type="text" id="config-nickname" placeholder="e.g. Society Bot">
+      </div>
+      <div class="input-group">
+        <label>Author Name</label>
+        <input type="text" id="emb-author" placeholder="e.g. Welcome to $GUILD!" oninput="updatePreview()">
+      </div>
+      <div class="input-group">
+        <label>Author Icon URL</label>
+        <input type="text" id="emb-author-icon" placeholder="https://..." oninput="updatePreview()">
+      </div>
+      <div class="input-group">
+        <label>Title</label>
+        <input type="text" id="emb-title" placeholder="Main header text" oninput="updatePreview()">
+      </div>
+      <div class="input-group">
+        <label>Description (Required)</label>
+        <textarea id="emb-desc" placeholder="Hello $USER, please read the rules..." oninput="updatePreview()"></textarea>
+      </div>
+      <div class="input-group">
+        <label>Sidebar Color (Hex)</label>
+        <input type="text" id="emb-color" placeholder="#4ade80" oninput="updatePreview()">
+      </div>
+      <div class="input-group">
+        <label>Thumbnail URL (Top Right)</label>
+        <input type="text" id="emb-thumb" placeholder="https://..." oninput="updatePreview()">
+      </div>
+      <div class="input-group">
+        <label>Main Image URL (Bottom)</label>
+        <input type="text" id="emb-image" placeholder="https://..." oninput="updatePreview()">
+      </div>
+      <div class="input-group" style="margin-bottom: 0;">
+        <label>Footer Text</label>
+        <input type="text" id="emb-footer" placeholder="You are member #$MEMBER_COUNT" oninput="updatePreview()">
+      </div>
+    </div>
+
+    <div class="embed-preview-container">
+      <span class="server-bar-label" style="margin-bottom: 16px;">Live Preview</span>
+      
+      <div class="discord-message-header">
+        <div class="discord-avatar">MS</div>
+        <div class="discord-bot-name">Society Bot <span class="discord-bot-tag">✓ BOT</span></div>
+      </div>
+
+      <div class="discord-embed" id="prev-container">
         
-        <div class="input-group">
-            <label>Author Name</label>
-            <input type="text" id="emb-author" placeholder="e.g. Welcome to $GUILD!" oninput="updatePreview()">
-        </div>
-        <div class="input-group">
-            <label>Author Icon URL</label>
-            <input type="text" id="emb-author-icon" placeholder="https://..." oninput="updatePreview()">
-        </div>
-        <div class="input-group">
-            <label>Title</label>
-            <input type="text" id="emb-title" placeholder="Main header text" oninput="updatePreview()">
-        </div>
-        <div class="input-group">
-            <label>Description (Required)</label>
-            <textarea id="emb-desc" placeholder="Hello $USER, please read the rules..." oninput="updatePreview()"></textarea>
-        </div>
-        <div class="input-group">
-            <label>Sidebar Color (Hex)</label>
-            <input type="text" id="emb-color" placeholder="#4ade80" oninput="updatePreview()">
-        </div>
-        <div class="input-group">
-            <label>Thumbnail URL (Top Right)</label>
-            <input type="text" id="emb-thumb" placeholder="https://..." oninput="updatePreview()">
-        </div>
-        <div class="input-group">
-            <label>Main Image URL (Bottom)</label>
-            <input type="text" id="emb-image" placeholder="https://..." oninput="updatePreview()">
-        </div>
-        <div class="input-group" style="margin-bottom: 0;">
-            <label>Footer Text</label>
-            <input type="text" id="emb-footer" placeholder="You are member #$MEMBER_COUNT" oninput="updatePreview()">
-        </div>
-        </div>
-        
+        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+          <div style="flex: 1;">
+            <div class="embed-author" id="prev-author-wrap">
+              <img src="" class="embed-author-img" id="prev-author-icon">
+              <span id="prev-author-text"></span>
+            </div>
+            <div class="embed-title" id="prev-title"></div>
+            <div class="embed-description" id="prev-desc">Hello $USER, please read the rules...</div>
+          </div>
+          <img src="" class="embed-thumbnail" id="prev-thumb">
         </div>
 
-        <button class="btn-primary" id="save-general-btn" style="margin-top: 32px;" onclick="saveServerConfig()">Save Identity Settings</button>
+        <img src="" class="embed-main-image" id="prev-image">
+
+        <div class="embed-footer" id="prev-footer-wrap">
+          <span id="prev-footer-text"></span>
         </div>
-        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <button class="btn-primary" id="save-general-btn" style="margin-top: 32px;" onclick="saveServerConfig()">Save Identity Settings</button>
+</div>
 
         <div class="embed-preview-container">
         <span class="server-bar-label" style="margin-bottom: 16px;">Live Preview</span>
