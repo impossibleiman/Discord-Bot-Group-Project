@@ -125,18 +125,29 @@ async function addInviteAlias() {
 
     if (!code || !alias) return alert("Please enter both a code and an alias.");
 
-    // Fetch current config, add new alias, then save
+    const token = localStorage.getItem('admin_session');
+    
+    // 1. Fetch current config
     const response = await fetch(`${API_BASE}/config/${guildId}`, {
-        headers: { 'Authorization': localStorage.getItem('admin_session') }
+        headers: { 'Authorization': token }
     });
     const config = await response.json();
     
+    // 2. SAFETY CHECK: Ensure the map exists before we try to add to it
+    if (!config.inviteAliases) {
+        config.inviteAliases = {};
+    }
+
+    // 3. Add the new alias
     config.inviteAliases[code] = alias;
 
+    // 4. Save the full updated object
     await saveFullConfig(guildId, config);
+    
+    // 5. Reset and refresh
     document.getElementById('new-invite-code').value = "";
     document.getElementById('new-invite-alias').value = "";
-    loadServerConfig(); // Refresh table
+    loadServerConfig(); 
 }
 
 async function deleteAlias(code) {
@@ -168,29 +179,29 @@ async function saveServerConfig() {
     const guildId = document.getElementById('guild-selector').value;
     const token = localStorage.getItem('admin_session');
     
-    const data = {
-        nickname: document.getElementById('config-nickname').value,
-        welcomeMessage: document.getElementById('config-welcome').value
-    };
+    // 1. Fetch the CURRENT full config first (to keep the aliases safe!)
+    const getRes = await fetch(`${API_BASE}/config/${guildId}`, {
+        headers: { 'Authorization': token }
+    });
+    const config = await getRes.json();
 
-    try {
-        const response = await fetch(`${API_BASE}/config/${guildId}`, {
-            method: 'POST',
-            headers: { 
-                'Content-Type': 'application/json',
-                'Authorization': token 
-            },
-            body: JSON.stringify(data)
-        });
+    // 2. Only update the fields from the text boxes
+    config.nickname = document.getElementById('config-nickname').value;
+    config.welcomeMessage = document.getElementById('config-welcome').value;
 
-        if (response.ok) {
-            alert("Settings saved successfully!");
-            log("Config updated for " + guildId);
-        } else {
-            alert("Failed to save settings.");
-        }
-    } catch (err) {
-        log("Error saving config.");
+    // 3. Send the WHOLE object (aliases included) back to the bot
+    const postRes = await fetch(`${API_BASE}/config/${guildId}`, {
+        method: 'POST',
+        headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': token 
+        },
+        body: JSON.stringify(config)
+    });
+
+    if (postRes.ok) {
+        alert("Everything saved!");
+        loadServerConfig(); // Refresh the UI
     }
 }
 
