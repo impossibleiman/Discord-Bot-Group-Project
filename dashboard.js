@@ -110,6 +110,10 @@ async function loadServerConfig() {
     });
     const config = await response.json();
     
+    // RESTORED: Load the Bot Nickname
+    const nickEl = document.getElementById('config-nickname');
+    if (nickEl) nickEl.value = config.nickname || "";
+
     let embedData = {};
     try { embedData = JSON.parse(config.welcomeMessage || "{}"); } 
     catch (e) { embedData = { desc: config.welcomeMessage || "" }; }
@@ -141,7 +145,11 @@ async function saveServerConfig() {
             footer: document.getElementById('emb-footer').value
         };
 
-        const payload = { welcomeMessage: JSON.stringify(embedData) };
+        // RESTORED: Send the nickname to the Java Backend!
+        const payload = { 
+            nickname: document.getElementById('config-nickname').value,
+            welcomeMessage: JSON.stringify(embedData) 
+        };
 
         const postRes = await fetch(`${API_BASE}/config/${currentGuildId}`, {
             method: 'POST',

@@ -61,7 +61,14 @@ main { margin-left:var(--sidebar-w); padding:calc(var(--header-h) + 40px) 60px 8
 
 /* HORIZONTAL SERVER BAR */
 .server-bar-wrapper { margin-bottom: 40px; }
-.server-bar-label { font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:12px; display:block; }
+.server-bar-label, .sidebar-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;           /* Increased from 10px */
+  font-weight: 600;          /* Made it bolder */
+  letter-spacing: 1.5px;     /* Slightly tightened to balance the larger size */
+  color: #94a3b8;            /* Brightened from var(--muted) for better contrast */
+  text-transform: uppercase;
+}
 .server-bar { display:flex; gap:12px; flex-wrap:wrap; }
 .server-pill {
   background:var(--card); border:1px solid var(--border); color:var(--text);
@@ -256,7 +263,7 @@ td code { background: #08101a; padding: 4px 8px; border-radius: 4px; color: var(
         <input type="text" id="emb-title" placeholder="Main header text" oninput="updatePreview()">
     </div>
     <div class="input-group">
-        <label>Description (Required)</label>
+        <label>Description <span style="color: #ef4444;">(Required)</span></label>
         <textarea id="emb-desc" placeholder="Hello $USER, welcome to the server!&#10;Joined via: $INVITE $INVITER&#10;Time: $TIME" oninput="updatePreview()"></textarea>
     </div>
     <div class="input-group">
