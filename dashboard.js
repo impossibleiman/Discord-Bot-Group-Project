@@ -270,49 +270,67 @@ async function deleteAlias(code) {
 
 function updatePreview() {
     // 1. Color
-    const hex = document.getElementById('emb-color').value.trim() || '#1e1f22';
+    const colorEl = document.getElementById('emb-color');
+    const hex = (colorEl ? colorEl.value.trim() : '') || '#1e1f22';
     document.getElementById('prev-container').style.borderLeftColor = hex;
 
-    // 2. Author
-    const authorTxt = document.getElementById('emb-author').value.trim();
-    const authorIco = document.getElementById('emb-author-icon').value.trim();
-    const authorWrap = document.getElementById('prev-author-wrap');
-    if (authorTxt) {
-        authorWrap.style.display = 'flex';
-        document.getElementById('prev-author-text').innerText = authorTxt;
-        const imgEl = document.getElementById('prev-author-icon');
-        if (authorIco) { imgEl.src = authorIco; imgEl.style.display = 'block'; }
-        else { imgEl.style.display = 'none'; }
-    } else {
-        authorWrap.style.display = 'none';
+    // 2. Title
+    const titleElInput = document.getElementById('emb-title');
+    const title = titleElInput ? titleElInput.value.trim() : '';
+    const titleEl = document.getElementById('prev-title');
+    if (title) { 
+        titleEl.style.display = 'block'; 
+        titleEl.innerText = title; 
+    } else { 
+        titleEl.style.display = 'none'; 
     }
 
-    // 3. Title
-    const title = document.getElementById('emb-title').value.trim();
-    const titleEl = document.getElementById('prev-title');
-    if (title) { titleEl.style.display = 'block'; titleEl.innerText = title; }
-    else { titleEl.style.display = 'none'; }
+    // 3. Description (With Live Variable Mockups!)
+    const descEl = document.getElementById('emb-desc');
+    let desc = descEl ? descEl.value.trim() : '';
+    
+    if (!desc) {
+        desc = 'Hello <span style="color:#c9cdfb; background:rgba(88,101,242,.3); padding:0 2px; border-radius:3px;">@User</span>, welcome to the server!\nJoined via: TikTok (discord.gg/abcd123)\nTime: Today at 12:00 PM';
+    } else {
+        // Swap out the variables to show what it will actually look like in Discord
+        desc = desc.replace(/\$USER/g, '<span style="color:#c9cdfb; background:rgba(88,101,242,.3); padding:0 2px; border-radius:3px;">@User</span>')
+                   .replace(/\$GUILD/g, 'MMU Minecraft Society')
+                   .replace(/\$MEMBER_COUNT/g, '42')
+                   .replace(/\$INVITE/g, 'TikTok (discord.gg/abcd123)')
+                   .replace(/\$INVITER/g, '\nInvited by: <span style="color:#c9cdfb; background:rgba(88,101,242,.3); padding:0 2px; border-radius:3px;">@Friend</span>')
+                   .replace(/\$TIME/g, 'Today at 12:00 PM');
+    }
+    // We use innerHTML here instead of innerText so the blue @User tags render properly
+    document.getElementById('prev-desc').innerHTML = desc.replace(/\n/g, '<br>');
 
-    // 4. Description
-    const desc = document.getElementById('emb-desc').value.trim();
-    document.getElementById('prev-desc').innerText = desc || 'Hello $USER, please read the rules...';
+    // 4. Thumbnail
+    const thumbElInput = document.getElementById('emb-thumb');
+    const thumb = thumbElInput ? thumbElInput.value.trim() : '';
+    const prevThumb = document.getElementById('prev-thumb');
+    if (thumb) { 
+        prevThumb.src = thumb; 
+        prevThumb.style.display = 'block'; 
+    } else { 
+        prevThumb.style.display = 'none'; 
+    }
 
-    // 5. Thumbnail
-    const thumb = document.getElementById('emb-thumb').value.trim();
-    const thumbEl = document.getElementById('prev-thumb');
-    if (thumb) { thumbEl.src = thumb; thumbEl.style.display = 'block'; }
-    else { thumbEl.style.display = 'none'; }
+    // 5. Main Image
+    const imgElInput = document.getElementById('emb-image');
+    const img = imgElInput ? imgElInput.value.trim() : '';
+    const prevImg = document.getElementById('prev-image');
+    if (img) { 
+        prevImg.src = img; 
+        prevImg.style.display = 'block'; 
+    } else { 
+        prevImg.style.display = 'none'; 
+    }
 
-    // 6. Main Image
-    const img = document.getElementById('emb-image').value.trim();
-    const imgEl = document.getElementById('prev-image');
-    if (img) { imgEl.src = img; imgEl.style.display = 'block'; }
-    else { imgEl.style.display = 'none'; }
-
-    // 7. Footer
-    const footerTxt = document.getElementById('emb-footer').value.trim();
+    // 6. Footer
+    const footerElInput = document.getElementById('emb-footer');
+    let footerTxt = footerElInput ? footerElInput.value.trim() : '';
     const footerWrap = document.getElementById('prev-footer-wrap');
     if (footerTxt) {
+        footerTxt = footerTxt.replace(/\$MEMBER_COUNT/g, '42');
         footerWrap.style.display = 'flex';
         document.getElementById('prev-footer-text').innerText = footerTxt;
     } else {
