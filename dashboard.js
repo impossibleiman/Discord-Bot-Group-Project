@@ -376,14 +376,14 @@ async function refreshMinecraftData() {
         // 3. Update Chat Feed
         const chatBox = document.getElementById('mc-chat-box');
         if (data.chat && data.chat.length > 0) {
-            chatBox.innerHTML = data.chat.map(m => `
-                <div style="margin-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.03); padding-bottom: 5px;">
-                    <span class="pill" style="background: rgba(74, 222, 128, 0.1); color: var(--green); border: 1px solid rgba(74, 222, 128, 0.2);">
-                        ${m.user}
-                    </span> 
-                    <span style="color: var(--white); margin-left: 8px;">${m.text}</span>
-                </div>
-            `).join('');
+        chatBox.innerHTML = data.chat.map(m => `
+            <div style="margin-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.03); padding-bottom: 5px;">
+                <span class="pill" style="background: rgba(74, 222, 128, 0.1); color: var(--green); border: 1px solid rgba(74, 222, 128, 0.2);">
+                    ${escapeHTML(m.user)}
+                </span> 
+                <span style="color: var(--white); margin-left: 8px;">${escapeHTML(m.text)}</span>
+            </div>
+        `).join('');
         } else {
             chatBox.innerHTML = '<div style="color: var(--muted); text-align: center; margin-top: 100px;">Waiting for in-game activity...</div>';
         }
@@ -391,6 +391,19 @@ async function refreshMinecraftData() {
         document.getElementById('mc-online-status').innerText = "○ Offline";
         document.getElementById('mc-online-status').style.color = "var(--muted)";
     }
+
+    if (data.status.leaderboards) {
+        const mobs = data.status.leaderboards.mob_kills || [];
+        document.getElementById('leaderboard-mobs').innerHTML = mobs.length > 0 
+            ? mobs.map((p, i) => `<div>${i+1}. ${p}</div>`).join('')
+            : "No data yet";
+
+        const deaths = data.status.leaderboards.deaths || [];
+        document.getElementById('leaderboard-deaths').innerHTML = deaths.length > 0 
+            ? deaths.map((p, i) => `<div>${i+1}. ${p}</div>`).join('')
+            : "No data yet";
+    }
+
 }
 
 // Function to send a message from the Website to Minecraft
@@ -419,6 +432,13 @@ async function sendToGame() {
     } catch (err) {
         console.error("Chat Error:", err);
     }
+}
+
+// Function to safely escape HTML
+function escapeHTML(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
 }
 
 // Start the loop: Check for new data every 3 seconds

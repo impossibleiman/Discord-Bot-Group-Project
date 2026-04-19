@@ -302,19 +302,22 @@ public class MinecraftSocietyBot {
 
         // 1. DATA FROM PLUGIN -> BOT
         app.post("/mc-sync/update", ctx -> {
-            // SECURITY CHECK: Verify the secret key you set
             if (!"MMU_Soc_7721_x92_SecretSync_!99".equals(ctx.header("X-MC-Auth"))) { 
-                ctx.status(401); 
-                return; 
+                ctx.status(401); return; 
             }
 
             org.json.JSONObject data = new org.json.JSONObject(ctx.body());
             
-            // Update Global Stats for the website to read
+            // Update Stats
             mcStatus.put("online", data.getInt("onlinePlayers"));
             mcStatus.put("max", data.getInt("maxPlayers"));
             mcStatus.put("day", data.getLong("gameDay"));
             mcStatus.put("time", data.getLong("gameTime"));
+
+            // NEW: Save leaderboards if they exist
+            if (data.has("leaderboards")) {
+                mcStatus.put("leaderboards", data.getJSONObject("leaderboards").toMap());
+            }
 
             // Sync Chat Messages coming FROM the Minecraft game
             if (data.has("newChat")) {
