@@ -129,21 +129,29 @@
             </tbody>
     </table>
 
-    <div style="display:flex; gap:10px;">
-        <div style="display:flex; gap:10px; align-items: center;">
-            <input type="text" id="new-invite-code" placeholder="Code (e.g. ABC123)" style="flex:1; padding:8px;">
-            
-            <button onclick="generateBotInvite()" style="background-color: #7289da; padding: 8px 12px;" title="Generate a permanent invite via the bot">
-                Generate
-            </button>
-
-            <input type="text" id="new-invite-alias" placeholder="Alias (e.g. Instagram)" style="flex:1; padding:8px;">
-            <button onclick="addInviteAlias()">Add Alias</button>
-        </div>
-        <input type="text" id="new-invite-code" placeholder="Code (e.g. ABC123)" style="flex:1; padding:8px;">
-        <input type="text" id="new-invite-alias" placeholder="Alias (e.g. Instagram)" style="flex:1; padding:8px;">
-        <button onclick="addInviteAlias()">Add Alias</button>
+<div class="card">
+    <h2>Invite Aliases</h2>
+    <p>Type your desired name (e.g. TikTok) and click create. The bot handles the rest!</p>
+    
+    <div style="display:flex; gap:10px; margin-bottom: 20px; align-items: center;">
+        <input type="text" id="new-magic-alias" placeholder="Invite Alias (e.g. Instagram)" style="flex:1; padding:10px; border-radius: 4px; border: 1px solid #444; background: #222; color: white;">
+        
+        <button onclick="createMagicInvite()" style="background-color: #7289da; padding: 10px 20px; font-weight: bold; border-radius: 4px; border: none; cursor: pointer;">
+            Create Magic Invite
+        </button>
     </div>
+
+    <table id="alias-table" style="width:100%; text-align:left; border-collapse: collapse;">
+        <thead>
+            <tr style="border-bottom: 2px solid #444;">
+                <th style="padding: 10px;">Alias Name</th>
+                <th style="padding: 10px;">Discord Link</th>
+                <th style="padding: 10px;">Action</th>
+            </tr>
+        </thead>
+        <tbody id="alias-list">
+            </tbody>
+    </table>
 </div>
 
 <button onclick="saveServerConfig()" style="margin-top: 10px; background-color: #2ecc71;">Save All Server Settings</button>

@@ -168,40 +168,55 @@ public class MinecraftSocietyBot {
             }
         });
 
-        app.get("/create-invite/{guildId}", ctx -> {
+        app.get("/create-magic-invite/{guildId}", ctx -> {
             String sessionId = ctx.header("Authorization");
-            if (!activeSessions.containsKey(sessionId)) {
-                ctx.status(401).result("Unauthorized");
-                return;
-            }
+            if (!activeSessions.containsKey(sessionId)) { ctx.status(401); return; }
 
             String guildId = ctx.pathParam("guildId");
-            var guild = jdaHolder[0].getGuildById(guildId);
-
-            if (guild == null) {
-                ctx.status(404).result("Guild not found");
+            
+            // 1. Get the requested alias from the website URL (?alias=Instagram)
+            String requestedAlias = ctx.queryParam("alias");
+            if (requestedAlias == null || requestedAlias.trim().isEmpty()) {
+                ctx.status(400).result("Error: Alias name is required.");
                 return;
             }
 
-            // Find a suitable channel to create the invite (Welcome channel or System channel)
+            var guild = jdaHolder[0].getGuildById(guildId);
+            if (guild == null) { ctx.status(404); return; }
+
+            // 2. Find target channel (same logic as before)
             var channels = guild.getTextChannelsByName("test-welcome", true);
             var targetChannel = !channels.isEmpty() ? channels.get(0) : guild.getSystemChannel();
 
             if (targetChannel == null) {
-                ctx.status(400).result("No suitable channel found to create invite.");
+                ctx.status(400).result("No suitable channel found.");
                 return;
             }
 
-            // Create a permanent invite (0 age, 0 uses = never expires)
+            // 3. Create the unique, permanent invite
             targetChannel.createInvite()
                     .setMaxAge(0)
                     .setMaxUses(0)
-                    .setUnique(true)
+                    .setUnique(true) // Crucial for unique aliasing
                     .queue(invite -> {
-                        // Send the code back to the dashboard
-                        ctx.result(invite.getCode());
+                        
+                        // 4. Fetch current config, add new mapping, and save IMMEDIATELY
+                        ServerConfig config = guildConfigs.getOrDefault(guildId, new ServerConfig());
+                        if (config.inviteAliases == null) config.inviteAliases = new java.util.HashMap<>();
+                        
+                        // Map cryptic Discord Code -> Your Human Alias
+                        config.inviteAliases.put(invite.getCode(), requestedAlias.trim());
+                        
+                        // Commit to RAM map and JSON file
+                        guildConfigs.put(guildId, config);
+                        saveConfigs(); 
+                        // ---------------------------------
+
+                        // Send code back just for logging on the dashboard
+                        ctx.result(invite.getCode()); 
+
                     }, throwable -> {
-                        ctx.status(500).result("Discord failed to create invite: " + throwable.getMessage());
+                        ctx.status(500).result("Discord Error: " + throwable.getMessage());
                     });
         });
 
