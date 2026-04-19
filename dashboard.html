@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MMU Minecraft Society | Admin Dashboard</title>
+    <style>
+        :root {
+            --mc-green: #3c8527;
+            --mc-dark: #1e1e1e;
+            --mc-gray: #313131;
+            --text: #ffffff;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--mc-dark);
+            color: var(--text);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        header {
+            background-color: var(--mc-green);
+            width: 100%;
+            padding: 1rem 0;
+            text-align: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+        }
+        .container {
+            max-width: 800px;
+            width: 90%;
+            margin-top: 2rem;
+        }
+        .card {
+            background-color: var(--mc-gray);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border-left: 5px solid var(--mc-green);
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 0.8rem;
+        }
+        .online { background: #2ecc71; }
+        .offline { background: #e74c3c; }
+        button {
+            background: var(--mc-green);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        button:hover { filter: brightness(1.2); }
+        #log-output {
+            background: black;
+            color: #00ff00;
+            padding: 10px;
+            font-family: monospace;
+            height: 100px;
+            overflow-y: auto;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Society Bot Dashboard</h1>
+</header>
+
+<div class="container">
+    <div class="card">
+        <h2>Session Status</h2>
+        <div id="session-info">Checking session...</div>
+    </div>
+
+    <div class="card">
+        <h2>Bot Quick Actions</h2>
+        <button onclick="checkBotStatus()">Refresh Bot Stats</button>
+        <p>Bot Status: <span id="bot-status" class="status-badge offline">Unknown</span></p>
+    </div>
+
+    <div class="card">
+        <h2>Console Log</h2>
+        <div id="log-output">Initialized dashboard...</div>
+    </div>
+</div>
+
+<script src="dashboard.js"></script>
+</body>
+</html>

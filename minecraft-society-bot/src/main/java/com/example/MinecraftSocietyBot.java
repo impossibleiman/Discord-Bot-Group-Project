@@ -138,6 +138,18 @@ public class MinecraftSocietyBot {
                 ctx.result("✅ API is Live! Found Client ID: " + clientId);
             }
         });
+
+        app.get("/check-session", ctx -> {
+            String sessionId = ctx.queryParam("session");
+            
+            if (sessionId == null || !activeSessions.containsKey(sessionId)) {
+                ctx.status(401).result("Session invalid.");
+                return;
+            }
+            
+            String userId = activeSessions.get(sessionId);
+            ctx.result("Logged in as User ID: " + userId);
+        });
     }
 
     private static String getDiscordUserId(String accessToken, OkHttpClient client) {
