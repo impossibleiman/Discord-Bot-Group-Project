@@ -353,20 +353,31 @@ function updatePreview() {
     }
 }
 
-// Ensure this helper is at the very top of your file
+// Function to safely escape HTML
 function sanitize(str) {
     const div = document.createElement('div');
     div.textContent = str;
     return div.innerHTML;
 }
 
-async function refreshMinecraftChat() {
+// CONSOLIDATED REFRESH FUNCTION
+async function refreshMinecraftData() {
     try {
         const res = await fetch(`${API_BASE}/mc-data`);
+        if (!res.ok) throw new Error("API Offline");
+        
         const data = await res.json();
 
+        // 1. UPDATE STATUS (Even if stats are ignored, we show connection)
+        const statusEl = document.getElementById('mc-online-status');
+        if (statusEl) {
+            statusEl.innerText = "● Online";
+            statusEl.style.color = "var(--green)";
+        }
+
+        // 2. UPDATE CHAT FEED
         const chatBox = document.getElementById('mc-chat-box');
-        if (data.chat) {
+        if (chatBox && data.chat) {
             chatBox.innerHTML = data.chat.map(m => `
                 <div style="margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.03); padding-bottom: 6px;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
@@ -385,6 +396,11 @@ async function refreshMinecraftChat() {
         }
     } catch (e) {
         console.error("Chat sync failed:", e);
+        const statusEl = document.getElementById('mc-online-status');
+        if (statusEl) {
+            statusEl.innerText = "○ Offline";
+            statusEl.style.color = "var(--muted)";
+        }
     }
 }
 
@@ -394,34 +410,30 @@ async function sendToGame() {
     const message = input.value.trim();
     if (!message) return;
 
+    const token = localStorage.getItem('admin_session');
+
     try {
         const res = await fetch(`${API_BASE}/mc-send-chat`, {
             method: 'POST',
             headers: { 
                 'Content-Type': 'application/json',
-                'Authorization': localStorage.getItem('admin_session')
+                'Authorization': token
             },
             body: JSON.stringify({ message: message })
         });
 
         if (res.ok) {
             input.value = "";
-            // Optionally refresh immediately to show your message
+            // Trigger an immediate refresh so the web message appears instantly
             refreshMinecraftData();
         } else {
-            alert("Failed to send: Ensure you are logged in as an admin.");
+            showToast("Failed to send: Session may be expired.", "error");
         }
     } catch (err) {
         console.error("Chat Error:", err);
+        showToast("Connection error while sending.", "error");
     }
 }
 
-// Function to safely escape HTML
-function escapeHTML(str) {
-    const div = document.createElement('div');
-    div.textContent = str;
-    return div.innerHTML;
-}
-
-// Start the loop: Check for new data every 3 seconds
+// START THE LOOP: Check for new data every 3 seconds
 setInterval(refreshMinecraftData, 3000);
