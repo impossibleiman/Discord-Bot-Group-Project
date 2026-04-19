@@ -104,66 +104,73 @@ async function loadServerConfig() {
     renderAliasTable(config.inviteAliases || {});
 }
 
-// Add/Replace this in dashboard.js
 
 async function createMagicInvite() {
     const guildId = document.getElementById('guild-selector').value;
     const alias = document.getElementById('new-magic-alias').value.trim();
 
     if (!guildId) return alert("Please select a server first!");
-    if (!alias) return alert("Please type an alias name (e.g. Instagram)!");
+    if (!alias) return alert("Please type an alias name!");
 
-    log(`Requesting magic invite for alias: '${alias}'...`);
+    log(`✨ Requesting magic invite for: ${alias}...`);
     const token = localStorage.getItem('admin_session');
 
     try {
-        // Send the alias as a query parameter (?alias=Instagram)
         const response = await fetch(`${API_BASE}/create-magic-invite/${guildId}?alias=${encodeURIComponent(alias)}`, {
             headers: { 'Authorization': token }
         });
 
         if (response.ok) {
             const newCode = await response.text();
-            log(`✨ Success! Created and mapped: ${alias} -> ${newCode}`);
+            log(`✅ Successfully mapped ${alias} to discord.gg/${newCode}`);
             
             // Clear input box
             document.getElementById('new-magic-alias').value = "";
             
-            // Reload settings immediately to show the new entry in the table
+            // Refresh the table to show the new link
             loadServerConfig(); 
-            
-            alert(`Magic Invite Created!\n\n${alias} -> discord.gg/${newCode}`);
         } else {
             const error = await response.text();
-            alert("Error: " + error);
-            log("Server rejected invite creation: " + error);
+            log("❌ Error: " + error);
         }
     } catch (err) {
-        log("Failed to communicate with bot for magic invite.");
-        console.error(err);
+        log("❌ Connection failed.");
     }
 }
 
-// Update your existing renderAliasTable function to show links
 function renderAliasTable(aliases) {
     const tbody = document.getElementById('alias-list');
     tbody.innerHTML = "";
     
-    // Sort aliases alphabetically by name
+    // Fix: Sort by the Alias Name (the value, which is index)
     const sortedEntries = Object.entries(aliases).sort((a, b) => a.localeCompare(b));
 
     for (const [code, alias] of sortedEntries) {
         tbody.innerHTML += `
             <tr style="border-bottom: 1px solid #333;">
-                <td style="padding: 10px;"><b>${alias}</b></td>
-                <td style="padding: 10px;"><code>discord.gg/${code}</code></td>
-                <td style="padding: 10px;">
-                    <button onclick="deleteAlias('${code}')" style="background:#e74c3c; padding:5px 10px; border-radius:4px; border:none; color:white; font-weight:bold; cursor:pointer;">
+                <td style="padding: 12px;"><strong>${alias}</strong></td>
+                <td style="padding: 12px;">
+                    <code style="background: #111; padding: 4px 8px; border-radius: 4px; color: #7289da;">
+                        https://discord.gg/${code}
+                    </code>
+                </td>
+                <td style="padding: 12px; text-align: right;">
+                    <button onclick="deleteAlias('${code}')" style="background:#e74c3c; padding:6px 12px; border-radius:4px; border:none; color:white; cursor:pointer; font-size: 0.8rem;">
                         Delete
                     </button>
                 </td>
             </tr>`;
     }
+    
+    if (Object.keys(aliases).length === 0) {
+        tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; padding: 30px; color: #888;">No magic invites yet. Create one above!</td></tr>';
+    }
+}
+    
+    if (Object.keys(aliases).length === 0) {
+        tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; padding: 20px; color: #aaa;">No magic invites created yet.</td></tr>';
+    }
+}
     
     if (Object.keys(aliases).length === 0) {
         tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; padding: 20px; color: #aaa;">No magic invites created yet.</td></tr>';
