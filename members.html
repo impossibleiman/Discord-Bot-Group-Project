@@ -5,7 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Members — Minecraft Society</title>
 
-<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
 
 <style>
 :root {
@@ -25,7 +27,7 @@ html { scroll-behavior:smooth; }
 
 body {
   background:var(--bg); color:var(--text);
-  font-family:'Syne', sans-serif;
+  font-family:'Inter', sans-serif;
   min-height:100vh; overflow-x:hidden;
 }
 
@@ -90,7 +92,7 @@ main {
   display:inline-flex; align-items:center; gap:7px;
   background:rgba(74,222,128,.1); border:1px solid rgba(74,222,128,.25);
   border-radius:999px; padding:5px 14px;
-  font-family:'Space Mono', monospace; font-size:12px; color:var(--green); margin-bottom:20px;
+  font-family:'JetBrains Mono', monospace; font-size:12px; color:var(--green); margin-bottom:20px;
 }
 .hero-badge::before {
   content:''; width:7px; height:7px; border-radius:50%;
@@ -104,7 +106,7 @@ main {
 .section-title { display:flex; align-items:center; gap:12px; margin-bottom:32px; }
 .section-title h2 { font-size:22px; font-weight:800; color:var(--white); letter-spacing:-.5px; }
 .section-title .tag {
-  font-family:'Space Mono', monospace; font-size:11px;
+  font-family:'JetBrains Mono', monospace; font-size:11px;
   background:rgba(74,222,128,.1); color:var(--green);
   border:1px solid rgba(74,222,128,.2); padding:3px 10px; border-radius:999px;
 }
@@ -143,7 +145,7 @@ main {
 
 .role-badge {
   display:inline-flex; align-items:center; gap:5px;
-  font-family:'Space Mono', monospace; font-size:10px;
+  font-family:'JetBrains Mono', monospace; font-size:10px;
   letter-spacing:.5px; padding:3px 10px; border-radius:999px; margin-bottom:10px;
 }
 .role-lead  { background:rgba(251,191,36,.08);  border:1px solid rgba(251,191,36,.22);  color:#fbbf24; }
@@ -152,7 +154,7 @@ main {
 .role-default { background:rgba(203,213,225,.06); border:1px solid rgba(203,213,225,.15); color:var(--muted); }
 
 .card h3 { font-size:16px; font-weight:800; color:var(--white); letter-spacing:-.3px; margin-bottom:4px; }
-.card .handle { font-family:'Space Mono', monospace; font-size:11px; color:var(--muted); }
+.card .handle { font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--muted); }
 
 /* ─── FOOTER ─────────────────────────────────────────────── */
 footer {
@@ -184,7 +186,7 @@ footer {
 .discord-btn:hover { background:rgba(74,222,128,.18); border-color:rgba(74,222,128,.5); }
 
 .footer-col h4 {
-  font-family:'Space Mono', monospace; font-size:10px;
+  font-family:'JetBrains Mono', monospace; font-size:10px;
   letter-spacing:2px; text-transform:uppercase; color:var(--muted); margin-bottom:18px;
 }
 .footer-col a { display:block; color:var(--text); text-decoration:none; font-size:14px; font-weight:600; margin-bottom:11px; transition:color .2s; }
@@ -194,7 +196,7 @@ footer {
   border-top:1px solid var(--border); padding-top:28px;
   display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;
 }
-.footer-bottom p { font-family:'Space Mono', monospace; font-size:11px; color:var(--muted); }
+.footer-bottom p { font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--muted); }
 .footer-bottom span { color:var(--green); }
 
 @keyframes fadeUp { from{opacity:0;transform:translateY(30px)} to{opacity:1;transform:translateY(0)} }
