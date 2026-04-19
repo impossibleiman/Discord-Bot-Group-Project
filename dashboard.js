@@ -109,10 +109,10 @@ async function createMagicInvite() {
     const guildId = document.getElementById('guild-selector').value;
     const alias = document.getElementById('new-magic-alias').value.trim();
 
-    if (!guildId) return alert("Please select a server first!");
-    if (!alias) return alert("Please type an alias name!");
+    if (!guildId) return alert("Please select a server first.");
+    if (!alias) return alert("Please type an alias name.");
 
-    log(`✨ Requesting magic invite for: ${alias}...`);
+    log("Requesting magic invite for alias: " + alias);
     const token = localStorage.getItem('admin_session');
 
     try {
@@ -122,19 +122,17 @@ async function createMagicInvite() {
 
         if (response.ok) {
             const newCode = await response.text();
-            log(`✅ Successfully mapped ${alias} to discord.gg/${newCode}`);
+            log("Success: Created and mapped " + alias + " to discord.gg/" + newCode);
             
-            // Clear input box
+            // Clear input and refresh UI
             document.getElementById('new-magic-alias').value = "";
-            
-            // Refresh the table to show the new link
             loadServerConfig(); 
         } else {
             const error = await response.text();
-            log("❌ Error: " + error);
+            log("Error from server: " + error);
         }
     } catch (err) {
-        log("❌ Connection failed.");
+        log("Connection failed while creating magic invite.");
     }
 }
 
@@ -142,7 +140,7 @@ function renderAliasTable(aliases) {
     const tbody = document.getElementById('alias-list');
     tbody.innerHTML = "";
     
-    // Fix: Sort by the Alias Name (the value, which is index)
+    // Sort by the Alias Name (the value at index 1)
     const sortedEntries = Object.entries(aliases).sort((a, b) => a.localeCompare(b));
 
     for (const [code, alias] of sortedEntries) {
@@ -163,17 +161,7 @@ function renderAliasTable(aliases) {
     }
     
     if (Object.keys(aliases).length === 0) {
-        tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; padding: 30px; color: #888;">No magic invites yet. Create one above!</td></tr>';
-    }
-}
-    
-    if (Object.keys(aliases).length === 0) {
-        tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; padding: 20px; color: #aaa;">No magic invites created yet.</td></tr>';
-    }
-}
-    
-    if (Object.keys(aliases).length === 0) {
-        tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; padding: 20px; color: #aaa;">No magic invites created yet.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; padding: 30px; color: #888;">No magic invites found. Use the creator above to generate one.</td></tr>';
     }
 }
 
