@@ -10,6 +10,9 @@ import org.json.JSONObject;
 
 public class MinecraftSocietyBot {
     
+    // A simple way to store active sessions (In-memory for now)
+    private static final java.util.Map<String, String> activeSessions = new java.util.HashMap<>();
+    
     public static void main(String[] args) {
     
         // Get token from .env 
@@ -23,7 +26,7 @@ public class MinecraftSocietyBot {
             System.err.println("Error: DISCORD_TOKEN is missing from .env file!");
             return; 
         }
-
+        
         // Command Manager
         CommandManager manager = new CommandManager();
         // -------------------------------------------------------------------------------------------------------
@@ -103,10 +106,21 @@ public class MinecraftSocietyBot {
                 JSONObject tokenJson = new JSONObject(tokenResponse.body().string());
                 String accessToken = tokenJson.getString("access_token");
 
+                // Get Discord user ID from access token
+                String userId = getDiscordUserId(accessToken, httpClient);
+                if (userId == null) {
+                    ctx.status(500).result("Failed to fetch Discord user.");
+                    return;
+                }
+
                 // B. Check if user is an Administrator in a server with the bot
                 if (isUserAdmin(accessToken, httpClient, jdaHolder[0])) {
-                    // Success! Redirect to dashboard
-                    ctx.redirect("https://mmuminecraftsociety.co.uk/dashboard.html?auth=success");
+                    String sessionId = java.util.UUID.randomUUID().toString();
+
+                    // Store sessionId -> userId
+                    activeSessions.put(sessionId, userId);
+
+                    ctx.redirect("https://mmuminecraftsociety.co.uk/dashboard.html?session=" + sessionId);
                 } else {
                     ctx.status(403).result("Access Denied: You must be an Admin in a server where the bot is present.");
                 }
@@ -126,6 +140,22 @@ public class MinecraftSocietyBot {
         });
     }
 
+    private static String getDiscordUserId(String accessToken, OkHttpClient client) {
+        Request request = new Request.Builder()
+                .url("https://discord.com/api/users/@me")
+                .header("Authorization", "Bearer " + accessToken)
+                .build();
+
+        try (Response response = client.newCall(request).execute()) {
+            if (!response.isSuccessful() || response.body() == null) return null;
+            JSONObject userJson = new JSONObject(response.body().string());
+            return userJson.getString("id");
+        } catch (Exception e) {
+            System.err.println("Error fetching Discord user ID:");
+            e.printStackTrace();
+            return null;
+        }
+    }
 
     private static boolean isUserAdmin(String accessToken, OkHttpClient client, JDA jda) {
         Request request = new Request.Builder()
