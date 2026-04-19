@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.HashSet;
+import java.util.List;
 
 import org.json.JSONObject;
 import org.json.JSONArray;
@@ -23,14 +24,21 @@ import org.json.JSONArray;
 import com.google.gson.Gson;
 
 public class MinecraftSocietyBot {
+
+    // Store the latest Minecraft data in memory
+    private static final Map<String, Object> mcStatus = new java.util.concurrent.ConcurrentHashMap<>();
+    private static final List<Map<String, String>> liveChat = new java.util.concurrent.CopyOnWriteArrayList<>();
+    private static final List<String> webToGameQueue = new java.util.concurrent.CopyOnWriteArrayList<>();
     
     // --- NEW SECURITY ARCHITECTURE ---
     static class SessionData {
         String userId;
+        String username;
         Set<String> adminGuilds; // Only servers this specific user is allowed to edit
         
-        SessionData(String userId, Set<String> adminGuilds) {
+        SessionData(String userId, String username, Set<String> adminGuilds) {
             this.userId = userId;
+            this.username = username;
             this.adminGuilds = adminGuilds;
         }
     }
@@ -139,6 +147,7 @@ public class MinecraftSocietyBot {
                 String accessToken = tokenJson.getString("access_token");
 
                 String userId = getDiscordUserId(accessToken, httpClient);
+                String username = getDiscordUsername(accessToken, httpClient);
                 if (userId == null) { ctx.status(500).result("Failed to fetch Discord user."); return; }
 
                 // SECURE: Fetch only the servers this user is an admin of
@@ -146,7 +155,7 @@ public class MinecraftSocietyBot {
 
                 if (!allowedGuilds.isEmpty()) {
                     String sessionId = java.util.UUID.randomUUID().toString();
-                    activeSessions.put(sessionId, new SessionData(userId, allowedGuilds));
+                    activeSessions.put(sessionId, new SessionData(userId, username, allowedGuilds));
                     ctx.redirect("https://mmuminecraftsociety.co.uk/dashboard.html?session=" + sessionId);
                 } else {
                     ctx.status(403).result("Access Denied: You must be an Admin in a server where the bot is present.");
@@ -287,6 +296,68 @@ public class MinecraftSocietyBot {
 
             ctx.result("Config updated and applied!");
         });
+
+
+        // --- MINECRAFT SYNC ENDPOINTS ---
+
+        // 1. DATA FROM PLUGIN -> BOT
+        app.post("/mc-sync/update", ctx -> {
+            // SECURITY CHECK: Verify the secret key you set
+            if (!"MMU_Soc_7721_x92_SecretSync_!99".equals(ctx.header("X-MC-Auth"))) { 
+                ctx.status(401); 
+                return; 
+            }
+
+            org.json.JSONObject data = new org.json.JSONObject(ctx.body());
+            
+            // Update Global Stats for the website to read
+            mcStatus.put("online", data.getInt("onlinePlayers"));
+            mcStatus.put("max", data.getInt("maxPlayers"));
+            mcStatus.put("day", data.getLong("gameDay"));
+            mcStatus.put("time", data.getLong("gameTime"));
+
+            // Sync Chat Messages coming FROM the Minecraft game
+            if (data.has("newChat")) {
+                org.json.JSONArray newMsgs = data.getJSONArray("newChat");
+                for (int i = 0; i < newMsgs.length(); i++) {
+                    org.json.JSONObject m = newMsgs.getJSONObject(i);
+                    // We use a Map here so it converts easily to JSON for the dashboard
+                    liveChat.add(0, Map.of("user", m.getString("player"), "text", m.getString("content")));
+                }
+                // Keep only the last 50 messages so we don't eat up RAM
+                while (liveChat.size() > 50) liveChat.remove(liveChat.size() - 1);
+            }
+
+            // Send back any messages waiting in the "Queue" from the Website to the Game
+            org.json.JSONArray responseQueue = new org.json.JSONArray(webToGameQueue);
+            webToGameQueue.clear();
+            ctx.json(responseQueue.toString());
+        });
+
+        // 2. DATA FROM BOT -> WEBSITE (The "Pull" endpoint)
+        app.get("/mc-data", ctx -> {
+            ctx.json(Map.of("status", mcStatus, "chat", liveChat));
+        });
+
+        // 3. CHAT FROM WEBSITE -> GAME (Queues a message)
+        app.post("/mc-send-chat", ctx -> {
+            String sessionId = ctx.header("Authorization");
+            if (!activeSessions.containsKey(sessionId)) { ctx.status(401); return; }
+
+            var session = activeSessions.get(sessionId); //
+            
+            // Use the username we ALREADY saved in the session during login
+            String user = session.username != null ? session.username : "Unknown User"; 
+
+            org.json.JSONObject body = new org.json.JSONObject(ctx.body());
+            String message = body.getString("message");
+            
+            webToGameQueue.add("§a[Web] §f" + user + ": " + message); //
+            ctx.status(200);
+        });
+
+
+
     }
 
     private static String getDiscordUserId(String accessToken, OkHttpClient client) {
@@ -294,6 +365,14 @@ public class MinecraftSocietyBot {
         try (Response response = client.newCall(request).execute()) {
             if (!response.isSuccessful() || response.body() == null) return null;
             return new JSONObject(response.body().string()).getString("id");
+        } catch (Exception e) { return null; }
+    }
+
+    private static String getDiscordUsername(String accessToken, OkHttpClient client) {
+        Request request = new Request.Builder().url("https://discord.com/api/users/@me").header("Authorization", "Bearer " + accessToken).build();
+        try (Response response = client.newCall(request).execute()) {
+            if (!response.isSuccessful() || response.body() == null) return null;
+            return new JSONObject(response.body().string()).getString("username");
         } catch (Exception e) { return null; }
     }
 

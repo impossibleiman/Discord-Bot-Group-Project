@@ -365,6 +365,40 @@ td code { background: #08101a; padding: 4px 8px; border-radius: 4px; color: var(
   </div>
 </div>
 
+<div class="section-title">
+  <h2>Live Minecraft Server</h2>
+  <span class="tag">Real-time Sync</span>
+</div>
+
+<div class="status-card" style="margin-bottom: 24px;">
+  <div class="stat">
+    <div class="stat-label">Server Status</div>
+    <div class="stat-value green" id="mc-online-status">● Online</div>
+  </div>
+  <div class="stat">
+    <div class="stat-label">Players</div>
+    <div class="stat-value" id="mc-players">0 / 0</div>
+  </div>
+  <div class="stat">
+    <div class="stat-label">World Time</div>
+    <div class="stat-value" id="mc-time">Day 0 (00:00)</div>
+  </div>
+</div>
+
+<div class="command-box">
+  <div class="sidebar-label" style="margin-bottom: 15px;">Global Chat Feed</div>
+  <div id="mc-chat-box" style="height: 300px; overflow-y: auto; background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 20px; font-family: 'JetBrains Mono', monospace; font-size: 13px; margin-bottom: 18px; line-height: 1.6;">
+    <div style="color: var(--muted)">Connecting to bridge...</div>
+  </div>
+  
+  <div style="display: flex; gap: 12px;">
+    <input type="text" id="mc-chat-input" placeholder="Type a message to the server..." 
+           style="flex: 1; background: var(--surface); border: 1px solid var(--border); color: var(--white); padding: 12px; border-radius: 8px;">
+    <button onclick="sendToGame()" class="btn-invite" style="border: none; cursor: pointer; height: 45px;">Send</button>
+  </div>
+</div>
+
+
 <script>
   // Simple functions to open and close the modal
   function openHelpModal() { document.getElementById('help-modal').classList.add('active'); }
