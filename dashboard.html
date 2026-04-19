@@ -93,6 +93,26 @@
     </div>
 </div>
 
+<div class="card">
+    <h2>Server Settings</h2>
+    <p>Select a server to manage:</p>
+    <select id="guild-selector" onchange="loadServerConfig()">
+        <option value="">-- Choose a Server --</option>
+    </select>
+
+    <div id="settings-form" style="display:none; margin-top: 20px;">
+        <label>Bot Nickname (for this server):</label><br>
+        <input type="text" id="config-nickname" style="width:100%; padding:8px; margin: 10px 0;"><br>
+
+        <label>Welcome Message:</label><br>
+        <textarea id="config-welcome" rows="4" style="width:100%; padding:8px; margin: 10px 0;"></textarea>
+        <p style="font-size: 0.8rem; color: #aaa;">Use <b>$USER</b> for mention and <b>$GUILD</b> for server name.</p>
+
+        <button onclick="saveServerConfig()">Save Settings</button>
+    </div>
+</div>
+
+
 <script src="dashboard.js"></script>
 </body>
 </html>

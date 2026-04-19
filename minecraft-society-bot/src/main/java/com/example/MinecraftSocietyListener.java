@@ -22,51 +22,56 @@ public class MinecraftSocietyListener extends ListenerAdapter {
     // ===== WELCOME + INVITE TRACKING =====
     @Override
     public void onGuildMemberJoin(GuildMemberJoinEvent event) {
-
         if (event.getUser().isBot()) return;
 
         Guild guild = event.getGuild();
+        String guildId = guild.getId();
 
+        // 1. Fetch Modular Config from Main class
+        ServerConfig config = MinecraftSocietyBot.getGuildConfig(guildId);
+
+        // 2. Invite Tracking Logic
         String inviteCode = "Unknown";
         String inviter = "Unknown";
-
         List<Invite> invites = guild.retrieveInvites().complete();
 
         for (Invite invite : invites) {
             int previousUses = inviteUses.getOrDefault(invite.getCode(), 0);
-
             if (invite.getUses() > previousUses) {
                 inviteCode = invite.getCode();
                 inviter = invite.getInviter() != null ? invite.getInviter().getAsTag() : "Unknown";
             }
-
             inviteUses.put(invite.getCode(), invite.getUses());
         }
 
+        // 3. Channel Selection
         var channels = guild.getTextChannelsByName("test-welcome", true);
         if (channels.isEmpty()) return;
-
         var channel = channels.get(0);
 
-        long days = Duration.between(
-                event.getUser().getTimeCreated().toInstant(),
-                Instant.now()
-        ).toDays();
+        // 4. Calculate Account Age
+        long days = Duration.between(event.getUser().getTimeCreated().toInstant(), Instant.now()).toDays();
+        String age = (days < 30) ? days + " days" : (days < 365) ? (days / 30) + " months" : (days / 365) + " years";
 
-        String age;
-        if (days < 30) age = days + " days";
-        else if (days < 365) age = (days / 30) + " months";
-        else age = (days / 365) + " years";
+        // 5. Variable Substitution ($USER, $GUILD)
+        String welcomeTemplate = (config.welcomeMessage != null && !config.welcomeMessage.isEmpty()) 
+                ? config.welcomeMessage 
+                : "Welcome $USER to $GUILD!"; // Fallback default
 
+        String formattedMessage = welcomeTemplate
+                .replace("$USER", event.getUser().getAsMention())
+                .replace("$GUILD", guild.getName());
+
+        // 6. Build the Modular Embed
         EmbedBuilder embed = new EmbedBuilder();
         embed.setColor(Color.GREEN);
-        embed.setTitle("🎉 Welcome to Minecraft Society!");
+        embed.setTitle("🎉 New Society Member!"); 
         embed.setDescription(
-                "Welcome " + event.getUser().getAsMention() + "!\n\n" +
-                        "**Invite**\n" +
-                        "Joined via: `" + inviteCode + "`\n" +
-                        "Invited by: " + inviter + "\n\n" +
-                        "**Account Age**\n" + age
+                formattedMessage + "\n\n" +
+                "**Invite Stats**\n" +
+                "Joined via: `" + inviteCode + "`\n" +
+                "Invited by: **" + inviter + "**\n\n" +
+                "**Account Age**\n" + age
         );
 
         embed.setThumbnail(event.getUser().getAvatarUrl());
@@ -76,44 +81,38 @@ public class MinecraftSocietyListener extends ListenerAdapter {
         channel.sendMessageEmbeds(embed.build()).queue();
     }
 
-    // ===== VERIFY BUTTON CLICK =====
+    // ===== VERIFY BUTTON CLICK (Unchanged) =====
     @Override
     public void onButtonInteraction(ButtonInteractionEvent event) {
-
         if (!event.getComponentId().equals("verify_button")) return;
 
         Guild guild = event.getGuild();
         Member member = event.getMember();
-
         if (guild == null || member == null) return;
 
         var roles = guild.getRolesByName("Member", true);
-
         if (roles.isEmpty()) {
             event.reply("Role 'Member' not found.").setEphemeral(true).queue();
             return;
         }
 
         guild.addRoleToMember(member, roles.get(0)).queue();
-
         event.reply("✅ You now have full access!").setEphemeral(true).queue();
     }
 
-    // ===== VERIFY EMBED =====
+    // ===== VERIFY EMBED (Unchanged) =====
     public void sendVerifyEmbed(Guild guild) {
-
         var channels = guild.getTextChannelsByName("verify", true);
         if (channels.isEmpty()) return;
 
         var channel = channels.get(0);
-
         EmbedBuilder embed = new EmbedBuilder();
         embed.setColor(Color.GREEN);
         embed.setTitle("✅ Verification Required");
         embed.setDescription(
                 "Welcome to **Minecraft Society**!\n\n" +
-                        "Click the button below to unlock the server 🚀\n\n" +
-                        "🔒 You currently have limited access"
+                "Click the button below to unlock the server 🚀\n\n" +
+                "🔒 You currently have limited access"
         );
         embed.setFooter("Minecraft Society • Verification", guild.getIconUrl());
         embed.setTimestamp(Instant.now());

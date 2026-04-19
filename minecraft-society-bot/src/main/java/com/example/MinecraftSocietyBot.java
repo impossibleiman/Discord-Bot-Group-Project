@@ -6,13 +6,47 @@ import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import okhttp3.*;
+
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.json.JSONObject;
+
+import com.google.gson.Gson;
 
 public class MinecraftSocietyBot {
     
     // A simple way to store active sessions (In-memory for now)
     private static final java.util.Map<String, String> activeSessions = new java.util.HashMap<>();
     
+    private static Map<String, ServerConfig> guildConfigs = new HashMap<>();
+    private static final String CONFIG_FILE = "guild_configs.json";
+
+    private static void saveConfigs() {
+        try (FileWriter writer = new FileWriter(CONFIG_FILE)) {
+            new Gson().toJson(guildConfigs, writer);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static void loadConfigs() {
+        File file = new File(CONFIG_FILE);
+        if (file.exists()) {
+            try (FileReader reader = new FileReader(file)) {
+                java.lang.reflect.Type type = new com.google.gson.reflect.TypeToken<Map<String, ServerConfig>>(){}.getType();
+                guildConfigs = new Gson().fromJson(reader, type);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+
     public static void main(String[] args) {
     
         // Get token from .env 
@@ -150,6 +184,55 @@ public class MinecraftSocietyBot {
             String userId = activeSessions.get(sessionId);
             ctx.result("Logged in as User ID: " + userId);
         });
+
+        loadConfigs(); // Load settings when bot starts
+
+        app.get("/config/{guildId}", ctx -> {
+            String sessionId = ctx.header("Authorization"); // We'll send the session ID here
+            if (!activeSessions.containsKey(sessionId)) {
+                ctx.status(401).result("Unauthorized");
+                return;
+            }
+
+            String guildId = ctx.pathParam("guildId");
+            ServerConfig config = guildConfigs.getOrDefault(guildId, new ServerConfig());
+            ctx.json(config);
+        });
+
+        app.post("/config/{guildId}", ctx -> {
+            String sessionId = ctx.header("Authorization");
+            if (!activeSessions.containsKey(sessionId)) {
+                ctx.status(401).result("Unauthorized");
+                return;
+            }
+
+            String guildId = ctx.pathParam("guildId");
+            ServerConfig newConfig = ctx.bodyAsClass(ServerConfig.class);
+            
+            guildConfigs.put(guildId, newConfig);
+            saveConfigs(); // Permanent save!
+
+            // Apply the nickname change in Discord immediately
+            var guild = jdaHolder[0].getGuildById(guildId);
+            if (guild != null) {
+                guild.getSelfMember().modifyNickname(newConfig.nickname).queue();
+            }
+
+            ctx.result("Config updated and applied!");
+        });
+
+
+        app.get("/my-guilds", ctx -> {
+            String sessionId = ctx.header("Authorization");
+            if (!activeSessions.containsKey(sessionId)) { ctx.status(401); return; }
+
+            // Return a list of guilds the bot is in
+            var guilds = jdaHolder[0].getGuilds().stream()
+                .map(g -> Map.of("id", g.getId(), "name", g.getName()))
+                .toList();
+            ctx.json(guilds);
+        });
+
     }
 
     private static String getDiscordUserId(String accessToken, OkHttpClient client) {
@@ -201,4 +284,9 @@ public class MinecraftSocietyBot {
         }
         return false;
     }
+
+
+    public static ServerConfig getGuildConfig(String guildId) {
+    return guildConfigs.getOrDefault(guildId, new ServerConfig());
+}
 }

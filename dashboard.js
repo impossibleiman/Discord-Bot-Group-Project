@@ -66,3 +66,53 @@ function log(msg) {
     out.innerHTML += `<br>> ${msg}`;
     out.scrollTop = out.scrollHeight;
 }
+
+// Add this to your verifySession() success block
+async function loadGuilds() {
+    // This is a simple way to get guilds where the bot and user are both present
+    // For now, we'll fetch from a new endpoint we'll create below
+    const response = await fetch(`${API_BASE}/my-guilds`, {
+        headers: { 'Authorization': localStorage.getItem('admin_session') }
+    });
+    const guilds = await response.json();
+    const selector = document.getElementById('guild-selector');
+    guilds.forEach(g => {
+        let opt = document.createElement('option');
+        opt.value = g.id;
+        opt.innerHTML = g.name;
+        selector.appendChild(opt);
+    });
+}
+
+async function loadServerConfig() {
+    const guildId = document.getElementById('guild-selector').value;
+    if (!guildId) return;
+
+    const response = await fetch(`${API_BASE}/config/${guildId}`, {
+        headers: { 'Authorization': localStorage.getItem('admin_session') }
+    });
+    const config = await response.json();
+    
+    document.getElementById('config-nickname').value = config.nickname || "";
+    document.getElementById('config-welcome').value = config.welcomeMessage || "";
+    document.getElementById('settings-form').style.display = "block";
+}
+
+async function saveServerConfig() {
+    const guildId = document.getElementById('guild-selector').value;
+    const data = {
+        nickname: document.getElementById('config-nickname').value,
+        welcomeMessage: document.getElementById('config-welcome').value
+    };
+
+    const response = await fetch(`${API_BASE}/config/${guildId}`, {
+        method: 'POST',
+        headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': localStorage.getItem('admin_session') 
+        },
+        body: JSON.stringify(data)
+    });
+
+    if (response.ok) alert("Settings saved successfully!");
+}
