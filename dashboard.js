@@ -167,11 +167,6 @@ function renderAliasTable(aliases) {
             </tr>`;
     }
 }
-    
-    if (Object.keys(aliases).length === 0) {
-        tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; padding: 30px; color: #888;">No magic invites found. Use the creator above to generate one.</td></tr>';
-    }
-}
 
 async function addInviteAlias() {
     const guildId = document.getElementById('guild-selector').value;
