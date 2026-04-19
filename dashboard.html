@@ -187,6 +187,13 @@ td code { background: #08101a; padding: 4px 8px; border-radius: 4px; color: var(
 .embed-footer { display: flex; align-items: center; gap: 8px; font-size: 12px; color: #949ba4; margin-top: 8px; display: none; }
 .embed-footer-img { width: 20px; height: 20px; border-radius: 50%; object-fit: cover; display: none; }
 
+.pill {
+  display:inline-flex; align-items:center; gap:5px;
+  background:rgba(251,191,36,.08); border:1px solid rgba(251,191,36,.2);
+  color:#fbbf24; border-radius:999px; padding:3px 10px;
+  font-size:12px; font-family:'JetBrains Mono', monospace;
+}
+
 </style>
 </head>
 <body>
@@ -226,20 +233,23 @@ td code { background: #08101a; padding: 4px 8px; border-radius: 4px; color: var(
     <div id="tab-general" class="tab-content active">
       <div class="command-box">
         <h3>Server Identity</h3>
-        <div class="input-group">
-          <label>Bot Nickname</label>
-          <input type="text" id="config-nickname" placeholder="e.g. Society Bot">
-        </div>
+      <div class="input-group">
+        <label>Bot Nickname</label>
+        <input type="text" id="config-nickname" placeholder="e.g. Society Bot" oninput="updatePreview()">
+      </div>
         <div class="command-box">
   <h3>Welcome Embed Builder</h3>
-  <p style="color: var(--muted); font-size: 14px; margin-bottom: 24px;">Design a rich welcome embed. Available variables: $USER, $GUILD, $MEMBER_COUNT</p>
-
   <div class="embed-builder-grid">
     
     <div class="embed-form">
-    <p style="color: var(--muted); font-size: 13px; margin-bottom: 24px;">
-        Variables: <code>$USER</code> <code>$GUILD</code> <code>$MEMBER_COUNT</code> <code>$INVITE</code> <code>$INVITER</code> <code>$TIME</code>
-    </p>
+    <p style="color: var(--muted); font-size: 13px; margin-bottom: 24px; display: flex; align-items: center; flex-wrap: wrap; gap: 8px;">
+    Variables: 
+    <span class="pill">$USER</span> 
+    <span class="pill">$GUILD</span> 
+    <span class="pill">$MEMBER_COUNT</span> 
+    <span class="pill">$INVITE</span> 
+    <span class="pill">$TIME</span>
+  </p>
 
     <div class="input-group">
         <label>Title</label>
@@ -267,22 +277,27 @@ td code { background: #08101a; padding: 4px 8px; border-radius: 4px; color: var(
     </div>
     </div>
 
-    <div class="embed-preview-container">
+<div class="embed-preview-container">
       <span class="server-bar-label" style="margin-bottom: 16px;">Live Preview</span>
       
       <div class="discord-message-header">
-        <div class="discord-avatar">MS</div>
-        <div class="discord-bot-name">Society Bot <span class="discord-bot-tag">✓ BOT</span></div>
+        <img class="discord-avatar" src="https://cdn.discordapp.com/app-icons/1493768627256688772/92a33a206de225c5086eea041cd0ee77.png" style="object-fit: cover;">
+        
+        <div class="discord-bot-name">
+          <span id="prev-bot-name">Society Bot</span> 
+          <span class="discord-bot-tag">✓ BOT</span>
+        </div>
       </div>
 
       <div class="discord-embed" id="prev-container">
         
         <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+          
           <div style="flex: 1;">
-            </div>
             <div class="embed-title" id="prev-title"></div>
             <div class="embed-description" id="prev-desc">Hello $USER, please read the rules...</div>
           </div>
+          
           <img src="" class="embed-thumbnail" id="prev-thumb">
         </div>
 
@@ -291,10 +306,9 @@ td code { background: #08101a; padding: 4px 8px; border-radius: 4px; color: var(
         <div class="embed-footer" id="prev-footer-wrap">
           <span id="prev-footer-text"></span>
         </div>
-
+    <button class="btn-primary" style="margin-top: 32px;" onclick="saveServerConfig()">Save Identity Settings</button>
       </div>
     </div>
-    <button class="btn-primary" style="margin-top: 32px;" onclick="saveServerConfig()">Save Identity Settings</button>
 
   </div>
 

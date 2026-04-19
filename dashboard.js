@@ -269,6 +269,13 @@ async function deleteAlias(code) {
 }
 
 function updatePreview() {
+    // 0. Bot Nickname Update
+    const nickInput = document.getElementById('config-nickname');
+    const prevBotName = document.getElementById('prev-bot-name');
+    if (prevBotName) {
+        // If the box has text, use it. Otherwise, default to "Society Bot"
+        prevBotName.innerText = (nickInput && nickInput.value.trim() !== '') ? nickInput.value.trim() : 'Society Bot';
+    }
     // 1. Color
     const colorEl = document.getElementById('emb-color');
     const hex = (colorEl ? colorEl.value.trim() : '') || '#1e1f22';
