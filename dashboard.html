@@ -4,7 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Dashboard — Minecraft Society Bot</title>
-<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
 :root {
   --green: #4ade80; --bg: #050a0f; --surface: #0b1420; --card: #0f1e30;
@@ -14,7 +16,7 @@
 
 *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
 body {
-  background: var(--bg); color: var(--text); font-family: 'Syne', sans-serif;
+  background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif;
   min-height: 100vh; overflow-x: hidden;
 }
 body::before {
@@ -43,7 +45,7 @@ header {
   height:calc(100vh - var(--header-h)); background:var(--surface);
   border-right:1px solid var(--border); padding:32px 20px; z-index:100;
 }
-.sidebar-label { font-family:'Space Mono', monospace; font-size:10px; letter-spacing:2px; color:var(--muted); text-transform:uppercase; margin-bottom:10px; padding-left:12px; }
+.sidebar-label { font-family:'JetBrains Mono', monospace; font-size:10px; letter-spacing:2px; color:var(--muted); text-transform:uppercase; margin-bottom:10px; padding-left:12px; }
 .nav-tab {
   display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:8px;
   color:var(--text); text-decoration:none; font-size:14px; font-weight:600;
@@ -59,12 +61,12 @@ main { margin-left:var(--sidebar-w); padding:calc(var(--header-h) + 40px) 60px 8
 
 /* HORIZONTAL SERVER BAR */
 .server-bar-wrapper { margin-bottom: 40px; }
-.server-bar-label { font-family:'Space Mono', monospace; font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:12px; display:block; }
+.server-bar-label { font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:12px; display:block; }
 .server-bar { display:flex; gap:12px; flex-wrap:wrap; }
 .server-pill {
   background:var(--card); border:1px solid var(--border); color:var(--text);
   padding:10px 20px; border-radius:999px; font-weight:600; font-size:14px; cursor:pointer;
-  transition:all .2s; font-family:'Syne', sans-serif; display:flex; align-items:center; gap:8px;
+  transition:all .2s; font-family:'Inter', sans-serif; display:flex; align-items:center; gap:8px;
 }
 .server-pill:hover { border-color:var(--green); color:var(--white); }
 .server-pill.active { background:rgba(74,222,128,.1); border-color:var(--green); color:var(--green); }
@@ -78,10 +80,10 @@ main { margin-left:var(--sidebar-w); padding:calc(var(--header-h) + 40px) 60px 8
 .command-box { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:28px 32px; margin-bottom:24px; }
 .command-box h3 { font-size: 18px; color: var(--white); margin-bottom: 16px; }
 .input-group { margin-bottom: 20px; display: flex; flex-direction: column; gap: 8px; }
-.input-group label { font-family:'Space Mono', monospace; font-size:12px; color:var(--muted); }
+.input-group label { font-family:'JetBrains Mono', monospace; font-size:12px; color:var(--muted); }
 input[type="text"], textarea {
   background: #08101a; border: 1px solid var(--border); color: var(--white);
-  padding: 12px 16px; border-radius: 8px; font-family: 'Space Mono', monospace; font-size: 13px;
+  padding: 12px 16px; border-radius: 8px; font-family: 'JetBrains Mono', monospace; font-size: 13px;
   width: 100%; transition: border-color 0.2s;
 }
 input[type="text"]:focus, textarea:focus { outline: none; border-color: var(--green); }
@@ -90,7 +92,7 @@ textarea { resize: vertical; min-height: 100px; }
 /* BUTTONS */
 .btn-primary {
   background: var(--green); color: #052e16; padding: 10px 20px; border-radius: 8px;
-  font-weight: 700; font-family: 'Syne', sans-serif; border: none; cursor: pointer; transition: all 0.2s;
+  font-weight: 700; font-family: 'Inter', sans-serif; border: none; cursor: pointer; transition: all 0.2s;
 }
 .btn-primary:hover { background: #3bca70; transform: translateY(-1px); }
 .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
@@ -99,9 +101,9 @@ textarea { resize: vertical; min-height: 100px; }
 
 /* TABLE */
 table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-th { text-align: left; padding: 12px; font-family: 'Space Mono', monospace; font-size: 11px; color: var(--muted); text-transform: uppercase; border-bottom: 1px solid var(--border); }
+th { text-align: left; padding: 12px; font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--muted); text-transform: uppercase; border-bottom: 1px solid var(--border); }
 td { padding: 16px 12px; border-bottom: 1px solid var(--border); font-size: 14px; }
-td code { background: #08101a; padding: 4px 8px; border-radius: 4px; color: var(--green); font-family: 'Space Mono', monospace; font-size: 12px; }
+td code { background: #08101a; padding: 4px 8px; border-radius: 4px; color: var(--green); font-family: 'JetBrains Mono', monospace; font-size: 12px; }
 
 /* TOASTS */
 #toast-container { position: fixed; bottom: 30px; right: 30px; display: flex; flex-direction: column; gap: 10px; z-index: 1000; }
@@ -112,6 +114,34 @@ td code { background: #08101a; padding: 4px 8px; border-radius: 4px; color: var(
 @keyframes fadeUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
 @keyframes slideIn { from{opacity:0;transform:translateX(50px)} to{opacity:1;transform:translateX(0)} }
 @keyframes fadeOut { from{opacity:1;transform:translateX(0)} to{opacity:0;transform:translateX(50px)} }
+
+/* MODAL STYLES */
+.help-icon {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 16px; height: 16px; border-radius: 50%; background: rgba(74,222,128,0.1);
+  color: var(--green); font-size: 10px; font-weight: bold; cursor: pointer;
+  margin-left: 8px; border: 1px solid rgba(74,222,128,0.3); transition: all 0.2s;
+}
+.help-icon:hover { background: var(--green); color: #052e16; }
+
+.modal-overlay {
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(5, 10, 15, 0.8); backdrop-filter: blur(4px);
+  display: none; justify-content: center; align-items: center; z-index: 1000;
+  animation: fadeIn 0.2s ease;
+}
+.modal-overlay.active { display: flex; }
+.modal {
+  background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+  padding: 32px; max-width: 400px; width: 100%; position: relative;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+}
+.modal h3 { color: var(--white); margin-bottom: 12px; font-size: 18px; }
+.close-btn {
+  position: absolute; top: 16px; right: 16px; background: none; border: none;
+  color: var(--muted); font-size: 24px; cursor: pointer; transition: color 0.2s;
+}
+.close-btn:hover { color: var(--white); }
 </style>
 </head>
 <body>
@@ -123,11 +153,11 @@ td code { background: #08101a; padding: 4px 8px; border-radius: 4px; color: var(
   </a>
   <div style="display:flex; align-items:center; gap:16px;">
     
-    <div id="bot-status" style="font-family:'Space Mono', monospace; font-size:11px; padding:4px 10px; border-radius:99px; border:1px solid var(--border); color:var(--muted);">
+    <div id="bot-status" style="font-family:'JetBrains Mono', monospace; font-size:11px; padding:4px 10px; border-radius:99px; border:1px solid var(--border); color:var(--muted);">
       Checking Bot...
     </div>
 
-    <div id="session-info" style="font-family: 'Space Mono', monospace; font-size: 12px; color: var(--muted);">Verifying session...</div>
+    <div id="session-info" style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--muted);">Verifying session...</div>
   </div>
 </header>
 
@@ -139,7 +169,10 @@ td code { background: #08101a; padding: 4px 8px; border-radius: 4px; color: var(
 
 <main>
   <div class="server-bar-wrapper">
-    <span class="server-bar-label">Select Server</span>
+    <div style="display: flex; align-items: center; margin-bottom: 12px;">
+      <span class="server-bar-label" style="margin-bottom: 0;">Select Server</span>
+      <span class="help-icon" onclick="openHelpModal()" title="Where is my server?">?</span>
+    </div>
     <div id="server-bar" class="server-bar">
       </div>
   </div>
@@ -188,5 +221,25 @@ td code { background: #08101a; padding: 4px 8px; border-radius: 4px; color: var(
 <div id="toast-container"></div>
 
 <script src="dashboard.js"></script>
+<div class="modal-overlay" id="help-modal" onclick="closeHelpModal()">
+  <div class="modal" onclick="event.stopPropagation()">
+    <button class="close-btn" onclick="closeHelpModal()">&times;</button>
+    <h3>Where is my server?</h3>
+    <p style="color: var(--muted); font-size: 14px; line-height: 1.6; margin-bottom: 16px;">
+      If you don't see your server in the list above, please check the following:
+    </p>
+    <ul style="color: var(--text); font-size: 14px; line-height: 1.8; padding-left: 20px; margin-bottom: 24px;">
+      <li>You must have the <strong>Manage Server</strong> or <strong>Administrator</strong> permission in Discord.</li>
+      <li>The <strong>Minecraft Society Bot</strong> must already be invited and inside the server.</li>
+    </ul>
+    <button class="btn-primary" style="width: 100%;" onclick="closeHelpModal()">Understood</button>
+  </div>
+</div>
+
+<script>
+  // Simple functions to open and close the modal
+  function openHelpModal() { document.getElementById('help-modal').classList.add('active'); }
+  function closeHelpModal() { document.getElementById('help-modal').classList.remove('active'); }
+</script>
 </body>
 </html>
