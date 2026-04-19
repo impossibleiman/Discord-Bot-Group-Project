@@ -410,7 +410,7 @@ async function refreshMinecraftData() {
                     <div style="display:flex; justify-content:space-between;">
                         <span>
                             <span style="color:var(--muted)">${i + 1}.</span>
-                            ${sanitize(p.player)}
+                            ${sanitize(m.user)}
                         </span>
                         <span style="color:var(--green)">${p.value}</span>
                     </div>
@@ -427,7 +427,7 @@ async function refreshMinecraftData() {
                         <div style="display:flex; justify-content:space-between;">
                             <span>
                                 <span style="color:var(--muted)">${i + 1}.</span>
-                                ${sanitize(p.player)}
+                                ${sanitize(m.text)}
                             </span>
                             <span style="color:#ef4444">${p.value}</span>
                         </div>
