@@ -230,13 +230,18 @@ td code { background: #08101a; padding: 4px 8px; border-radius: 4px; color: var(
           <label>Bot Nickname</label>
           <input type="text" id="config-nickname" placeholder="e.g. Society Bot">
         </div>
-    <div class="command-box">
-    <h3>Welcome Embed Builder</h3>
-    <p style="color: var(--muted); font-size: 14px; margin-bottom: 24px;">Design a rich welcome embed. Available variables: $USER, $GUILD, $MEMBER_COUNT</p>
+        <div class="command-box">
+        <h3>Welcome Embed Builder</h3>
+        <p style="color: var(--muted); font-size: 14px; margin-bottom: 24px;">Design a rich welcome embed. Available variables: $USER, $GUILD, $MEMBER_COUNT</p>
 
-    <div class="embed-builder-grid">
+        <div class="embed-builder-grid">
+            
+            <div class="embed-form">
+        <div class="input-group">
+            <label>Bot Nickname</label>
+            <input type="text" id="config-nickname" placeholder="e.g. Society Bot">
+        </div>
         
-        <div class="embed-form">
         <div class="input-group">
             <label>Author Name</label>
             <input type="text" id="emb-author" placeholder="e.g. Welcome to $GUILD!" oninput="updatePreview()">
@@ -268,6 +273,12 @@ td code { background: #08101a; padding: 4px 8px; border-radius: 4px; color: var(
         <div class="input-group" style="margin-bottom: 0;">
             <label>Footer Text</label>
             <input type="text" id="emb-footer" placeholder="You are member #$MEMBER_COUNT" oninput="updatePreview()">
+        </div>
+        </div>
+        
+        </div>
+
+        <button class="btn-primary" id="save-general-btn" style="margin-top: 32px;" onclick="saveServerConfig()">Save Identity Settings</button>
         </div>
         </div>
 

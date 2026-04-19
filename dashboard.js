@@ -103,6 +103,7 @@ function selectServer(guildId, buttonElement) {
     loadServerConfig();
 }
 
+// Load Settings for Selected Server
 async function loadServerConfig() {
     if (!currentGuildId) return;
     const response = await fetch(`${API_BASE}/config/${currentGuildId}`, {
@@ -110,57 +111,70 @@ async function loadServerConfig() {
     });
     const config = await response.json();
     
-    document.getElementById('config-nickname').value = config.nickname || "";
-    
-    // Load Embed Data
-    const embed = config.welcomeEmbed || {};
-    document.getElementById('embed-author-name').value = embed.authorName || "";
-    document.getElementById('embed-author-icon').value = embed.authorIcon || "";
-    document.getElementById('embed-title').value = embed.title || "";
-    document.getElementById('embed-url').value = embed.url || "";
-    document.getElementById('embed-description').value = embed.description || "";
-    document.getElementById('embed-color').value = embed.color || "";
-    document.getElementById('embed-thumbnail').value = embed.thumbnail || "";
-    document.getElementById('embed-image').value = embed.image || "";
-    document.getElementById('embed-footer-text').value = embed.footerText || "";
-    document.getElementById('embed-footer-icon').value = embed.footerIcon || "";
+    // 1. Set Nickname
+    const nickEl = document.getElementById('config-nickname');
+    if (nickEl) nickEl.value = config.nickname || "";
 
+    // 2. Parse Embed Data
+    let embedData = {};
+    try {
+        // Attempt to parse the welcomeMessage as a JSON string (New Format)
+        embedData = JSON.parse(config.welcomeMessage || "{}");
+    } catch (e) {
+        // Fallback if it's the old plain-text format
+        embedData = { desc: config.welcomeMessage || "" };
+    }
+
+    // 3. Populate Embed Fields
+    document.getElementById('emb-author').value = embedData.author || "";
+    document.getElementById('emb-author-icon').value = embedData.authorIcon || "";
+    document.getElementById('emb-title').value = embedData.title || "";
+    document.getElementById('emb-desc').value = embedData.desc || "";
+    document.getElementById('emb-color').value = embedData.color || "";
+    document.getElementById('emb-thumb').value = embedData.thumb || "";
+    document.getElementById('emb-image').value = embedData.image || "";
+    document.getElementById('emb-footer').value = embedData.footer || "";
+
+    // Render tables and preview
     renderAliasTable(config.inviteAliases || {});
-    updatePreview();
+    updatePreview(); 
 }
 
-// Save Settings (Now with Embed Builder)
+// Save Settings
 async function saveServerConfig() {
     if (!currentGuildId) return;
     const token = localStorage.getItem('admin_session');
     const btn = document.getElementById('save-general-btn');
     
-    btn.innerText = "Saving...";
-    btn.disabled = true;
+    if (btn) {
+        btn.innerText = "Saving...";
+        btn.disabled = true;
+    }
     
     try {
-        // 1. Fetch current config to safely preserve magic invite aliases
+        // Fetch current config to avoid overwriting unrelated data
         const getRes = await fetch(`${API_BASE}/config/${currentGuildId}`, { headers: { 'Authorization': token } });
         const config = await getRes.json();
 
-        // 2. Set the bot nickname
-        config.nickname = document.getElementById('config-nickname').value;
+        // 1. Grab Nickname
+        const nickEl = document.getElementById('config-nickname');
+        if (nickEl) config.nickname = nickEl.value;
 
-        // 3. Package the complete Embed Builder data
-        config.welcomeEmbed = {
-            authorName: document.getElementById('embed-author-name').value.trim(),
-            authorIcon: document.getElementById('embed-author-icon').value.trim(),
-            title: document.getElementById('embed-title').value.trim(),
-            url: document.getElementById('embed-url').value.trim(),
-            description: document.getElementById('embed-description').value.trim(),
-            color: document.getElementById('embed-color').value.trim(),
-            thumbnail: document.getElementById('embed-thumbnail').value.trim(),
-            image: document.getElementById('embed-image').value.trim(),
-            footerText: document.getElementById('embed-footer-text').value.trim(),
-            footerIcon: document.getElementById('embed-footer-icon').value.trim()
+        // 2. Package all Embed Fields into a single JSON object
+        const embedData = {
+            author: document.getElementById('emb-author').value,
+            authorIcon: document.getElementById('emb-author-icon').value,
+            title: document.getElementById('emb-title').value,
+            desc: document.getElementById('emb-desc').value,
+            color: document.getElementById('emb-color').value,
+            thumb: document.getElementById('emb-thumb').value,
+            image: document.getElementById('emb-image').value,
+            footer: document.getElementById('emb-footer').value
         };
 
-        // 4. Send the updated config to the Java Bot
+        // Serialize and store it in the existing welcomeMessage field
+        config.welcomeMessage = JSON.stringify(embedData);
+
         const postRes = await fetch(`${API_BASE}/config/${currentGuildId}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Authorization': token },
@@ -168,15 +182,17 @@ async function saveServerConfig() {
         });
 
         if (postRes.ok) {
-            showToast("Embed settings saved successfully!");
+            showToast("Identity settings saved successfully!");
         } else {
             showToast("Failed to save settings.", "error");
         }
     } catch (err) {
         showToast("Network error.", "error");
     } finally {
-        btn.innerText = "Save Identity Settings";
-        btn.disabled = false;
+        if (btn) {
+            btn.innerText = "Save Identity Settings";
+            btn.disabled = false;
+        }
     }
 }
 
