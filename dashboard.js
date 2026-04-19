@@ -353,57 +353,61 @@ function updatePreview() {
     }
 }
 
-// Function to update the dashboard with live Minecraft data
+// Ensure this helper is at the very top of your file
+function sanitize(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+}
+
 async function refreshMinecraftData() {
     try {
         const res = await fetch(`${API_BASE}/mc-data`);
         if (!res.ok) throw new Error("Offline");
         
+        // This is the variable the error was looking for
         const data = await res.json();
 
-        // 1. Update Stats
+        // 1. Update Basic Stats
         document.getElementById('mc-online-status').innerText = "● Online";
-        document.getElementById('mc-online-status').style.color = "var(--green)";
         document.getElementById('mc-players').innerText = `${data.status.online || 0} / ${data.status.max || 0}`;
 
-        // 2. Format World Time (Ticks to HH:MM)
         const ticks = data.status.time || 0;
         const hours = Math.floor((ticks / 1000 + 6) % 24);
         const minutes = Math.floor((ticks % 1000) * 0.06);
         const timeStr = `${hours}:${minutes < 10 ? '0' : ''}${minutes}`;
         document.getElementById('mc-time').innerText = `Day ${data.status.day || 0} (${timeStr})`;
 
-        // 3. Update Chat Feed
+        // 2. Update Chat (Your screenshot shows this part works!)
         const chatBox = document.getElementById('mc-chat-box');
         if (data.chat && data.chat.length > 0) {
-        chatBox.innerHTML = data.chat.map(m => `
-            <div style="margin-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.03); padding-bottom: 5px;">
-                <span class="pill" style="background: rgba(74, 222, 128, 0.1); color: var(--green); border: 1px solid rgba(74, 222, 128, 0.2);">
-                    ${escapeHTML(m.user)}
-                </span> 
-                <span style="color: var(--white); margin-left: 8px;">${escapeHTML(m.text)}</span>
-            </div>
-        `).join('');
-        } else {
-            chatBox.innerHTML = '<div style="color: var(--muted); text-align: center; margin-top: 100px;">Waiting for in-game activity...</div>';
+            chatBox.innerHTML = data.chat.map(m => `
+                <div style="margin-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.03); padding-bottom: 5px;">
+                    <span class="pill" style="background: rgba(74, 222, 128, 0.1); color: var(--green); border: 1px solid rgba(74, 222, 128, 0.2);">
+                        ${sanitize(m.user)}
+                    </span> 
+                    <span style="color: var(--white); margin-left: 8px;">${sanitize(m.text)}</span>
+                </div>
+            `).join('');
         }
+
+        // 3. Update Leaderboards (MOVE THIS INSIDE THE FUNCTION)
+        if (data.status.leaderboards) {
+            const mobs = data.status.leaderboards.mob_kills || [];
+            document.getElementById('leaderboard-mobs').innerHTML = mobs.length > 0 
+                ? mobs.map((p, i) => `<div><span style="color:var(--muted)">${i+1}.</span> ${sanitize(p)}</div>`).join('')
+                : "No data yet.";
+
+            const deaths = data.status.leaderboards.deaths || [];
+            document.getElementById('leaderboard-deaths').innerHTML = deaths.length > 0 
+                ? deaths.map((p, i) => `<div><span style="color:var(--muted)">${i+1}.</span> ${sanitize(p)}</div>`).join('')
+                : "No data yet.";
+        }
+        
     } catch (e) {
+        console.error("Sync Error:", e);
         document.getElementById('mc-online-status').innerText = "○ Offline";
-        document.getElementById('mc-online-status').style.color = "var(--muted)";
     }
-
-    if (data.status.leaderboards) {
-        const mobs = data.status.leaderboards.mob_kills || [];
-        document.getElementById('leaderboard-mobs').innerHTML = mobs.length > 0 
-            ? mobs.map((p, i) => `<div>${i+1}. ${p}</div>`).join('')
-            : "No data yet";
-
-        const deaths = data.status.leaderboards.deaths || [];
-        document.getElementById('leaderboard-deaths').innerHTML = deaths.length > 0 
-            ? deaths.map((p, i) => `<div>${i+1}. ${p}</div>`).join('')
-            : "No data yet";
-    }
-
 }
 
 // Function to send a message from the Website to Minecraft
