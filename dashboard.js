@@ -140,8 +140,15 @@ function renderAliasTable(aliases) {
     const tbody = document.getElementById('alias-list');
     tbody.innerHTML = "";
     
-    // Sort by the Alias Name (the value at index 1)
-    const sortedEntries = Object.entries(aliases).sort((a, b) => a.localeCompare(b));
+    if (!aliases || Object.keys(aliases).length === 0) {
+        tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; padding: 30px; color: #888;">No magic invites found. Use the creator above to generate one.</td></tr>';
+        return;
+    }
+
+    // Correct sorting logic: a and b are the Alias Name strings
+    const sortedEntries = Object.entries(aliases).sort((a, b) => {
+        return String(a).localeCompare(String(b));
+    });
 
     for (const [code, alias] of sortedEntries) {
         tbody.innerHTML += `
@@ -159,6 +166,7 @@ function renderAliasTable(aliases) {
                 </td>
             </tr>`;
     }
+}
     
     if (Object.keys(aliases).length === 0) {
         tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; padding: 30px; color: #888;">No magic invites found. Use the creator above to generate one.</td></tr>';
