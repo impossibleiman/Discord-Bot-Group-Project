@@ -218,6 +218,68 @@ public class MinecraftSocietyBot {
             ctx.future(() -> future);
         });
 
+        app.delete("/delete-invite/{guildId}/{code}", ctx -> {
+            String sessionId = ctx.header("Authorization");
+            if (!activeSessions.containsKey(sessionId)) {
+                ctx.status(401).result("Unauthorized");
+                return;
+            }
+
+            String guildId = ctx.pathParam("guildId");
+            String code = ctx.pathParam("code");
+
+            // FIX: The method is Invite.resolve(), not retrieve()
+            net.dv8tion.jda.api.entities.Invite.resolve(jdaHolder[0], code).queue(invite -> {
+                invite.delete().queue(
+                    success -> System.out.println("Deleted invite " + code + " from Discord."),
+                    error -> System.err.println("Failed to delete from Discord: " + error.getMessage())
+                );
+            }, throwable -> {
+                System.err.println("Invite " + code + " not found or already deleted on Discord.");
+            });
+
+            // Remove the alias from your internal configuration
+            ServerConfig config = guildConfigs.get(guildId);
+            if (config != null && config.inviteAliases != null) {
+                config.inviteAliases.remove(code);
+                saveConfigs();
+                ctx.result("Invite removed from dashboard and Discord.");
+            } else {
+                ctx.status(404).result("Invite not found in configuration.");
+            }
+        });
+
+        app.post("/config/{guildId}", ctx -> {
+            String sessionId = ctx.header("Authorization");
+            if (!activeSessions.containsKey(sessionId)) {
+                ctx.status(401).result("Unauthorized");
+                return;
+            }
+
+            String guildId = ctx.pathParam("guildId");
+            ServerConfig newConfig = ctx.bodyAsClass(ServerConfig.class);
+            
+            // --- THE MISSING SAFETY CHECK ---
+            // Prevent existing aliases from being wiped if the dashboard sends an incomplete object
+            ServerConfig existing = guildConfigs.get(guildId);
+            if (existing != null && (newConfig.inviteAliases == null || newConfig.inviteAliases.isEmpty())) {
+                newConfig.inviteAliases = existing.inviteAliases;
+            }
+            // ---------------------------------
+
+            guildConfigs.put(guildId, newConfig);
+            saveConfigs(); // Permanent save!
+
+            // Apply the nickname change in Discord immediately
+            var guild = jdaHolder[0].getGuildById(guildId);
+            if (guild != null && newConfig.nickname != null && !newConfig.nickname.trim().isEmpty()) {
+                guild.getSelfMember().modifyNickname(newConfig.nickname).queue();
+            }
+
+            ctx.result("Config updated and applied!");
+        });
+
+
         app.get("/test-env", ctx -> {
             String clientId = dotenv.get("DISCORD_CLIENT_ID");
             

@@ -202,14 +202,31 @@ async function addInviteAlias() {
 
 async function deleteAlias(code) {
     const guildId = document.getElementById('guild-selector').value;
-    const response = await fetch(`${API_BASE}/config/${guildId}`, {
-        headers: { 'Authorization': localStorage.getItem('admin_session') }
-    });
-    const config = await response.json();
-    
-    delete config.inviteAliases[code];
-    await saveFullConfig(guildId, config);
-    loadServerConfig();
+    if (!confirm("Are you sure you want to delete this invite? It will be revoked on Discord as well.")) {
+        return;
+    }
+
+    const token = localStorage.getItem('admin_session');
+    log("Deleting invite: " + code);
+
+    try {
+        const response = await fetch(`${API_BASE}/delete-invite/${guildId}/${code}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': token }
+        });
+
+        if (response.ok) {
+            log("Successfully deleted invite.");
+            // Refresh the table to show it's gone
+            loadServerConfig();
+        } else {
+            const error = await response.text();
+            alert("Error: " + error);
+        }
+    } catch (err) {
+        log("Failed to communicate with the bot to delete the invite.");
+        console.error(err);
+    }
 }
 
 // Helper to save the whole config object
