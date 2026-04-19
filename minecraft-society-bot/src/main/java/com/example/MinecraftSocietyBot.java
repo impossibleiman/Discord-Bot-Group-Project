@@ -26,7 +26,6 @@ import com.google.gson.Gson;
 public class MinecraftSocietyBot {
 
     // Store the latest Minecraft data in memory
-    private static final Map<String, Object> mcStatus = new java.util.concurrent.ConcurrentHashMap<>();
     private static final List<Map<String, String>> liveChat = new java.util.concurrent.CopyOnWriteArrayList<>();
     private static final List<String> webToGameQueue = new java.util.concurrent.CopyOnWriteArrayList<>();
     
@@ -302,62 +301,55 @@ public class MinecraftSocietyBot {
 
         // 1. DATA FROM PLUGIN -> BOT
         app.post("/mc-sync/update", ctx -> {
-            if (!"MMU_Soc_7721_x92_SecretSync_!99".equals(ctx.header("X-MC-Auth"))) { 
-                ctx.status(401); return; 
-            }
+    if (!"MMU_Soc_7721_x92_SecretSync_!99".equals(ctx.header("X-MC-Auth"))) { 
+        ctx.status(401); return; 
+    }
 
-            org.json.JSONObject data = new org.json.JSONObject(ctx.body());
-            
-            // Update Stats
-            mcStatus.put("online", data.getInt("onlinePlayers"));
-            mcStatus.put("max", data.getInt("maxPlayers"));
-            mcStatus.put("day", data.getLong("gameDay"));
-            mcStatus.put("time", data.getLong("gameTime"));
+    org.json.JSONObject data = new org.json.JSONObject(ctx.body());
+    String timestamp = java.time.LocalTime.now().format(java.time.format.DateTimeFormatter.ofPattern("HH:mm"));
 
-            // NEW: Save leaderboards if they exist
-            if (data.has("leaderboards")) {
-                mcStatus.put("leaderboards", data.getJSONObject("leaderboards").toMap());
-            }
+    if (data.has("newChat")) {
+        org.json.JSONArray newMsgs = data.getJSONArray("newChat");
+        for (int i = 0; i < newMsgs.length(); i++) {
+            org.json.JSONObject m = newMsgs.getJSONObject(i);
+            // Added "time" key here
+            liveChat.add(0, Map.of(
+                "user", m.getString("player"), 
+                "text", m.getString("content"),
+                "time", timestamp
+            ));
+        }
+        while (liveChat.size() > 50) liveChat.remove(liveChat.size() - 1);
+    }
 
-            // Sync Chat Messages coming FROM the Minecraft game
-            if (data.has("newChat")) {
-                org.json.JSONArray newMsgs = data.getJSONArray("newChat");
-                for (int i = 0; i < newMsgs.length(); i++) {
-                    org.json.JSONObject m = newMsgs.getJSONObject(i);
-                    // We use a Map here so it converts easily to JSON for the dashboard
-                    liveChat.add(0, Map.of("user", m.getString("player"), "text", m.getString("content")));
-                }
-                // Keep only the last 50 messages so we don't eat up RAM
-                while (liveChat.size() > 50) liveChat.remove(liveChat.size() - 1);
-            }
+    org.json.JSONArray responseQueue = new org.json.JSONArray(webToGameQueue);
+    webToGameQueue.clear();
+    ctx.json(responseQueue.toString());
+});
 
-            // Send back any messages waiting in the "Queue" from the Website to the Game
-            org.json.JSONArray responseQueue = new org.json.JSONArray(webToGameQueue);
-            webToGameQueue.clear();
-            ctx.json(responseQueue.toString());
-        });
+// 2. CHAT FROM WEBSITE -> GAME
+app.post("/mc-send-chat", ctx -> {
+    String sessionId = ctx.header("Authorization");
+    if (!activeSessions.containsKey(sessionId)) { ctx.status(401); return; }
 
-        // 2. DATA FROM BOT -> WEBSITE (The "Pull" endpoint)
-        app.get("/mc-data", ctx -> {
-            ctx.json(Map.of("status", mcStatus, "chat", liveChat));
-        });
+    var session = activeSessions.get(sessionId);
+    String user = session.username != null ? session.username : "Unknown User"; 
+    org.json.JSONObject body = new org.json.JSONObject(ctx.body());
+    String message = body.getString("message");
+    String timestamp = java.time.LocalTime.now().format(java.time.format.DateTimeFormatter.ofPattern("HH:mm"));
 
-        // 3. CHAT FROM WEBSITE -> GAME (Queues a message)
-        app.post("/mc-send-chat", ctx -> {
-            String sessionId = ctx.header("Authorization");
-            if (!activeSessions.containsKey(sessionId)) { ctx.status(401); return; }
+    // Send to Minecraft queue
+    webToGameQueue.add("§a[Web] §f" + user + ": " + message);
 
-            var session = activeSessions.get(sessionId); //
-            
-            // Use the username we ALREADY saved in the session during login
-            String user = session.username != null ? session.username : "Unknown User"; 
+    // NEW: Add directly to web chat list so it shows on the dashboard immediately
+    liveChat.add(0, Map.of(
+        "user", user + " (Web)", 
+        "text", message,
+        "time", timestamp
+    ));
 
-            org.json.JSONObject body = new org.json.JSONObject(ctx.body());
-            String message = body.getString("message");
-            
-            webToGameQueue.add("§a[Web] §f" + user + ": " + message); //
-            ctx.status(200);
-        });
+    ctx.status(200);
+});
 
 
 
