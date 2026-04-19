@@ -142,6 +142,51 @@ td code { background: #08101a; padding: 4px 8px; border-radius: 4px; color: var(
   color: var(--muted); font-size: 24px; cursor: pointer; transition: color 0.2s;
 }
 .close-btn:hover { color: var(--white); }
+
+/* EMBED BUILDER GRID */
+.embed-builder-grid { 
+  display: grid; 
+  grid-template-columns: 1fr 1fr; 
+  gap: 40px; 
+  align-items: start; 
+}
+
+@media (max-width: 960px) { 
+  .embed-builder-grid { grid-template-columns: 1fr; } 
+}
+
+/* LIVE DISCORD PREVIEW STYLES */
+.embed-preview-container {
+  background: #313338; /* Exact Discord background */
+  border-radius: 8px;
+  padding: 16px;
+  position: sticky;
+  top: 100px; /* Keeps the preview in view when scrolling down the inputs */
+}
+
+.discord-message-header { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+.discord-avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--green); display: flex; align-items: center; justify-content: center; color: #052e16; font-weight: bold; }
+.discord-bot-name { color: #f2f3f5; font-size: 16px; font-weight: 600; display: flex; align-items: center; gap: 6px; }
+.discord-bot-tag { background: #5865F2; color: white; font-size: 10px; padding: 2px 4px; border-radius: 3px; font-weight: 600; text-transform: uppercase; }
+
+.discord-embed {
+  background: #2b2d31;
+  border-radius: 4px;
+  border-left: 4px solid #1e1f22;
+  padding: 12px 16px 16px 16px;
+  display: flex; flex-direction: column; gap: 8px;
+  max-width: 432px; margin-left: 52px;
+}
+
+.embed-author { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; color: #ffffff; display: none; }
+.embed-author-img { width: 24px; height: 24px; border-radius: 50%; object-fit: cover; display: none; }
+.embed-title { font-size: 16px; font-weight: 700; color: #00a8fc; display: none; }
+.embed-description { font-size: 14px; line-height: 1.375; color: #dbdee1; white-space: pre-wrap; }
+.embed-main-image { max-width: 100%; border-radius: 4px; margin-top: 8px; display: none; }
+.embed-thumbnail { width: 80px; height: 80px; border-radius: 4px; object-fit: cover; display: none; float: right; margin-left: 16px; }
+.embed-footer { display: flex; align-items: center; gap: 8px; font-size: 12px; color: #949ba4; margin-top: 8px; display: none; }
+.embed-footer-img { width: 20px; height: 20px; border-radius: 50%; object-fit: cover; display: none; }
+
 </style>
 </head>
 <body>
@@ -185,63 +230,83 @@ td code { background: #08101a; padding: 4px 8px; border-radius: 4px; color: var(
           <label>Bot Nickname</label>
           <input type="text" id="config-nickname" placeholder="e.g. Society Bot">
         </div>
-        <div class="command-box">
-        <h3>Welcome Embed Builder</h3>
-        <p style="color: var(--muted); font-size: 14px; margin-bottom: 16px;">
-            Design a rich welcome embed. Available variables: <code>$USER</code>, <code>$GUILD</code>, <code>$MEMBER_COUNT</code>
-        </p>
+    <div class="command-box">
+    <h3>Welcome Embed Builder</h3>
+    <p style="color: var(--muted); font-size: 14px; margin-bottom: 24px;">Design a rich welcome embed. Available variables: $USER, $GUILD, $MEMBER_COUNT</p>
 
-        <div class="property-grid" style="grid-template-columns: 1fr 1fr; gap: 16px;">
-            <div class="input-group">
-                <label>Author Name</label>
-                <input type="text" id="embed-author-name" placeholder="e.g. Welcome to $GUILD!">
-                </div>
-                <div class="input-group">
-                <label>Author Icon URL</label>
-                <input type="text" id="embed-author-icon" placeholder="https://...">
-                </div>
-                
-                <div class="input-group">
-                <label>Title</label>
-                <input type="text" id="embed-title" placeholder="Main header text">
-                </div>
-                <div class="input-group">
-                <label>Title URL</label>
-                <input type="text" id="embed-url" placeholder="Makes the title clickable">
-                </div>
-
-                <div class="input-group" style="grid-column: 1 / -1;">
-                <label>Description (Required)</label>
-                <textarea id="embed-description" placeholder="Hello $USER, please read the rules..."></textarea>
-                </div>
-
-                <div class="input-group">
-                <label>Sidebar Color (Hex)</label>
-                <input type="text" id="embed-color" placeholder="#4ade80">
-                </div>
-                <div class="input-group">
-                <label>Thumbnail URL (Top Right)</label>
-                <input type="text" id="embed-thumbnail" placeholder="https://...">
-                </div>
-
-                <div class="input-group" style="grid-column: 1 / -1;">
-                <label>Main Image URL (Bottom)</label>
-                <input type="text" id="embed-image" placeholder="https://...">
-                </div>
-
-                <div class="input-group">
-                <label>Footer Text</label>
-                <input type="text" id="embed-footer-text" placeholder="You are member #$MEMBER_COUNT">
-                </div>
-                <div class="input-group">
-                <label>Footer Icon URL</label>
-                <input type="text" id="embed-footer-icon" placeholder="https://...">
-                </div>
-            </div>
+    <div class="embed-builder-grid">
+        
+        <div class="embed-form">
+        <div class="input-group">
+            <label>Author Name</label>
+            <input type="text" id="emb-author" placeholder="e.g. Welcome to $GUILD!" oninput="updatePreview()">
         </div>
-        <button class="btn-primary" id="save-general-btn" onclick="saveServerConfig()">Save Identity Settings</button>
-      </div>
+        <div class="input-group">
+            <label>Author Icon URL</label>
+            <input type="text" id="emb-author-icon" placeholder="https://..." oninput="updatePreview()">
+        </div>
+        <div class="input-group">
+            <label>Title</label>
+            <input type="text" id="emb-title" placeholder="Main header text" oninput="updatePreview()">
+        </div>
+        <div class="input-group">
+            <label>Description (Required)</label>
+            <textarea id="emb-desc" placeholder="Hello $USER, please read the rules..." oninput="updatePreview()"></textarea>
+        </div>
+        <div class="input-group">
+            <label>Sidebar Color (Hex)</label>
+            <input type="text" id="emb-color" placeholder="#4ade80" oninput="updatePreview()">
+        </div>
+        <div class="input-group">
+            <label>Thumbnail URL (Top Right)</label>
+            <input type="text" id="emb-thumb" placeholder="https://..." oninput="updatePreview()">
+        </div>
+        <div class="input-group">
+            <label>Main Image URL (Bottom)</label>
+            <input type="text" id="emb-image" placeholder="https://..." oninput="updatePreview()">
+        </div>
+        <div class="input-group" style="margin-bottom: 0;">
+            <label>Footer Text</label>
+            <input type="text" id="emb-footer" placeholder="You are member #$MEMBER_COUNT" oninput="updatePreview()">
+        </div>
+        </div>
+
+        <div class="embed-preview-container">
+        <span class="server-bar-label" style="margin-bottom: 16px;">Live Preview</span>
+        
+        <div class="discord-message-header">
+            <div class="discord-avatar">MS</div>
+            <div class="discord-bot-name">Society Bot <span class="discord-bot-tag">✓ BOT</span></div>
+        </div>
+
+        <div class="discord-embed" id="prev-container">
+            
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+            <div style="flex: 1;">
+                <div class="embed-author" id="prev-author-wrap">
+                <img src="" class="embed-author-img" id="prev-author-icon">
+                <span id="prev-author-text"></span>
+                </div>
+                <div class="embed-title" id="prev-title"></div>
+                <div class="embed-description" id="prev-desc">Hello $USER, please read the rules...</div>
+            </div>
+            <img src="" class="embed-thumbnail" id="prev-thumb">
+            </div>
+
+            <img src="" class="embed-main-image" id="prev-image">
+
+            <div class="embed-footer" id="prev-footer-wrap">
+            <span id="prev-footer-text"></span>
+            </div>
+
+        </div>
+        </div>
+
     </div>
+
+    <button class="btn-primary" style="margin-top: 32px;" onclick="saveServerConfig()">Save Identity Settings</button>
+    </div>    
+</div>
 
     <div id="tab-invites" class="tab-content">
       <div class="command-box">

@@ -91,7 +91,7 @@ public class MinecraftSocietyBot {
             for (Guild guild : jdaHolder.getGuilds()) {
                 // Check for permission before trying to fetch invites
                 if (guild.getSelfMember().hasPermission(net.dv8tion.jda.api.Permission.MANAGE_SERVER)) {
-                    listener.updateInviteCache(guild);
+                    updateInviteCache(guild);
                 } else {
                     System.err.println("⚠️ Skipping invite cache for " + guild.getName() + " (Missing MANAGE_SERVER permission)");
                 }
@@ -325,5 +325,21 @@ public class MinecraftSocietyBot {
 
     public static ServerConfig getGuildConfig(String guildId) {
         return guildConfigs.getOrDefault(guildId, new ServerConfig());
+    }
+
+    public static void updateInviteCache(net.dv8tion.jda.api.entities.Guild guild) {
+        // Double-check permissions just to be safe
+        if (guild.getSelfMember().hasPermission(net.dv8tion.jda.api.Permission.MANAGE_SERVER)) {
+            guild.retrieveInvites().queue(
+                invites -> {
+                    java.util.Map<String, Integer> cache = new java.util.HashMap<>();
+                    for (net.dv8tion.jda.api.entities.Invite invite : invites) {
+                        cache.put(invite.getCode(), invite.getUses());
+                    }
+                    System.out.println("✅ Invite cache updated for: " + guild.getName());
+                },
+                error -> System.err.println("Failed to cache invites for " + guild.getName() + ": " + error.getMessage())
+            );
+        }
     }
 }

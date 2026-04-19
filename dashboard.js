@@ -126,6 +126,7 @@ async function loadServerConfig() {
     document.getElementById('embed-footer-icon').value = embed.footerIcon || "";
 
     renderAliasTable(config.inviteAliases || {});
+    updatePreview();
 }
 
 // Save Settings (Now with Embed Builder)
@@ -286,5 +287,57 @@ async function deleteAlias(code) {
         }
     } catch (err) {
         showToast("Failed to connect to server.", "error");
+    }
+}
+
+function updatePreview() {
+    // 1. Color
+    const hex = document.getElementById('emb-color').value.trim() || '#1e1f22';
+    document.getElementById('prev-container').style.borderLeftColor = hex;
+
+    // 2. Author
+    const authorTxt = document.getElementById('emb-author').value.trim();
+    const authorIco = document.getElementById('emb-author-icon').value.trim();
+    const authorWrap = document.getElementById('prev-author-wrap');
+    if (authorTxt) {
+        authorWrap.style.display = 'flex';
+        document.getElementById('prev-author-text').innerText = authorTxt;
+        const imgEl = document.getElementById('prev-author-icon');
+        if (authorIco) { imgEl.src = authorIco; imgEl.style.display = 'block'; }
+        else { imgEl.style.display = 'none'; }
+    } else {
+        authorWrap.style.display = 'none';
+    }
+
+    // 3. Title
+    const title = document.getElementById('emb-title').value.trim();
+    const titleEl = document.getElementById('prev-title');
+    if (title) { titleEl.style.display = 'block'; titleEl.innerText = title; }
+    else { titleEl.style.display = 'none'; }
+
+    // 4. Description
+    const desc = document.getElementById('emb-desc').value.trim();
+    document.getElementById('prev-desc').innerText = desc || 'Hello $USER, please read the rules...';
+
+    // 5. Thumbnail
+    const thumb = document.getElementById('emb-thumb').value.trim();
+    const thumbEl = document.getElementById('prev-thumb');
+    if (thumb) { thumbEl.src = thumb; thumbEl.style.display = 'block'; }
+    else { thumbEl.style.display = 'none'; }
+
+    // 6. Main Image
+    const img = document.getElementById('emb-image').value.trim();
+    const imgEl = document.getElementById('prev-image');
+    if (img) { imgEl.src = img; imgEl.style.display = 'block'; }
+    else { imgEl.style.display = 'none'; }
+
+    // 7. Footer
+    const footerTxt = document.getElementById('emb-footer').value.trim();
+    const footerWrap = document.getElementById('prev-footer-wrap');
+    if (footerTxt) {
+        footerWrap.style.display = 'flex';
+        document.getElementById('prev-footer-text').innerText = footerTxt;
+    } else {
+        footerWrap.style.display = 'none';
     }
 }
