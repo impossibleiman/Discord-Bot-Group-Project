@@ -196,16 +196,12 @@ async function checkBotStatus() {
         if (response.ok) {
             statusEl.innerText = "● Bot Online";
             statusEl.style.color = "var(--green)";
-            statusEl.style.background = "rgba(74,222,128,.1)";
-            statusEl.style.borderColor = "rgba(74,222,128,.25)";
         } else {
             throw new Error("Bad status");
         }
     } catch (err) {
         statusEl.innerText = "● Bot Offline";
         statusEl.style.color = "#e74c3c";
-        statusEl.style.background = "rgba(231,76,60,.1)";
-        statusEl.style.borderColor = "rgba(231,76,60,.25)";
     }
 }
 
