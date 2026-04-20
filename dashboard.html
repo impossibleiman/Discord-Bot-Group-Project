@@ -44,7 +44,9 @@ header {
   position:fixed; top:var(--header-h); left:0; width:var(--sidebar-w);
   height:calc(100vh - var(--header-h)); background:var(--surface);
   border-right:1px solid var(--border); padding:32px 20px; z-index:100;
+  overflow-y:auto;
 }
+.sidebar-section { margin-bottom: 26px; }
 .sidebar-label { font-family:'JetBrains Mono', monospace; font-size:10px; letter-spacing:2px; color:var(--muted); text-transform:uppercase; margin-bottom:10px; padding-left:12px; }
 .nav-tab {
   display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:8px;
@@ -56,11 +58,38 @@ header {
 .sidebar-dot { width:6px; height:6px; border-radius:50%; background:var(--muted); flex-shrink:0; transition:background .2s; }
 .nav-tab:hover .sidebar-dot, .nav-tab.active .sidebar-dot { background:var(--green); box-shadow:0 0 6px var(--green); }
 
+.sidebar-help-row {
+  display:flex;
+  align-items:center;
+  margin-bottom:10px;
+}
+
+.guild-hint {
+  font-size:12px;
+  color:var(--muted);
+  margin:0 0 10px 12px;
+}
+
+.guild-list {
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+
+.server-pill {
+  width:100%;
+  background:var(--card); border:1px solid var(--border); color:var(--text);
+  padding:10px 12px; border-radius:10px; font-weight:600; font-size:13px; cursor:pointer;
+  transition:all .2s; font-family:'Inter', sans-serif; display:flex; align-items:center; gap:8px;
+  text-align:left;
+}
+.server-pill:hover { border-color:var(--green); color:var(--white); }
+.server-pill.active { background:rgba(74,222,128,.1); border-color:var(--green); color:var(--green); }
+.server-pill.active::before { content:''; width:8px; height:8px; border-radius:50%; background:var(--green); box-shadow:0 0 8px var(--green); }
+
 /* MAIN CONTENT */
 main { margin-left:var(--sidebar-w); padding:calc(var(--header-h) + 40px) 60px 80px; position:relative; z-index:1; }
 
-/* HORIZONTAL SERVER BAR */
-.server-bar-wrapper { margin-bottom: 40px; }
 .server-bar-label, .sidebar-label {
   font-family: 'JetBrains Mono', monospace;
   font-size: 12px;           /* Increased from 10px */
@@ -69,19 +98,154 @@ main { margin-left:var(--sidebar-w); padding:calc(var(--header-h) + 40px) 60px 8
   color: #94a3b8;            /* Brightened from var(--muted) for better contrast */
   text-transform: uppercase;
 }
-.server-bar { display:flex; gap:12px; flex-wrap:wrap; }
-.server-pill {
-  background:var(--card); border:1px solid var(--border); color:var(--text);
-  padding:10px 20px; border-radius:999px; font-weight:600; font-size:14px; cursor:pointer;
-  transition:all .2s; font-family:'Inter', sans-serif; display:flex; align-items:center; gap:8px;
-}
-.server-pill:hover { border-color:var(--green); color:var(--white); }
-.server-pill.active { background:rgba(74,222,128,.1); border-color:var(--green); color:var(--green); }
-.server-pill.active::before { content:''; width:8px; height:8px; border-radius:50%; background:var(--green); box-shadow:0 0 8px var(--green); }
 
 /* TAB CONTENT AREAS */
 .tab-content { display: none; animation:fadeUp .4s ease both; }
 .tab-content.active { display: block; }
+
+.section-title {
+  display:flex;
+  align-items:center;
+  gap:12px;
+  margin-bottom:20px;
+}
+
+.section-title h2 {
+  color:var(--white);
+  font-size:28px;
+  letter-spacing:-0.8px;
+}
+
+.tag {
+  font-family:'JetBrains Mono', monospace;
+  font-size:11px;
+  background:rgba(74,222,128,.1);
+  color:var(--green);
+  border:1px solid rgba(74,222,128,.2);
+  padding:4px 10px;
+  border-radius:999px;
+}
+
+/* LIVE TAB */
+.live-hero {
+  margin-bottom:24px;
+  background:linear-gradient(120deg, rgba(74,222,128,.13), rgba(15,30,48,.75));
+  border:1px solid rgba(74,222,128,.25);
+  border-radius:16px;
+  padding:28px;
+  position:relative;
+  overflow:hidden;
+}
+
+.live-hero::after {
+  content:'';
+  position:absolute;
+  width:260px;
+  height:260px;
+  border-radius:50%;
+  background:radial-gradient(circle, rgba(74,222,128,.2), transparent 70%);
+  top:-120px;
+  right:-90px;
+}
+
+.live-subtitle {
+  font-size:14px;
+  color:#9cb3c9;
+  max-width:620px;
+  line-height:1.7;
+}
+
+.live-stat-grid {
+  display:grid;
+  grid-template-columns:repeat(auto-fit, minmax(260px, 1fr));
+  gap:16px;
+  margin-bottom:22px;
+}
+
+.live-stat {
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:22px;
+  transition:border-color .2s, transform .2s, box-shadow .2s;
+}
+
+.live-stat:hover {
+  border-color:rgba(74,222,128,.35);
+  transform:translateY(-2px);
+  box-shadow:0 10px 36px rgba(74,222,128,.08);
+}
+
+.live-stat-label {
+  font-family:'JetBrains Mono', monospace;
+  font-size:11px;
+  letter-spacing:1px;
+  text-transform:uppercase;
+  color:var(--muted);
+  margin-bottom:10px;
+}
+
+.live-stat-value {
+  font-size:34px;
+  line-height:1;
+  font-weight:800;
+  color:var(--white);
+  letter-spacing:-1px;
+  margin-bottom:8px;
+}
+
+.live-stat-value.green {
+  color:var(--green);
+}
+
+.live-stat-note {
+  font-size:12px;
+  color:#8aa2b8;
+}
+
+.chat-box {
+  height:300px;
+  overflow-y:auto;
+  background:var(--bg);
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:20px;
+  font-family:'JetBrains Mono', monospace;
+  font-size:13px;
+  margin-bottom:18px;
+  line-height:1.6;
+}
+
+.chat-send {
+  background:var(--green);
+  color:#052e16;
+  border:none;
+  border-radius:8px;
+  padding:0 20px;
+  font-weight:700;
+  cursor:pointer;
+  transition:all .2s;
+}
+
+.chat-send:hover {
+  background:#3bca70;
+  transform:translateY(-1px);
+}
+
+.requires-server-note {
+  display:none;
+  background:rgba(251,191,36,.08);
+  border:1px solid rgba(251,191,36,.25);
+  color:#fbbf24;
+  border-radius:10px;
+  padding:12px 14px;
+  margin-bottom:16px;
+  font-size:13px;
+}
+
+.requires-server-note.visible {
+  display:block;
+}
 
 /* FORMS & CARDS */
 .command-box { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:28px 32px; margin-bottom:24px; }
@@ -222,70 +386,78 @@ td code { background: #08101a; padding: 4px 8px; border-radius: 4px; color: var(
 
 
 <div class="sidebar">
-  <div class="sidebar-label">Management</div>
-<button class="nav-tab active" onclick="switchTab('tab-minecraft', this)">
-  <span class="sidebar-dot"></span>Live Server
-</button>
+  <div class="sidebar-section">
+    <div class="sidebar-label">Live</div>
+    <button class="nav-tab active" onclick="switchTab('tab-minecraft', this)">
+      <span class="sidebar-dot"></span>Live Server
+    </button>
+  </div>
 
-<button class="nav-tab" onclick="switchTab('tab-general', this)">
-  <span class="sidebar-dot"></span>General Settings
-</button>
+  <div class="sidebar-section">
+    <div class="sidebar-label">Server Management</div>
+    <button class="nav-tab" onclick="switchTab('tab-general', this)">
+      <span class="sidebar-dot"></span>General Settings
+    </button>
+    <button class="nav-tab" onclick="switchTab('tab-invites', this)">
+      <span class="sidebar-dot"></span>Magic Invites
+    </button>
+  </div>
 
-<button class="nav-tab" onclick="switchTab('tab-invites', this)">
-  <span class="sidebar-dot"></span>Magic Invites
-</button>
+  <div class="sidebar-section" id="guild-selector-section">
+    <div class="sidebar-help-row">
+      <span class="sidebar-label" style="margin-bottom: 0;">Servers</span>
+      <span class="help-icon" onclick="openHelpModal()" title="Where is my server?">?</span>
+    </div>
+    <p class="guild-hint">Select a server for config tabs.</p>
+    <div id="guild-list" class="guild-list"></div>
+  </div>
 </div>
 
 <main>
-  <div class="server-bar-wrapper">
-    <div style="display: flex; align-items: center; margin-bottom: 12px;">
-      <span class="server-bar-label" style="margin-bottom: 0;">Select Server</span>
-      <span class="help-icon" onclick="openHelpModal()" title="Where is my server?">?</span>
-    </div>
-    <div id="server-bar" class="server-bar">
-      </div>
-  </div>
-
-  <div id="settings-container" style="display: none;">
+  <div id="settings-container">
 
     <div id="tab-minecraft" class="tab-content active">
+      <div class="live-hero">
+        <div class="section-title">
+          <h2>Live Minecraft Server</h2>
+          <span class="tag">Real-time Sync</span>
+        </div>
+        <p class="live-subtitle">Track your Minecraft server bridge in real time. Player counts, world clock, and cross-chat updates refresh automatically every two seconds.</p>
+      </div>
 
-  <div class="section-title">
-    <h2>Live Minecraft Server</h2>
-    <span class="tag">Real-time Sync</span>
-  </div>
+      <div class="live-stat-grid">
+        <div class="live-stat">
+          <div class="live-stat-label">Players Online</div>
+          <div class="live-stat-value green" id="mc-players">0 / 0</div>
+          <div class="live-stat-note">Current online players against server cap.</div>
+        </div>
+        <div class="live-stat">
+          <div class="live-stat-label">World Time</div>
+          <div class="live-stat-value" id="mc-time">Day 0 (00:00)</div>
+          <div class="live-stat-note">In-game day and clock from the running world.</div>
+        </div>
+      </div>
 
-    <div class="stat">
-      <div class="stat-label">Players</div>
-      <div class="stat-value" id="mc-players">0 / 0</div>
-    </div>
-    <div class="stat">
-      <div class="stat-label">World Time</div>
-      <div class="stat-value" id="mc-time">Day 0 (00:00)</div>
-    </div>
-  </div>
+      <div class="command-box">
+        <div class="sidebar-label" style="margin-bottom: 15px;">Global Chat Feed</div>
+        <div id="mc-chat-box" class="chat-box">
+          <div style="color: var(--muted)">Connecting to bridge...</div>
+        </div>
 
-  <div class="command-box">
-    <div class="sidebar-label" style="margin-bottom: 15px;">Global Chat Feed</div>
-    
-    <div id="mc-chat-box" style="height: 300px; overflow-y: auto; background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 20px; font-family: 'JetBrains Mono', monospace; font-size: 13px; margin-bottom: 18px; line-height: 1.6;">
-      <div style="color: var(--muted)">Connecting to bridge...</div>
-    </div>
-    
-    <div style="display: flex; gap: 12px;">
-      <input type="text" id="mc-chat-input" placeholder="Type a message to the server..." 
-        style="flex: 1; background: var(--surface); border: 1px solid var(--border); color: var(--white); padding: 12px; border-radius: 8px;">
-      
-      <button onclick="sendToGame()" class="btn-invite" style="border: none; cursor: pointer; height: 45px;">
-        Send
-      </button>
-    </div>
-  </div>
+        <div style="display: flex; gap: 12px;">
+          <input type="text" id="mc-chat-input" placeholder="Type a message to the server..."
+            style="flex: 1; background: var(--surface); border: 1px solid var(--border); color: var(--white); padding: 12px; border-radius: 8px;">
 
-</div>
+          <button onclick="sendToGame()" class="chat-send" style="height: 45px;">
+            Send
+          </button>
+        </div>
+      </div>
+    </div>
 
 
     <div id="tab-general" class="tab-content">
+      <div class="requires-server-note" id="general-server-note">Choose a server from the left sidebar to edit configuration for this tab.</div>
       <div class="command-box">
         <h3>Server Identity</h3>
       <div class="input-group">
@@ -371,6 +543,7 @@ td code { background: #08101a; padding: 4px 8px; border-radius: 4px; color: var(
     </div>    
 
     <div id="tab-invites" class="tab-content">
+      <div class="requires-server-note" id="invites-server-note">Choose a server from the left sidebar to manage magic invites.</div>
       <div class="command-box">
         <h3>Create Magic Invite</h3>
         <p style="color: var(--muted); font-size: 14px; margin-bottom: 16px;">Generate permanent invites mapped to friendly names.</p>
@@ -402,7 +575,7 @@ td code { background: #08101a; padding: 4px 8px; border-radius: 4px; color: var(
     <button class="close-btn" onclick="closeHelpModal()">&times;</button>
     <h3>Where is my server?</h3>
     <p style="color: var(--muted); font-size: 14px; line-height: 1.6; margin-bottom: 16px;">
-      If you don't see your server in the list above, please check the following:
+      If you don't see your server in the left sidebar list, please check the following:
     </p>
     <ul style="color: var(--text); font-size: 14px; line-height: 1.8; padding-left: 20px; margin-bottom: 24px;">
       <li>You must have the <strong>Manage Server</strong> or <strong>Administrator</strong> permission in Discord.</li>

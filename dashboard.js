@@ -35,6 +35,22 @@ function switchTab(tabId, buttonElement) {
     
     document.getElementById(tabId).classList.add('active');
     buttonElement.classList.add('active');
+
+    updateServerRequiredState(tabId);
+}
+
+function updateServerRequiredState(activeTabId) {
+    const needsServer = activeTabId !== 'tab-minecraft' && !currentGuildId;
+    const generalNote = document.getElementById('general-server-note');
+    const invitesNote = document.getElementById('invites-server-note');
+
+    if (generalNote) {
+        generalNote.classList.toggle('visible', activeTabId === 'tab-general' && needsServer);
+    }
+
+    if (invitesNote) {
+        invitesNote.classList.toggle('visible', activeTabId === 'tab-invites' && needsServer);
+    }
 }
 
 async function verifySession() {
@@ -66,11 +82,12 @@ async function loadGuilds() {
         if (!response.ok) return showToast("Failed to load servers.", "error");
 
         const guilds = await response.json();
-        const serverBar = document.getElementById('server-bar');
+        const serverBar = document.getElementById('guild-list');
         serverBar.innerHTML = '';
 
         if (guilds.length === 0) {
             serverBar.innerHTML = '<span style="color:var(--muted); font-size:14px;">No managed servers found.</span>';
+            updateServerRequiredState('tab-minecraft');
             return;
         }
 
@@ -86,6 +103,9 @@ async function loadGuilds() {
                 selectServer(g.id, btn);
             }
         });
+
+        const activeTab = document.querySelector('.tab-content.active');
+        updateServerRequiredState(activeTab ? activeTab.id : 'tab-minecraft');
     } catch (err) {
         showToast("Error fetching server list.", "error");
     }
@@ -97,10 +117,10 @@ function selectServer(guildId, buttonElement) {
     // Update active pill styling
     document.querySelectorAll('.server-pill').forEach(btn => btn.classList.remove('active'));
     buttonElement.classList.add('active');
-
-    // Show settings container
-    document.getElementById('settings-container').style.display = "block";
     loadServerConfig();
+
+    const activeTab = document.querySelector('.tab-content.active');
+    updateServerRequiredState(activeTab ? activeTab.id : 'tab-minecraft');
 }
 
 async function loadServerConfig() {
@@ -130,7 +150,10 @@ async function loadServerConfig() {
 }
 
 async function saveServerConfig() {
-    if (!currentGuildId) return;
+    if (!currentGuildId) {
+        showToast("Select a server from the sidebar first.", "error");
+        return;
+    }
     const token = localStorage.getItem('admin_session');
     const btn = document.getElementById('save-general-btn');
     if (btn) { btn.innerText = "Saving..."; btn.disabled = true; }
