@@ -621,7 +621,7 @@ public class MinecraftSocietyBot {
             throw new IllegalArgumentException("Template buttons are invalid. Add at least one valid label and role ID.");
         }
 
-        String content = renderReactionRoleContent(template, channel.getId());
+        String content = template.content == null ? "" : template.content;
         List<ActionRow> rows = buildReactionRoleRows(roleButtons);
 
         String action;
@@ -655,25 +655,6 @@ public class MinecraftSocietyBot {
                 "messageId", template.messageId == null ? "" : template.messageId,
                 "action", action
         );
-    }
-
-    private static String renderReactionRoleContent(ReactionRoleConfig template, String channelId) {
-        String content = template.content == null ? "" : template.content;
-
-        List<String> roleMentions = new ArrayList<>();
-        if (template.buttons != null) {
-            for (ReactionRoleButtonConfig buttonConfig : template.buttons) {
-                if (buttonConfig != null && buttonConfig.roleId != null && !buttonConfig.roleId.isBlank()) {
-                    roleMentions.add("<@&" + buttonConfig.roleId + ">");
-                }
-            }
-        }
-
-        String roleList = roleMentions.isEmpty() ? "No roles configured." : String.join(", ", roleMentions);
-
-        content = content.replaceAll("(?i)\\$CHANNEL\\b", java.util.regex.Matcher.quoteReplacement("<#" + channelId + ">"));
-        content = content.replaceAll("(?i)\\$ROLE\\b", java.util.regex.Matcher.quoteReplacement(roleList));
-        return content;
     }
 
     private static List<ActionRow> buildReactionRoleRows(List<Button> buttons) {

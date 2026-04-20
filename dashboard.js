@@ -533,7 +533,7 @@ function loadReactionRoleTemplate(templateId) {
     if (!config) {
         if (channelInput) channelInput.value = '';
         if (messageInput) messageInput.value = '';
-        if (contentInput) contentInput.value = 'Choose your roles in $CHANNEL\nAvailable roles: $ROLE';
+        if (contentInput) contentInput.value = 'Choose your roles below.';
         clearReactionRoleButtonRows();
         addReactionRoleButtonRow();
         return;
@@ -562,7 +562,7 @@ function startNewReactionRoleConfig() {
     renderReactionRoleChannelOptions('');
     if (channelInput) channelInput.value = '';
     if (messageInput) messageInput.value = '';
-    if (contentInput) contentInput.value = 'Choose your roles in $CHANNEL\nAvailable roles: $ROLE';
+    if (contentInput) contentInput.value = 'Choose your roles below.';
 
     clearReactionRoleButtonRows();
     addReactionRoleButtonRow();
@@ -572,15 +572,23 @@ function startNewReactionRoleConfig() {
 
 function showReactionRoleEditor() {
     const panel = document.getElementById('rr-editor-panel');
+    const newBtn = document.getElementById('rr-new-config-btn');
     if (panel) {
         panel.style.display = '';
+    }
+    if (newBtn) {
+        newBtn.style.display = 'none';
     }
 }
 
 function hideReactionRoleEditor() {
     const panel = document.getElementById('rr-editor-panel');
+    const newBtn = document.getElementById('rr-new-config-btn');
     if (panel) {
         panel.style.display = 'none';
+    }
+    if (newBtn) {
+        newBtn.style.display = '';
     }
 }
 
@@ -795,7 +803,7 @@ async function publishReactionRoleConfig() {
         }
 
         showToast(`Reaction role message ${result.action === 'updated' ? 'updated' : 'sent'} successfully!`);
-        renderReactionRoleLiveList();
+        cancelReactionRoleEdit();
     } catch (err) {
         showToast('Network error while publishing reaction role message.', 'error');
     } finally {
