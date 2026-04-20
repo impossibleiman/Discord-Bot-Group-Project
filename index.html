@@ -18,164 +18,43 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles/shared.css">
 
 <style>
-:root {
-  --green:     #4ade80;
-  --bg:        #050a0f;
-  --surface:   #0b1420;
-  --card:      #0f1e30;
-  --border:    #1a3347;
-  --text:      #cbd5e1;
-  --muted:     #475569;
-  --white:     #f1f5f9;
-  --sidebar-w: 260px;
-  --header-h:  64px;
-}
-
-*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
-html { scroll-behavior: smooth; }
-
-body {
-  background: var(--bg);
-  color: var(--text);
-  font-family: 'Inter', sans-serif;
-  min-height: 100vh;
-  overflow-x: hidden;
-}
-
-body::before {
-  content:'';
-  position:fixed; inset:0;
-  background-image:
-    linear-gradient(rgba(74,222,128,.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(74,222,128,.03) 1px, transparent 1px);
-  background-size: 40px 40px;
-  pointer-events:none; z-index:0;
-}
-
-/* HEADER */
-header {
-  position:fixed; top:0; left:0; right:0;
-  height:var(--header-h);
-  background:rgba(5,10,15,.85);
-  backdrop-filter:blur(16px);
-  border-bottom:1px solid var(--border);
-  display:flex; align-items:center; justify-content:space-between;
-  padding:0 32px; z-index:200;
-}
-
-.logo {
-  display:flex; align-items:center; gap:10px;
-  font-weight:800; font-size:17px;
-  color:var(--white); letter-spacing:-.3px; text-decoration:none;
-}
-
-.logo-icon {
-  width:32px; height:32px; background:var(--green);
-  border-radius:6px; display:grid;
-  grid-template-columns:1fr 1fr; grid-template-rows:1fr 1fr;
-  gap:2px; padding:5px;
-}
-.logo-icon span { background:#052e16; border-radius:2px; }
-.logo-icon span:nth-child(2) { background:#14532d; }
-.logo-icon span:nth-child(3) { background:#166534; }
-.logo-icon span:nth-child(4) { background:#052e16; }
-
-nav { display:flex; align-items:center; gap:8px; }
-
-nav a {
-  color:var(--muted); text-decoration:none;
-  font-size:14px; font-weight:600;
-  padding:6px 12px; border-radius:8px;
-  transition:color .2s, background .2s;
-}
-nav a:hover { color:var(--white); background:rgba(255,255,255,.05); }
-nav a.active { color:var(--green); }
-
-.btn-invite {
-  background:var(--green) !important;
-  color:#052e16 !important;
-  padding:8px 18px !important;
-  border-radius:8px; font-weight:700; letter-spacing:.3px;
-  transition:all .2s !important;
-}
-.btn-invite:hover {
-  background:transparent !important;
-  color:var(--green) !important;
-  box-shadow:inset 0 0 0 2px var(--green);
-}
-
-/* HAMBURGER */
-.hamburger {
-  display:none; flex-direction:column; justify-content:center;
-  gap:5px; background:none; border:none; cursor:pointer;
-  padding:6px; border-radius:8px; transition:background .2s;
-}
-.hamburger:hover { background:rgba(255,255,255,.06); }
-.hamburger span {
-  display:block; width:22px; height:2px;
-  background:var(--white); border-radius:2px;
-  transition:transform .3s, opacity .3s;
-}
-.hamburger.open span:nth-child(1) { transform:translateY(7px) rotate(45deg); }
-.hamburger.open span:nth-child(2) { opacity:0; }
-.hamburger.open span:nth-child(3) { transform:translateY(-7px) rotate(-45deg); }
-
-/* MOBILE SIDEBAR DRAWER OVERLAY */
-.sidebar-overlay {
-  display:none; position:fixed; inset:0;
-  background:rgba(0,0,0,.6); z-index:90; backdrop-filter:blur(2px);
-}
-.sidebar-overlay.open { display:block; }
-
-/* SIDEBAR */
-.sidebar {
-  position:fixed; top:var(--header-h); left:0;
-  width:var(--sidebar-w);
-  height:calc(100vh - var(--header-h));
-  background:var(--surface);
-  border-right:1px solid var(--border);
-  padding:32px 20px; overflow-y:auto; z-index:100;
-  transition:transform .3s ease;
-}
-
-.sidebar-section { margin-bottom:28px; }
-
-.sidebar-label {
-  font-family:'JetBrains Mono', monospace;
-  font-size:10px; letter-spacing:2px;
-  color:var(--muted); text-transform:uppercase;
-  margin-bottom:10px; padding-left:12px;
-}
-
-.sidebar a {
-  display:flex; align-items:center; gap:10px;
-  padding:8px 12px; border-radius:8px;
-  color:var(--text); text-decoration:none;
-  font-size:14px; font-weight:600;
-  transition:all .2s; margin-bottom:2px;
-}
-.sidebar a:hover { background:rgba(74,222,128,.07); color:var(--green); padding-left:16px; }
-.sidebar a.active { background:rgba(74,222,128,.12); color:var(--green); }
-
-.sidebar-dot {
-  width:6px; height:6px; border-radius:50%;
-  background:var(--muted); flex-shrink:0; transition:background .2s;
-}
-.sidebar a:hover .sidebar-dot,
-.sidebar a.active .sidebar-dot { background:var(--green); box-shadow:0 0 6px var(--green); }
-
 /* MAIN */
 main {
   margin-left:var(--sidebar-w);
+  width:min(1680px, calc(100vw - var(--sidebar-w) - 24px));
   padding:calc(var(--header-h) + 60px) 60px 80px;
-  max-width:calc(var(--sidebar-w) + 860px);
-  position:relative; z-index:1;
+  position:relative;
+  z-index:1;
+}
+
+.top-showcase {
+  display:grid;
+  grid-template-columns:minmax(0, 1.45fr) minmax(360px, 1.15fr);
+  gap:24px;
+  align-items:start;
+  margin-bottom:52px;
+}
+
+@media (min-width:769px) and (max-width:1150px) {
+  .top-showcase {
+    grid-template-columns:1fr;
+    gap:20px;
+  }
+
+  .hero h1 {
+    font-size:clamp(34px, 5vw, 46px);
+  }
 }
 
 /* HERO */
 .hero { margin-bottom:72px; animation:fadeUp .8s ease both; }
+
+.top-showcase .hero {
+  margin-bottom:0;
+}
 
 .hero-badge {
   display:inline-flex; align-items:center; gap:7px;
@@ -208,6 +87,18 @@ section {
 }
 section.visible { opacity:1; transform:translateY(0); }
 
+.overview-aside {
+  margin-bottom:0;
+}
+
+.overview-aside .status-card {
+  grid-template-columns:1fr;
+}
+
+.overview-aside .section-title {
+  justify-content:space-between;
+}
+
 .section-title { display:flex; align-items:center; gap:12px; margin-bottom:24px; }
 .section-title h2 { font-size:22px; font-weight:800; color:var(--white); letter-spacing:-.5px; }
 .section-title .tag {
@@ -219,6 +110,39 @@ section.visible { opacity:1; transform:translateY(0); }
   font-family:'JetBrains Mono', monospace; font-size:11px;
   background:rgba(147,197,253,.08); color:#93c5fd;
   border:1px solid rgba(147,197,253,.2); padding:3px 10px; border-radius:999px;
+}
+
+.content-category {
+  margin:54px 0 24px;
+  padding-top:20px;
+  border-top:1px solid var(--border);
+}
+
+.content-category-row {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+}
+
+.content-category-label {
+  font-family:'JetBrains Mono', monospace;
+  font-size:10px;
+  letter-spacing:2px;
+  text-transform:uppercase;
+  color:var(--muted);
+}
+
+.content-category-value {
+  font-family:'JetBrains Mono', monospace;
+  font-size:11px;
+  letter-spacing:1.4px;
+  text-transform:uppercase;
+  color:var(--green);
+  background:rgba(74,222,128,.1);
+  border:1px solid rgba(74,222,128,.25);
+  border-radius:999px;
+  padding:3px 10px;
 }
 
 /* CARDS */
@@ -284,6 +208,11 @@ section.visible { opacity:1; transform:translateY(0); }
   border:1px solid var(--border); border-radius:14px; padding:28px 32px;
 }
 .prose strong { color:var(--white); }
+
+.intro-prose {
+  max-width:none;
+  width:100%;
+}
 
 .pill {
   display:inline-flex; align-items:center; gap:5px;
@@ -365,17 +294,29 @@ footer {
 ::-webkit-scrollbar-thumb:hover { background:var(--muted); }
 
 /* MOBILE */
-@media (max-width:768px) {
+@media (max-width:777px) {
+  .top-showcase { grid-template-columns:1fr; gap:20px; margin-bottom:32px; }
   .sidebar { transform:translateX(-100%); display:flex; flex-direction:column; }
   .sidebar.open { transform:translateX(0); box-shadow:4px 0 40px rgba(0,0,0,.5); }
   .hamburger { display:flex; }
   nav a:not(.btn-invite) { display:none; }
-  main { margin-left:0; padding:calc(var(--header-h) + 40px) 24px 60px; }
+  nav a.btn-invite { display:none; }
+  main {
+    margin-left:0;
+    width:100%;
+    max-width:none;
+    padding:calc(var(--header-h) + 40px) 24px 60px;
+  }
   footer { margin-left:0; }
   .footer-inner { padding:40px 24px 24px; }
   .footer-top { grid-template-columns:1fr; gap:32px; }
   .property-grid { grid-template-columns:1fr; }
   .copy-btn { display:none; }
+}
+
+@media (max-width:423px) {
+  .logo-icon { display:none; }
+  .logo { gap:0; }
 }
 </style>
 </head>
@@ -404,8 +345,7 @@ footer {
 <div class="sidebar" id="sidebar">
   <div class="sidebar-section">
     <div class="sidebar-label">Getting Started</div>
-    <a href="#intro" class="active"><span class="sidebar-dot"></span>Introduction</a>
-    <a href="#overview"><span class="sidebar-dot"></span>Server Overview</a>
+    <a href="#overview" class="active"><span class="sidebar-dot"></span>Overview</a>
   </div>
   <div class="sidebar-section">
     <div class="sidebar-label">Automatic</div>
@@ -425,15 +365,25 @@ footer {
 </div>
 
 <main>
-  <div class="hero">
-    <div class="hero-badge">v1.0 · Active</div>
-    <h1>Minecraft Society<br><span>Bot Documentation</span></h1>
-    <p>Advanced Discord bot built for community management at Manchester Metropolitan University — automating moderation, onboarding, and events.</p>
+  <section id="overview">
+  <div class="top-showcase">
+    <div class="hero">
+      <h1>Minecraft Society<br><span>Bot Documentation</span></h1>
+      <p>Advanced Discord bot built for community management at Manchester Metropolitan University — automating moderation, onboarding, and events.</p>
+    </div>
+
+    <div class="overview-aside">
+      <div class="section-title"><h2>Server Status</h2><span class="tag">v 1.0</span></div>
+      <div class="status-card">
+        <div class="stat"><div class="stat-label">Discord Member Count</div><div class="stat-value">--</div></div>
+        <div class="stat"><div class="stat-label">Status</div><div class="stat-value green">--</div></div>
+      </div>
+    </div>
   </div>
 
-  <section id="intro">
-    <div class="section-title"><h2>Introduction</h2><span class="tag">Overview</span></div>
-    <div class="prose">
+
+    <div class="section-title"><h2>Overview</h2></div>
+    <div class="prose intro-prose">
       The <strong>Minecraft Society Bot</strong> is a collaborative project developed at Manchester Metropolitan University (MMU).
       It is designed to automate moderation, streamline onboarding, and enhance community interaction within the Minecraft Society Discord server.
       <br><br>
@@ -441,24 +391,15 @@ footer {
     </div>
   </section>
 
-  <section id="overview">
-    <div class="section-title"><h2>Server Overview</h2><span class="tag">Status</span></div>
-    <div class="status-card">
-      <div class="stat"><div class="stat-label">Members</div><div class="stat-value">Live</div></div>
-      <div class="stat"><div class="stat-label">Status</div><div class="stat-value green">● Active</div></div>
-      <div class="stat"><div class="stat-label">Security</div><div class="stat-value">Verified</div></div>
+  <div class="content-category">
+    <div class="content-category-row">
+      <div class="content-category-label">Category</div>
+      <div class="content-category-value">Automatic</div>
     </div>
-    <div class="command-box">
-      <div class="property-grid">
-        <div class="label">University</div><div class="value">Manchester Metropolitan University (MMU)</div>
-        <div class="label">Platform</div><div class="value">Discord</div>
-        <div class="label">Access</div><div class="value">Verification required on join</div>
-      </div>
-    </div>
-  </section>
+  </div>
 
   <section id="welcome">
-    <div class="section-title"><h2>Welcome System</h2><span class="tag-auto">Automatic</span></div>
+    <div class="section-title"><h2>Welcome System</h2></div>
     <div class="command-box">
       <div class="command-header auto">Welcome &amp; Invite Tracking</div>
       <div class="property-grid">
@@ -471,7 +412,7 @@ footer {
   </section>
 
   <section id="verification">
-    <div class="section-title"><h2>Verification</h2><span class="tag-auto">Automatic</span></div>
+    <div class="section-title"><h2>Verification</h2></div>
     <div class="command-box">
       <div class="command-header auto">Button Verification</div>
       <div class="property-grid">
@@ -483,8 +424,15 @@ footer {
     </div>
   </section>
 
+  <div class="content-category">
+    <div class="content-category-row">
+      <div class="content-category-label">Category</div>
+      <div class="content-category-value">Commands</div>
+    </div>
+  </div>
+
   <section id="reactionrole">
-    <div class="section-title"><h2>Reaction Roles</h2><span class="tag">Command</span></div>
+    <div class="section-title"><h2>Reaction Roles</h2></div>
     <div class="command-box">
       <div class="command-header">reactionrole</div>
       <div class="property-grid">
@@ -502,7 +450,7 @@ footer {
   </section>
 
   <section id="event">
-    <div class="section-title"><h2>Event System</h2><span class="tag">Command</span></div>
+    <div class="section-title"><h2>Event System</h2></div>
     <div class="command-box">
       <div class="command-header">event</div>
       <div class="property-grid">
@@ -520,7 +468,7 @@ footer {
   </section>
 
   <section id="ticket">
-    <div class="section-title"><h2>Ticket System</h2><span class="tag">Command</span></div>
+    <div class="section-title"><h2>Ticket System</h2></div>
     <div class="command-box">
       <div class="command-header">ticket</div>
       <div class="property-grid">
@@ -537,8 +485,15 @@ footer {
     </div>
   </section>
 
+  <div class="content-category">
+    <div class="content-category-row">
+      <div class="content-category-label">Category</div>
+      <div class="content-category-value">Bots</div>
+    </div>
+  </div>
+
   <section id="aichat">
-    <div class="section-title"><h2>AI Chat Bot</h2><span class="tag-auto">Passive</span></div>
+    <div class="section-title"><h2>AI Chat Bot</h2></div>
     <div class="command-box">
       <div class="command-header auto">AI Chat</div>
       <div class="property-grid">
@@ -571,7 +526,7 @@ footer {
       </div>
       <div class="footer-col">
         <h4>Docs</h4>
-        <a href="index.html#intro">Introduction</a>
+        <a href="index.html#overview">Overview</a>
         <a href="index.html#welcome">Welcome System</a>
         <a href="index.html#verification">Verification</a>
         <a href="index.html#reactionrole">Reaction Roles</a>

@@ -7,56 +7,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles/shared.css">
 <style>
-:root {
-  --green: #4ade80; --bg: #050a0f; --surface: #0b1420; --card: #0f1e30;
-  --border: #1a3347; --text: #cbd5e1; --muted: #475569; --white: #f1f5f9;
-  --sidebar-w: 260px; --header-h: 64px;
-}
-
-*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
-body {
-  background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif;
-  min-height: 100vh; overflow-x: hidden;
-}
-body::before {
-  content:''; position:fixed; inset:0;
-  background-image: linear-gradient(rgba(74,222,128,.03) 1px, transparent 1px), linear-gradient(90deg, rgba(74,222,128,.03) 1px, transparent 1px);
-  background-size: 40px 40px; pointer-events:none; z-index:0;
-}
-
-/* HEADER */
-header {
-  position:fixed; top:0; left:0; right:0; height:var(--header-h);
-  background:rgba(5,10,15,.85); backdrop-filter:blur(16px);
-  border-bottom:1px solid var(--border);
-  display:flex; align-items:center; justify-content:space-between; padding:0 32px; z-index:200;
-}
-.logo { display:flex; align-items:center; gap:10px; font-weight:800; font-size:17px; color:var(--white); text-decoration:none; }
-.logo-icon { width:32px; height:32px; background:var(--green); border-radius:6px; display:grid; grid-template-columns:1fr 1fr; grid-template-rows:1fr 1fr; gap:2px; padding:5px; }
-.logo-icon span { background:#052e16; border-radius:2px; }
-.logo-icon span:nth-child(2) { background:#14532d; }
-.logo-icon span:nth-child(3) { background:#166534; }
-.logo-icon span:nth-child(4) { background:#052e16; }
-
-/* SIDEBAR (TABS) */
-.sidebar {
-  position:fixed; top:var(--header-h); left:0; width:var(--sidebar-w);
-  height:calc(100vh - var(--header-h)); background:var(--surface);
-  border-right:1px solid var(--border); padding:32px 20px; z-index:100;
-  overflow-y:auto;
-}
 .sidebar-section { margin-bottom: 26px; }
-.sidebar-label { font-family:'JetBrains Mono', monospace; font-size:10px; letter-spacing:2px; color:var(--muted); text-transform:uppercase; margin-bottom:10px; padding-left:12px; }
-.nav-tab {
-  display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:8px;
-  color:var(--text); text-decoration:none; font-size:14px; font-weight:600;
-  transition:all .2s; margin-bottom:4px; cursor:pointer; border:none; background:transparent; width:100%; text-align:left;
-}
-.nav-tab:hover { background:rgba(74,222,128,.07); color:var(--green); padding-left:16px; }
-.nav-tab.active { background:rgba(74,222,128,.12); color:var(--green); }
-.sidebar-dot { width:6px; height:6px; border-radius:50%; background:var(--muted); flex-shrink:0; transition:background .2s; }
-.nav-tab:hover .sidebar-dot, .nav-tab.active .sidebar-dot { background:var(--green); box-shadow:0 0 6px var(--green); }
 
 .sidebar-help-row {
   display:flex;
