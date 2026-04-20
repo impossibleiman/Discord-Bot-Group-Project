@@ -28,6 +28,7 @@ public class MinecraftSocietyBot {
     // Store the latest Minecraft data in memory
     private static final List<Map<String, String>> liveChat = new java.util.concurrent.CopyOnWriteArrayList<>();
     private static final List<String> webToGameQueue = new java.util.concurrent.CopyOnWriteArrayList<>();
+    private static final Map<String, Object> mcStatus = new java.util.concurrent.ConcurrentHashMap<>();
     
     // --- NEW SECURITY ARCHITECTURE ---
     static class SessionData {
@@ -315,6 +316,14 @@ public class MinecraftSocietyBot {
             org.json.JSONObject data = new org.json.JSONObject(ctx.body());
             String now = java.time.LocalTime.now().format(java.time.format.DateTimeFormatter.ofPattern("HH:mm"));
 
+            // Update Global Stats
+            if (data.has("onlinePlayers")) {
+                mcStatus.put("online", data.getInt("onlinePlayers"));
+                mcStatus.put("max", data.getInt("maxPlayers"));
+                mcStatus.put("day", data.getLong("gameDay"));
+                mcStatus.put("time", data.getLong("gameTime"));
+            }
+
             // Sync Chat Messages from Game
             if (data.has("newChat")) {
                 org.json.JSONArray newMsgs = data.getJSONArray("newChat");
@@ -337,8 +346,7 @@ public class MinecraftSocietyBot {
 
         // 2. DATA FROM BOT -> WEBSITE
         app.get("/mc-data", ctx -> {
-            // Only returning chat now (no status object)
-            ctx.json(java.util.Map.of("chat", liveChat));
+            ctx.json(java.util.Map.of("status", mcStatus, "chat", liveChat));
         });
 
         // 3. CHAT FROM WEBSITE -> GAME

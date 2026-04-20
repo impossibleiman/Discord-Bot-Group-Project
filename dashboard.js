@@ -377,22 +377,47 @@ async function refreshMinecraftData() {
         if (!res.ok) throw new Error("Offline");
         const data = await res.json();
 
+        // 1. Update Basic Stats
+        if (data.status) {
+            document.getElementById('mc-players').innerText = `${data.status.online || 0} / ${data.status.max || 0}`;
+
+            const ticks = data.status.time || 0;
+            const hours = Math.floor((ticks / 1000 + 6) % 24);
+            const minutes = Math.floor((ticks % 1000) * 0.06);
+            const timeStr = `${hours}:${minutes < 10 ? '0' : ''}${minutes}`;
+            document.getElementById('mc-time').innerText = `Day ${data.status.day || 0} (${timeStr})`;
+        }
+
+        // 2. Update Chat
         const chatBox = document.getElementById('mc-chat-box');
         if (data.chat && data.chat.length > 0) {
-            chatBox.innerHTML = data.chat.map(m => `
+            chatBox.innerHTML = data.chat.map(m => {
+                const isServer = m.user === "Server";
+                const pillColor = isServer ? "rgba(251, 191, 36, 0.1)" : "rgba(74, 222, 128, 0.1)";
+                const textColor = isServer ? "#fbbf24" : "var(--green)";
+
+                return `
                 <div style="margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.03); padding-bottom: 6px;">
                     <div style="display: flex; align-items: center; margin-bottom: 4px;">
-                        <span class="pill" style="font-size: 11px;">${sanitize(m.user)}</span> 
-                        <span style="font-family: 'JetBrains Mono'; font-size: 10px; color: var(--muted); margin-left: 8px;">${m.time || ''}</span>
+                        <span class="pill" style="font-size: 11px; background: ${pillColor}; color: ${textColor}; border: 1px solid ${pillColor};">
+                            ${sanitize(m.user)}
+                        </span> 
+                        <span style="font-family: 'JetBrains Mono'; font-size: 10px; color: var(--muted); margin-left: 8px;">
+                            ${m.time || ''}
+                        </span>
                     </div>
-                    <div style="color:var(--text); margin-left: 4px; font-size: 13px;">${sanitize(m.text)}</div>
+                    <div style="color:var(--text); margin-left: 4px; font-size: 13px;">
+                        ${isServer ? `<em>${sanitize(m.text)}</em>` : sanitize(m.text)}
+                    </div>
                 </div>
-            `).join('');
+                `;
+            }).join('');
         } else {
             chatBox.innerHTML = '<div style="color:var(--muted)">No recent activity...</div>';
         }
     } catch (e) {
         document.getElementById('mc-chat-box').innerHTML = '<div style="color:#e74c3c">Bridge Offline...</div>';
+        document.getElementById('mc-players').innerText = "0 / 0";
     }
 }
 
