@@ -29,6 +29,19 @@
   gap:8px;
 }
 
+.sidebar-status {
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  margin-bottom:20px;
+}
+
+.sidebar-status-item {
+  font-family:'JetBrains Mono', monospace;
+  font-size:11px;
+  color:var(--muted);
+}
+
 .server-pill {
   width:100%;
   background:var(--card); border:1px solid var(--border); color:var(--text);
@@ -324,17 +337,13 @@ td code { background: #08101a; padding: 4px 8px; border-radius: 4px; color: var(
 
 <div id="site-header"></div>
 
-<div style="position:fixed; top:14px; right:24px; display:flex; align-items:center; gap:16px; z-index:250;">
-  <div id="bot-status" style="font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--muted);">
-    Checking Bot...
-  </div>
-  <div id="session-info" style="font-family:'JetBrains Mono', monospace; font-size:12px; color:var(--muted);">
-    Verifying session...
-  </div>
-</div>
-
 
 <div class="sidebar">
+  <div class="sidebar-status">
+    <div id="bot-status" class="sidebar-status-item">Checking Bot...</div>
+    <div id="session-info" class="sidebar-status-item" style="font-size:12px;">Verifying session...</div>
+  </div>
+
   <div class="sidebar-section">
     <div class="sidebar-label">Live</div>
     <button class="nav-tab active" onclick="switchTab('tab-minecraft', this)">
