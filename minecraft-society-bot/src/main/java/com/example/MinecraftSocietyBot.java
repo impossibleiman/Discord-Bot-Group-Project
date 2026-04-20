@@ -634,9 +634,13 @@ public class MinecraftSocietyBot {
 
             Button button = Button.secondary("reactionrole:give:" + buttonConfig.roleId, buttonConfig.label);
             if (buttonConfig.emoji != null && !buttonConfig.emoji.isBlank()) {
-                Emoji emoji = resolveEmoji(buttonConfig.emoji);
-                if (emoji != null) {
-                    button = button.withEmoji(emoji);
+                try {
+                    Emoji emoji = resolveEmoji(buttonConfig.emoji);
+                    if (emoji != null) {
+                        button = button.withEmoji(emoji);
+                    }
+                } catch (Exception ignored) {
+                    // Invalid/unsupported emoji should not fail the entire publish.
                 }
             }
 
