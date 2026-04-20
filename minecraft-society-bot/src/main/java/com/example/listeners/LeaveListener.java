@@ -109,8 +109,6 @@ public class LeaveListener extends ListenerAdapter {
 
             if (!thumbnailUrl.isEmpty()) {
                 eb.setThumbnail(thumbnailUrl);
-            } else {
-                eb.setThumbnail(event.getUser().getEffectiveAvatarUrl());
             }
 
             if (!imageUrl.isEmpty()) {
