@@ -496,7 +496,7 @@ section.visible { opacity:1; transform:translateY(0); }
   background:rgba(74,222,128,.12);
   color:var(--green);
 }
-.command-header::before { content:'/'; opacity:.5; }
+.command-header::before { content:''; }
 .command-header.auto::before { content:'⚡'; font-style:normal; opacity:.7; font-size:13px; }
 
 .property-grid { display:grid; grid-template-columns:130px 1fr; gap:12px 16px; }
@@ -606,9 +606,12 @@ footer {
     <a href="#aboutus" class="active"><span class="sidebar-dot"></span>About Us</a>
   </div>
   <div class="sidebar-section">
-    <div class="sidebar-label">Automatic</div>
-    <a href="#welcome"><span class="sidebar-dot"></span>Welcome System</a>
-    <a href="#verification"><span class="sidebar-dot"></span>Verification</a>
+    <div class="sidebar-label">Joining &amp; Leaving</div>
+    <a href="#welcome"><span class="sidebar-dot"></span>Welcome Message</a>
+    <a href="#magicinvites"><span class="sidebar-dot"></span>Magic Invites</a>
+    <a href="#verification"><span class="sidebar-dot"></span>Verification &amp; Autoroles</a>
+    <a href="#stickyroles"><span class="sidebar-dot"></span>Sticky Roles</a>
+    <a href="#leave"><span class="sidebar-dot"></span>Leave Listener</a>
   </div>
   <div class="sidebar-section">
     <div class="sidebar-label">Commands</div>
@@ -657,33 +660,46 @@ footer {
   <div class="content-category content-category-spacer">
     <div class="content-category-row">
       <div class="content-category-label">Category</div>
-      <div class="content-category-value">Automatic</div>
+      <div class="content-category-value">Joining &amp; Leaving</div>
     </div>
   </div>
 
   <section id="welcome">
-    <div class="section-title"><h2>Welcome System</h2></div>
-    <div class="command-box has-media">
+    <div class="command-box has-media" data-role-key="welcomeMessage">
       <div class="command-box-body">
-        <div class="command-header auto">Welcome &amp; Invite Tracking</div>
+        <div class="command-header">Welcome Message</div>
         <div class="property-grid">
-          <div class="label">Description</div><div class="value">Automatically fires when a new member joins. Sends a welcome embed to <strong>#test-welcome</strong> showing who invited them, which invite code was used, and how old their Discord account is.</div>
+          <div class="label">Description</div><div class="value">Automatically sends a welcome embed to <strong>#test-welcome</strong> when a new member joins so the onboarding moment is immediate and clear.</div>
           <div class="label">Trigger</div><div class="value">Member joins the server</div>
           <div class="label">Channel</div><div class="value">#test-welcome</div>
-          <div class="label">Info shown</div><div class="value">Invite code · Inviter · Account age</div>
+          <div class="label">Info shown</div><div class="value">Welcome details · New member mention · Quick onboarding context</div>
         </div>
       </div>
       <div class="command-media">
         <img class="command-gif" src="https://picsum.photos/seed/welcome-system/640/420" alt="Welcome system placeholder preview">
       </div>
     </div>
+
+    <div class="command-box has-media" data-role-key="magicInvites">
+      <div class="command-box-body">
+        <div class="command-header">Magic Invites</div>
+        <div class="property-grid">
+          <div class="label">Description</div><div class="value">Tracks which invite brought a member in, who created it, and account-age context so join activity is transparent from day one.</div>
+          <div class="label">Trigger</div><div class="value">Member joins through an invite link</div>
+          <div class="label">Channel</div><div class="value">#test-welcome</div>
+          <div class="label">Info shown</div><div class="value">Invite code · Inviter · Discord account age</div>
+        </div>
+      </div>
+      <div class="command-media">
+        <img class="command-gif" src="https://picsum.photos/seed/magic-invites/640/420" alt="Magic invites placeholder preview">
+      </div>
+    </div>
   </section>
 
   <section id="verification">
-    <div class="section-title"><h2>Verification</h2></div>
     <div class="command-box has-media">
       <div class="command-box-body">
-        <div class="command-header auto">Button Verification</div>
+        <div class="command-header">Verification &amp; Autoroles</div>
         <div class="property-grid">
           <div class="label">Description</div><div class="value">Sends a verification embed in <strong>#verify</strong>. New members click the <em>Enter Server</em> button to receive the <strong>Member</strong> role and unlock full server access.</div>
           <div class="label">Trigger</div><div class="value">Member clicks the verify button</div>
@@ -697,6 +713,40 @@ footer {
     </div>
   </section>
 
+  <section id="stickyroles">
+    <div class="command-box has-media" data-role-key="stickyRoles">
+      <div class="command-box-body">
+        <div class="command-header">Sticky Roles</div>
+        <div class="property-grid">
+          <div class="label">Description</div><div class="value">Restores a member&apos;s previous server roles when they rejoin, keeping access levels and progression consistent.</div>
+          <div class="label">Trigger</div><div class="value">Member rejoins the server</div>
+          <div class="label">Role behavior</div><div class="value">Reapplies saved roles that are still valid</div>
+          <div class="label">Purpose</div><div class="value">Prevents manual re-role work and preserves member continuity</div>
+        </div>
+      </div>
+      <div class="command-media">
+        <img class="command-gif" src="https://picsum.photos/seed/sticky-roles/640/420" alt="Sticky roles placeholder preview">
+      </div>
+    </div>
+  </section>
+
+  <section id="leave">
+    <div class="command-box has-media" data-role-key="leaveListener">
+      <div class="command-box-body">
+        <div class="command-header">Leave Listener</div>
+        <div class="property-grid">
+          <div class="label">Description</div><div class="value">Automatically logs when members leave so staff can track churn and keep moderation context accurate.</div>
+          <div class="label">Trigger</div><div class="value">Member leaves the server</div>
+          <div class="label">Channel</div><div class="value">#test-welcome</div>
+          <div class="label">Info shown</div><div class="value">Member tag · Leave timestamp · Account snapshot</div>
+        </div>
+      </div>
+      <div class="command-media">
+        <img class="command-gif" src="https://picsum.photos/seed/leave-listener/640/420" alt="Leave listener placeholder preview">
+      </div>
+    </div>
+  </section>
+
   <div class="content-category content-category-spacer">
     <div class="content-category-row">
       <div class="content-category-label">Category</div>
@@ -705,11 +755,11 @@ footer {
   </div>
 
   <section id="ping">
-    <div class="section-title"><h2>Ping</h2></div>
     <div class="command-box has-media">
       <div class="command-box-body">
-        <div class="command-header">ping</div>
+        <div class="command-header">Ping Command</div>
         <div class="property-grid">
+          <div class="label">Usage</div><div class="value"><span class="pill-blue">/ping</span></div>
           <div class="label">Description</div><div class="value">Replies with <strong>Pong!</strong> and gives a quick signal that the bot is online and responsive.</div>
           <div class="label">Permissions</div><div class="value"><span class="pill">Open to everyone</span></div>
         </div>
@@ -721,11 +771,11 @@ footer {
   </section>
 
   <section id="purge">
-    <div class="section-title"><h2>Purge</h2></div>
     <div class="command-box has-media">
       <div class="command-box-body">
-        <div class="command-header">purge</div>
+        <div class="command-header">Purge Command</div>
         <div class="property-grid">
+          <div class="label">Usage</div><div class="value"><span class="pill-blue">/purge</span></div>
           <div class="label">Description</div><div class="value">Deletes a chosen number of recent messages from the current channel for quick moderation cleanup.</div>
           <div class="label">Permissions</div><div class="value"><span class="pill">⚙ Manage Messages</span></div>
           <div class="label">Arguments</div>
@@ -746,11 +796,11 @@ footer {
   </section>
 
   <section id="reactionrole">
-    <div class="section-title"><h2>Reaction Roles</h2></div>
     <div class="command-box has-media">
       <div class="command-box-body">
-        <div class="command-header">reactionrole</div>
+        <div class="command-header">Reaction Role Command</div>
         <div class="property-grid">
+          <div class="label">Usage</div><div class="value"><span class="pill-blue">/reactionrole</span></div>
           <div class="label">Description</div><div class="value">Creates an interactive setup flow that posts role buttons in a chosen channel so members can self-assign roles without staff involvement.</div>
           <div class="label">Permissions</div><div class="value"><span class="pill">⚙ Manage Roles</span></div>
           <div class="label">Arguments</div>
@@ -782,11 +832,11 @@ footer {
   </section>
 
   <section id="event">
-    <div class="section-title"><h2>Event System</h2></div>
     <div class="command-box has-media">
       <div class="command-box-body">
-        <div class="command-header">event</div>
+        <div class="command-header">Event Command</div>
         <div class="property-grid">
+          <div class="label">Usage</div><div class="value"><span class="pill-blue">/event</span></div>
           <div class="label">Description</div><div class="value">Creates and manages temporary event voice channels. Channels are automatically archived or removed after the event concludes.</div>
           <div class="label">Permissions</div><div class="value"><span class="pill">⚙ Manage Channels</span></div>
           <div class="label">Arguments</div>
@@ -817,11 +867,11 @@ footer {
   </section>
 
   <section id="ticketpanel">
-    <div class="section-title"><h2>Ticket Panel</h2></div>
     <div class="command-box has-media">
       <div class="command-box-body">
-        <div class="command-header">ticketpanel</div>
+        <div class="command-header">Ticket Panel Command</div>
         <div class="property-grid">
+          <div class="label">Usage</div><div class="value"><span class="pill-blue">/ticketpanel</span></div>
           <div class="label">Description</div><div class="value">Sends the support panel that lets members open a ticket for general help or purchase support.</div>
           <div class="label">Permissions</div><div class="value"><span class="pill">⚙ Send Messages</span></div>
         </div>
@@ -840,10 +890,9 @@ footer {
   </div>
 
   <section id="aichat">
-    <div class="section-title"><h2>AI Chat Bot</h2></div>
     <div class="command-box has-media">
       <div class="command-box-body">
-        <div class="command-header auto">AI Chat</div>
+        <div class="command-header">AI Chat</div>
         <div class="property-grid">
           <div class="label">Description</div><div class="value">An AI bot that listens in designated channels and replies to messages automatically. No command needed — just type and it will respond.</div>
           <div class="label">Trigger</div><div class="value">Any message in the designated channel</div>
@@ -1108,13 +1157,25 @@ footer {
 
   // Card role toggles: switch command perspective content and preview image.
   const roleContentBySection = {
-    welcome: {
+    welcomeMessage: {
       user: 'Shows new members who invited them and confirms account context right as they join.',
       staff: 'Lets staff verify invite attribution quickly and spot suspicious fresh accounts at join-time.'
+    },
+    magicInvites: {
+      user: 'Members get transparent invite attribution and a clearer join context from the moment they arrive.',
+      staff: 'Staff can audit invite growth patterns and quickly identify unexpected invite behavior.'
+    },
+    stickyRoles: {
+      user: 'Returning members regain their previous access profile automatically when they come back.',
+      staff: 'Staff no longer need to manually restore prior roles after temporary departures.'
     },
     verification: {
       user: 'Users press Enter Server to unlock channels and receive the Member role immediately.',
       staff: 'Staff get a low-friction gate that reduces manual role assignment and onboarding confusion.'
+    },
+    leaveListener: {
+      user: 'Users who leave are cleanly recorded, helping maintain accurate server history.',
+      staff: 'Staff receive reliable leave logs for moderation follow-up and retention analysis.'
     },
     ping: {
       user: 'Quickly checks if the bot is responsive before using other features.',
@@ -1158,7 +1219,7 @@ footer {
   }
 
   function setCardRole(card, role) {
-    const sectionId = card.closest('section')?.id;
+    const roleKey = card.dataset.roleKey || card.closest('section')?.id;
     const descEl = findDescriptionValue(card);
     const imgEl = card.querySelector('.command-gif');
 
@@ -1174,7 +1235,7 @@ footer {
       if (role === 'overview') {
         descEl.innerHTML = descEl.dataset.overviewHtml;
       } else {
-        const roleText = roleContentBySection[sectionId]?.[role];
+        const roleText = roleContentBySection[roleKey]?.[role];
         if (roleText) {
           descEl.textContent = roleText;
         }
