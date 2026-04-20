@@ -353,87 +353,48 @@ function updatePreview() {
     }
 }
 
-// Function to safely escape HTML
+/**
+ * Sanitizes a string by converting HTML characters to their entity equivalents.
+ * This prevents Cross-Site Scripting (XSS) when injecting user content into the DOM.
+ */
 function sanitize(str) {
-    const div = document.createElement('div');
-    div.textContent = str;
-    return div.innerHTML;
+    if (typeof str !== 'string') return '';
+    return str.replace(/[&<>"']/g, function(match) {
+        const escape = {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#39;'
+        };
+        return escape[match];
+    });
 }
 
-// CONSOLIDATED REFRESH FUNCTION
 async function refreshMinecraftData() {
     try {
         const res = await fetch(`${API_BASE}/mc-data`);
-        if (!res.ok) throw new Error("API Offline");
-        
+        if (!res.ok) throw new Error("Offline");
         const data = await res.json();
 
-        // 1. UPDATE STATUS (Even if stats are ignored, we show connection)
-        const statusEl = document.getElementById('mc-online-status');
-        if (statusEl) {
-            statusEl.innerText = "● Online";
-            statusEl.style.color = "var(--green)";
-        }
-
-        // 2. UPDATE CHAT FEED
         const chatBox = document.getElementById('mc-chat-box');
-        if (chatBox && data.chat) {
+        if (data.chat && data.chat.length > 0) {
             chatBox.innerHTML = data.chat.map(m => `
                 <div style="margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.03); padding-bottom: 6px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-                        <span class="pill" style="font-size: 11px; background: rgba(74, 222, 128, 0.1); color: var(--green);">
-                            ${sanitize(m.user)}
-                        </span>
-                        <span style="font-family: 'JetBrains Mono'; font-size: 10px; color: var(--muted);">
-                            ${m.time || ''}
-                        </span>
+                    <div style="display: flex; align-items: center; margin-bottom: 4px;">
+                        <span class="pill" style="font-size: 11px;">${sanitize(m.user)}</span> 
+                        <span style="font-family: 'JetBrains Mono'; font-size: 10px; color: var(--muted); margin-left: 8px;">${m.time || ''}</span>
                     </div>
-                    <div style="color: var(--white); margin-left: 4px; font-size: 13px;">
-                        ${sanitize(m.text)}
-                    </div>
+                    <div style="color:var(--text); margin-left: 4px; font-size: 13px;">${sanitize(m.text)}</div>
                 </div>
             `).join('');
+        } else {
+            chatBox.innerHTML = '<div style="color:var(--muted)">No recent activity...</div>';
         }
     } catch (e) {
-        console.error("Chat sync failed:", e);
-        const statusEl = document.getElementById('mc-online-status');
-        if (statusEl) {
-            statusEl.innerText = "○ Offline";
-            statusEl.style.color = "var(--muted)";
-        }
+        document.getElementById('mc-chat-box').innerHTML = '<div style="color:#e74c3c">Bridge Offline...</div>';
     }
 }
 
-// Function to send a message from the Website to Minecraft
-async function sendToGame() {
-    const input = document.getElementById('mc-chat-input');
-    const message = input.value.trim();
-    if (!message) return;
-
-    const token = localStorage.getItem('admin_session');
-
-    try {
-        const res = await fetch(`${API_BASE}/mc-send-chat`, {
-            method: 'POST',
-            headers: { 
-                'Content-Type': 'application/json',
-                'Authorization': token
-            },
-            body: JSON.stringify({ message: message })
-        });
-
-        if (res.ok) {
-            input.value = "";
-            // Trigger an immediate refresh so the web message appears instantly
-            refreshMinecraftData();
-        } else {
-            showToast("Failed to send: Session may be expired.", "error");
-        }
-    } catch (err) {
-        console.error("Chat Error:", err);
-        showToast("Connection error while sending.", "error");
-    }
-}
-
-// START THE LOOP: Check for new data every 3 seconds
-setInterval(refreshMinecraftData, 3000);
+// Start the auto-refresh loop
+setInterval(refreshMinecraftData, 2000);

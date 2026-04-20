@@ -301,56 +301,62 @@ public class MinecraftSocietyBot {
 
         // 1. DATA FROM PLUGIN -> BOT
         app.post("/mc-sync/update", ctx -> {
-    if (!"MMU_Soc_7721_x92_SecretSync_!99".equals(ctx.header("X-MC-Auth"))) { 
-        ctx.status(401); return; 
-    }
+            if (!"MMU_Soc_7721_x92_SecretSync_!99".equals(ctx.header("X-MC-Auth"))) { 
+                ctx.status(401); 
+                return; 
+            }
 
-    org.json.JSONObject data = new org.json.JSONObject(ctx.body());
-    String timestamp = java.time.LocalTime.now().format(java.time.format.DateTimeFormatter.ofPattern("HH:mm"));
+            org.json.JSONObject data = new org.json.JSONObject(ctx.body());
+            String now = java.time.LocalTime.now().format(java.time.format.DateTimeFormatter.ofPattern("HH:mm"));
 
-    if (data.has("newChat")) {
-        org.json.JSONArray newMsgs = data.getJSONArray("newChat");
-        for (int i = 0; i < newMsgs.length(); i++) {
-            org.json.JSONObject m = newMsgs.getJSONObject(i);
-            // Added "time" key here
-            liveChat.add(0, Map.of(
-                "user", m.getString("player"), 
-                "text", m.getString("content"),
-                "time", timestamp
+            // Sync Chat Messages from Game
+            if (data.has("newChat")) {
+                org.json.JSONArray newMsgs = data.getJSONArray("newChat");
+                for (int i = 0; i < newMsgs.length(); i++) {
+                    org.json.JSONObject m = newMsgs.getJSONObject(i);
+                    liveChat.add(0, java.util.Map.of(
+                        "user", m.getString("player"), 
+                        "text", m.getString("content"),
+                        "time", now
+                    ));
+                }
+                while (liveChat.size() > 50) liveChat.remove(liveChat.size() - 1);
+            }
+
+            // Send back any messages queued from the Website to the Game
+            org.json.JSONArray responseQueue = new org.json.JSONArray(webToGameQueue);
+            webToGameQueue.clear();
+            ctx.json(responseQueue.toString());
+        });
+
+        // 2. DATA FROM BOT -> WEBSITE
+        app.get("/mc-data", ctx -> {
+            // Only returning chat now (no status object)
+            ctx.json(java.util.Map.of("chat", liveChat));
+        });
+
+        // 3. CHAT FROM WEBSITE -> GAME
+        app.post("/mc-send-chat", ctx -> {
+            String sessionId = ctx.header("Authorization");
+            if (!activeSessions.containsKey(sessionId)) { ctx.status(401); return; }
+
+            org.json.JSONObject body = new org.json.JSONObject(ctx.body());
+            String message = body.getString("message");
+            String user = activeSessions.get(sessionId).username;
+            String now = java.time.LocalTime.now().format(java.time.format.DateTimeFormatter.ofPattern("HH:mm"));
+            
+            // Add to the queue for the plugin to pick up on its next sync
+            webToGameQueue.add("§a[Web] §f" + user + ": " + message);
+            
+            // Add to web chat immediately so the sender sees it on the dashboard
+            liveChat.add(0, java.util.Map.of(
+                "user", user + " (Web)", 
+                "text", message,
+                "time", now
             ));
-        }
-        while (liveChat.size() > 50) liveChat.remove(liveChat.size() - 1);
-    }
-
-    org.json.JSONArray responseQueue = new org.json.JSONArray(webToGameQueue);
-    webToGameQueue.clear();
-    ctx.json(responseQueue.toString());
-});
-
-// 2. CHAT FROM WEBSITE -> GAME
-app.post("/mc-send-chat", ctx -> {
-    String sessionId = ctx.header("Authorization");
-    if (!activeSessions.containsKey(sessionId)) { ctx.status(401); return; }
-
-    var session = activeSessions.get(sessionId);
-    String user = session.username != null ? session.username : "Unknown User"; 
-    org.json.JSONObject body = new org.json.JSONObject(ctx.body());
-    String message = body.getString("message");
-    String timestamp = java.time.LocalTime.now().format(java.time.format.DateTimeFormatter.ofPattern("HH:mm"));
-
-    // Send to Minecraft queue
-    webToGameQueue.add("§a[Web] §f" + user + ": " + message);
-
-    // NEW: Add directly to web chat list so it shows on the dashboard immediately
-    liveChat.add(0, Map.of(
-        "user", user + " (Web)", 
-        "text", message,
-        "time", timestamp
-    ));
-
-    ctx.status(200);
-});
-
+            
+            ctx.status(200);
+        });
 
 
     }
