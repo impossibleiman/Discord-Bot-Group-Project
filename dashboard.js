@@ -1,6 +1,7 @@
 const API_BASE = "https://api.mmuminecraftsociety.co.uk";
 let currentGuildId = null;
 let welcomeEmbedBuilder = null;
+let leaveEmbedBuilder = null;
 
 const DASHBOARD_ACTIVE_TAB_KEY = 'dashboard_active_tab';
 const DASHBOARD_SELECTED_GUILD_KEY = 'dashboard_selected_guild';
@@ -68,8 +69,43 @@ function initEmbedBuilders() {
         defaultBorderColor: '#1e1f22'
     });
 
+    leaveEmbedBuilder = createEmbedBuilder({
+        nicknameInputId: 'config-nickname',
+        inputIds: {
+            title: 'leave-emb-title',
+            desc: 'leave-emb-desc',
+            color: 'leave-emb-color',
+            thumb: 'leave-emb-thumb',
+            image: 'leave-emb-image',
+            footer: 'leave-emb-footer'
+        },
+        previewIds: {
+            botName: 'leave-prev-bot-name',
+            container: 'leave-prev-container',
+            title: 'leave-prev-title',
+            desc: 'leave-prev-desc',
+            thumb: 'leave-prev-thumb',
+            image: 'leave-prev-image',
+            footerWrap: 'leave-prev-footer-wrap',
+            footerText: 'leave-prev-footer-text'
+        },
+        defaultDescriptionHtml: 'User (<span style="color:#c9cdfb; background:rgba(88,101,242,.3); padding:0 2px; border-radius:3px;">@User</span>) left the server.<br>Time in server: <span style="color:#c9cdfb; background:rgba(88,101,242,.3); padding:0 2px; border-radius:3px;">2y 3mo 5d</span><br>Roles: <span style="color:#c9cdfb; background:rgba(88,101,242,.3); padding:0 2px; border-radius:3px;">@Member</span>, <span style="color:#c9cdfb; background:rgba(88,101,242,.3); padding:0 2px; border-radius:3px;">@Builder</span>',
+        variableMocks: {
+            '$USER': '@User (<span style="color:#c9cdfb; background:rgba(88,101,242,.3); padding:0 2px; border-radius:3px;">@User</span>)',
+            '$TIME_IN_SERVER': '<span style="color:#c9cdfb; background:rgba(88,101,242,.3); padding:0 2px; border-radius:3px;">2y 3mo 5d</span>',
+            '$ROLES': '<span style="color:#c9cdfb; background:rgba(88,101,242,.3); padding:0 2px; border-radius:3px;">@Member, @Builder</span>',
+            '$TIME': 'Today at 12:00 PM'
+        },
+        defaultBotName: 'Society Bot',
+        defaultBorderColor: '#ef4444'
+    });
+
     if (welcomeEmbedBuilder) {
         welcomeEmbedBuilder.update();
+    }
+
+    if (leaveEmbedBuilder) {
+        leaveEmbedBuilder.update();
     }
 }
 
@@ -106,8 +142,14 @@ function switchTab(tabId, buttonElement, persist = true) {
 
 function updateServerRequiredState(activeTabId) {
     const needsServer = activeTabId !== 'tab-minecraft' && !currentGuildId;
+    const identityNote = document.getElementById('identity-server-note');
     const generalNote = document.getElementById('general-server-note');
     const invitesNote = document.getElementById('invites-server-note');
+    const leaveNote = document.getElementById('leave-server-note');
+
+    if (identityNote) {
+        identityNote.classList.toggle('visible', activeTabId === 'tab-identity' && needsServer);
+    }
 
     if (generalNote) {
         generalNote.classList.toggle('visible', activeTabId === 'tab-general' && needsServer);
@@ -115,6 +157,10 @@ function updateServerRequiredState(activeTabId) {
 
     if (invitesNote) {
         invitesNote.classList.toggle('visible', activeTabId === 'tab-invites' && needsServer);
+    }
+
+    if (leaveNote) {
+        leaveNote.classList.toggle('visible', activeTabId === 'tab-leave' && needsServer);
     }
 }
 
@@ -213,61 +259,143 @@ async function loadServerConfig() {
     const nickEl = document.getElementById('config-nickname');
     if (nickEl) nickEl.value = config.nickname || "";
 
-    let embedData = {};
-    try { embedData = JSON.parse(config.welcomeMessage || "{}"); } 
-    catch (e) { embedData = { desc: config.welcomeMessage || "" }; }
+    let WelcomeEmbedData = {};
+    try { WelcomeEmbedData = JSON.parse(config.welcomeMessage || "{}"); } 
+    catch (e) { WelcomeEmbedData = { desc: config.welcomeMessage || "" }; }
 
-    document.getElementById('emb-title').value = embedData.title || "";
-    document.getElementById('emb-desc').value = embedData.desc || "";
-    document.getElementById('emb-color').value = embedData.color || "";
-    document.getElementById('emb-thumb').value = embedData.thumb || "";
-    document.getElementById('emb-image').value = embedData.image || "";
-    document.getElementById('emb-footer').value = embedData.footer || "";
+    document.getElementById('emb-title').value = WelcomeEmbedData.title || "";
+    document.getElementById('emb-desc').value = WelcomeEmbedData.desc || "";
+    document.getElementById('emb-color').value = WelcomeEmbedData.color || "";
+    document.getElementById('emb-thumb').value = WelcomeEmbedData.thumb || "";
+    document.getElementById('emb-image').value = WelcomeEmbedData.image || "";
+    document.getElementById('emb-footer').value = WelcomeEmbedData.footer || "";
+
+    let leaveEmbedData = {};
+    try { leaveEmbedData = JSON.parse(config.leaveMessage || "{}"); }
+    catch (e) { leaveEmbedData = { desc: config.leaveMessage || "" }; }
+
+    document.getElementById('leave-emb-title').value = leaveEmbedData.title || "";
+    document.getElementById('leave-emb-desc').value = leaveEmbedData.desc || "";
+    document.getElementById('leave-emb-color').value = leaveEmbedData.color || "";
+    document.getElementById('leave-emb-thumb').value = leaveEmbedData.thumb || "";
+    document.getElementById('leave-emb-image').value = leaveEmbedData.image || "";
+    document.getElementById('leave-emb-footer').value = leaveEmbedData.footer || "";
 
     renderAliasTable(config.inviteAliases || {});
-    updatePreview(); 
+    updateWelcomePreview();
+    updateLeavePreview();
 }
 
-async function saveServerConfig() {
+async function postConfigUpdate(payload, options = {}) {
     if (!currentGuildId) {
         showToast("Select a server from the sidebar first.", "error");
-        return;
+        return false;
     }
+
     const token = localStorage.getItem('admin_session');
-    const btn = document.getElementById('save-general-btn');
-    if (btn) { btn.innerText = "Saving..."; btn.disabled = true; }
+    const btnId = options.btnId || null;
+    const savingText = options.savingText || "Saving...";
+    const idleText = options.idleText || "Save";
+    const successMessage = options.successMessage || "Settings saved successfully!";
+
+    const btn = btnId ? document.getElementById(btnId) : null;
+    if (btn) {
+        btn.innerText = savingText;
+        btn.disabled = true;
+    }
     
     try {
-        const embedData = welcomeEmbedBuilder
-            ? welcomeEmbedBuilder.getPayload()
-            : {
-                title: document.getElementById('emb-title').value,
-                desc: document.getElementById('emb-desc').value,
-                color: document.getElementById('emb-color').value,
-                thumb: document.getElementById('emb-thumb').value,
-                image: document.getElementById('emb-image').value,
-                footer: document.getElementById('emb-footer').value
-            };
-
-        // RESTORED: Send the nickname to the Java Backend!
-        const payload = { 
-            nickname: document.getElementById('config-nickname').value,
-            welcomeMessage: JSON.stringify(embedData) 
-        };
-
         const postRes = await fetch(`${API_BASE}/config/${currentGuildId}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Authorization': token },
             body: JSON.stringify(payload)
         });
 
-        if (postRes.ok) showToast("Embed settings saved successfully!");
-        else showToast("Failed to save settings.", "error");
+        if (postRes.ok) {
+            showToast(successMessage);
+            return true;
+        }
+
+        showToast("Failed to save settings.", "error");
+        return false;
     } catch (err) {
         showToast("Network error.", "error");
+        return false;
     } finally {
-        if (btn) { btn.innerText = "Save Identity Settings"; btn.disabled = false; }
+        if (btn) {
+            btn.innerText = idleText;
+            btn.disabled = false;
+        }
     }
+}
+
+function buildWelcomeEmbedPayload() {
+    return welcomeEmbedBuilder
+        ? welcomeEmbedBuilder.getPayload()
+        : {
+            title: document.getElementById('emb-title').value,
+            desc: document.getElementById('emb-desc').value,
+            color: document.getElementById('emb-color').value,
+            thumb: document.getElementById('emb-thumb').value,
+            image: document.getElementById('emb-image').value,
+            footer: document.getElementById('emb-footer').value
+        };
+}
+
+function buildLeaveEmbedPayload() {
+    return leaveEmbedBuilder
+        ? leaveEmbedBuilder.getPayload()
+        : {
+            title: document.getElementById('leave-emb-title').value,
+            desc: document.getElementById('leave-emb-desc').value,
+            color: document.getElementById('leave-emb-color').value,
+            thumb: document.getElementById('leave-emb-thumb').value,
+            image: document.getElementById('leave-emb-image').value,
+            footer: document.getElementById('leave-emb-footer').value
+        };
+}
+
+async function saveServerIdentity() {
+    const nicknameInput = document.getElementById('config-nickname');
+    await postConfigUpdate(
+        {
+            nickname: nicknameInput ? nicknameInput.value : ''
+        },
+        {
+            btnId: 'save-identity-btn',
+            savingText: 'Saving Identity...',
+            idleText: 'Save Server Identity',
+            successMessage: 'Server identity saved successfully!'
+        }
+    );
+}
+
+async function saveWelcomeEmbedConfig() {
+    await postConfigUpdate(
+        {
+            welcomeMessage: JSON.stringify(buildWelcomeEmbedPayload())
+        },
+        {
+            btnId: 'save-welcome-btn',
+            savingText: 'Saving Welcome Embed...',
+            idleText: 'Save Welcome Embed',
+            successMessage: 'Welcome embed saved successfully!'
+        }
+    );
+}
+
+async function saveLeaveEmbedConfig() {
+    await postConfigUpdate(
+        {
+            leaveMessage: JSON.stringify(buildLeaveEmbedPayload())
+        },
+        {
+            btnId: 'save-leave-btn',
+            savingText: 'Saving Leave Embed...',
+            idleText: 'Save Leave Settings',
+            successMessage: 'Leave listener embed saved successfully!'
+        }
+    );
 }
 
 async function checkBotStatus() {
@@ -376,13 +504,26 @@ async function deleteAlias(code) {
     }
 }
 
-function updatePreview() {
+function updateWelcomePreview() {
     if (!welcomeEmbedBuilder) {
         initEmbedBuilders();
     }
     if (welcomeEmbedBuilder) {
         welcomeEmbedBuilder.update();
     }
+}
+
+function updateLeavePreview() {
+    if (!leaveEmbedBuilder) {
+        initEmbedBuilders();
+    }
+    if (leaveEmbedBuilder) {
+        leaveEmbedBuilder.update();
+    }
+}
+
+function updatePreview() {
+    updateWelcomePreview();
 }
 
 function createEmbedBuilder(config) {
@@ -463,7 +604,7 @@ function createEmbedBuilder(config) {
 
         const footerRaw = getInputValue(config.inputIds.footer);
         if (footerRaw) {
-            const footerText = replaceTemplateTokens(footerRaw, { '$MEMBER_COUNT': '42' });
+            const footerText = replaceTemplateTokens(footerRaw, config.footerMocks || config.variableMocks);
             prevFooterWrap.style.display = 'flex';
             prevFooterText.innerText = footerText;
         } else {
