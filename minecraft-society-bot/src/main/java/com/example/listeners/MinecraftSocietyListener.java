@@ -150,7 +150,7 @@ public class MinecraftSocietyListener extends ListenerAdapter {
             }
         }
 
-        String timeVar = "<t:" + (System.currentTimeMillis() / 1000) + ":R>";
+        String timeVar = "<t:" + (System.currentTimeMillis() / 1000) + ":f>";
         String ageVar = "<t:" + event.getUser().getTimeCreated().toEpochSecond() + ":R>";
         String pfpVar = event.getUser().getEffectiveAvatarUrl();
 

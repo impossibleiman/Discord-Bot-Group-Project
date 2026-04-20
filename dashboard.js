@@ -66,6 +66,12 @@ function initEmbedBuilders() {
             '$PFP': '<span style="color:#c9cdfb; background:rgba(88,101,242,.3); padding:0 2px; border-radius:3px;">User profile picture URL</span>',
             '$TIME': 'Today at 12:00 PM'
         },
+        titleMocks: {
+            '$TIME': '<t:1776689340:R>'
+        },
+        footerMocks: {
+            '$TIME': '<t:1776689340:R>'
+        },
         mediaMocks: {
             '$PFP': 'https://cdn.discordapp.com/embed/avatars/0.png'
         },
@@ -101,6 +107,12 @@ function initEmbedBuilders() {
             '$MEMBER_COUNT': '41',
             '$PFP': '<span style="color:#c9cdfb; background:rgba(88,101,242,.3); padding:0 2px; border-radius:3px;">User profile picture URL</span>',
             '$TIME': 'Today at 12:00 PM'
+        },
+        titleMocks: {
+            '$TIME': '<t:1776689340:R>'
+        },
+        footerMocks: {
+            '$TIME': '<t:1776689340:R>'
         },
         mediaMocks: {
             '$PFP': 'https://cdn.discordapp.com/embed/avatars/1.png'
@@ -580,8 +592,15 @@ function createEmbedBuilder(config) {
 
         const title = getInputValue(config.inputIds.title);
         if (title) {
+            const titleText = replaceTemplateTokens(
+                title,
+                {
+                    ...(config.variableMocks || {}),
+                    ...(config.titleMocks || {})
+                }
+            );
             prevTitle.style.display = 'block';
-            prevTitle.innerText = title;
+            prevTitle.innerText = titleText;
         } else {
             prevTitle.style.display = 'none';
         }
@@ -615,7 +634,13 @@ function createEmbedBuilder(config) {
 
         const footerRaw = getInputValue(config.inputIds.footer);
         if (footerRaw) {
-            const footerText = replaceTemplateTokens(footerRaw, config.footerMocks || config.variableMocks);
+            const footerText = replaceTemplateTokens(
+                footerRaw,
+                {
+                    ...(config.variableMocks || {}),
+                    ...(config.footerMocks || {})
+                }
+            );
             prevFooterWrap.style.display = 'flex';
             prevFooterText.innerText = footerText;
         } else {

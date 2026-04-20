@@ -159,7 +159,7 @@ public class LeaveListener extends ListenerAdapter {
                 .replaceAll("(?i)\\$ROLES\\b", java.util.regex.Matcher.quoteReplacement(roles))
                 .replaceAll("(?i)\\$MEMBER_COUNT\\b", java.util.regex.Matcher.quoteReplacement(memberCount))
                 .replaceAll("(?i)\\$PFP\\b", java.util.regex.Matcher.quoteReplacement(pfp))
-                .replaceAll("(?i)\\$TIME\\b", "<t:" + (System.currentTimeMillis() / 1000L) + ":R>");
+                .replaceAll("(?i)\\$TIME\\b", "<t:" + (System.currentTimeMillis() / 1000L) + ":f>");
     }
 
     private Color parseColorSafely(String hex, Color fallback) {
