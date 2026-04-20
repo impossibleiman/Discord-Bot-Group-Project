@@ -101,7 +101,7 @@ public class MinecraftSocietyBot {
 
         try {
             jdaHolder = JDABuilder.createDefault(token)
-                    .enableIntents(GatewayIntent.MESSAGE_CONTENT, GatewayIntent.GUILD_MEMBERS, GatewayIntent.GUILD_MESSAGES)
+                    .enableIntents(GatewayIntent.MESSAGE_CONTENT, GatewayIntent.GUILD_MEMBERS, GatewayIntent.GUILD_MESSAGES, GatewayIntent.GUILD_PRESENCES)
                     .addEventListeners(
                                        manager,
                                        listener,
@@ -172,7 +172,7 @@ public class MinecraftSocietyBot {
                 if (!allowedGuilds.isEmpty()) {
                     String sessionId = java.util.UUID.randomUUID().toString();
                     activeSessions.put(sessionId, new SessionData(userId, username, allowedGuilds));
-                    ctx.redirect("https://mmuminecraftsociety.co.uk/dashboard.html?session=" + sessionId);
+                    ctx.redirect("https://mmuminecraftsociety.co.uk/dashboard.htmlsession=" + sessionId);
                 } else {
                     ctx.status(403).result("Access Denied: You must be an Admin in a server where the bot is present.");
                 }
@@ -380,6 +380,33 @@ public class MinecraftSocietyBot {
             ));
             
             ctx.status(200);
+        });
+
+        // --- DISCORD STATS ENDPOINT ---
+        app.get("/discord-stats", ctx -> {
+            // HARDCODE YOUR IDs HERE
+            String targetGuildId = "1468598134241230851"; 
+            String targetBotId = "1493768627256688772"; 
+
+            net.dv8tion.jda.api.entities.Guild guild = jdaHolder.getGuildById(targetGuildId);
+            
+            if (guild == null) {
+                ctx.status(404).json(java.util.Map.of("error", "Server not found."));
+                return;
+            }
+
+            int memberCount = guild.getMemberCount();
+            String botStatus = "offline";
+
+            net.dv8tion.jda.api.entities.Member targetBot = guild.getMemberById(targetBotId);
+            if (targetBot != null && targetBot.getOnlineStatus() != net.dv8tion.jda.api.OnlineStatus.OFFLINE) {
+                botStatus = "online";
+            }
+
+            ctx.json(java.util.Map.of(
+                "memberCount", memberCount,
+                "botStatus", botStatus
+            ));
         });
 
 

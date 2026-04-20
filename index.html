@@ -267,7 +267,7 @@ footer {
 }
 </style>
 </head>
-<body data-page="docs">
+< data-page="docs">
 
 <div id="site-header"></div>
 
@@ -306,9 +306,15 @@ footer {
 
     <div class="overview-aside">
       <div class="section-title"><h2>Server Status</h2><span class="tag">v 1.0</span></div>
-      <div class="status-card">
-        <div class="stat"><div class="stat-label">Discord Member Count</div><div class="stat-value">--</div></div>
-        <div class="stat"><div class="stat-label">Status</div><div class="stat-value green">--</div></div>
+        <div class="status-card">
+          <div class="stat">
+            <div class="stat-label">Discord Member Count</div>
+            <div class="stat-value" id="index-discord-members">--</div>
+          </div>
+          <div class="stat">
+            <div class="stat-label">Status</div>
+            <div class="stat-value" id="index-bot-status">--</div>
+          </div>
       </div>
     </div>
   </div>
@@ -440,6 +446,50 @@ footer {
 
 <script src="scripts/header-loader.js"></script>
 <script src="scripts/footer-loader.js"></script>
+
+<script>
+// --- LIVE DISCORD STATS API ---
+  const API_BASE = "https://api.mmuminecraftsociety.co.uk";
+
+  async function fetchDiscordStats() {
+    try {
+        const res = await fetch(`${API_BASE}/discord-stats`);
+        if (res.ok) {
+            const data = await res.json();
+            
+            // Update Member Count
+            const membersEl = document.getElementById('index-discord-members');
+            if (membersEl) membersEl.innerText = data.memberCount;
+            
+            // Update Bot Status Text & Color
+            const statusEl = document.getElementById('index-bot-status');
+            if (statusEl) {
+                if (data.botStatus === "online") {
+                    statusEl.innerText = "● Online";
+                    statusEl.style.color = "var(--green)";
+                } else {
+                    statusEl.innerText = "○ Offline";
+                    statusEl.style.color = "#e74c3c"; // Red
+                }
+            }
+        }
+    } catch (e) {
+        console.error("Failed to fetch Discord stats");
+        const statusEl = document.getElementById('index-bot-status');
+        if (statusEl) {
+            statusEl.innerText = "API Offline";
+            statusEl.style.color = "#e74c3c";
+        }
+    }
+  }
+
+  // Fetch instantly on page load
+  document.addEventListener("DOMContentLoaded", fetchDiscordStats);
+  
+  // Fetch instantly when the user clicks back onto the tab
+  window.addEventListener('focus', fetchDiscordStats);
+</script>
+
 <script>
   // Sidebar scroll highlight
   const sections = document.querySelectorAll('section');
