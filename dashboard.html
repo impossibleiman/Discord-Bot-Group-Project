@@ -382,6 +382,9 @@ td code { background: #08101a; padding: 4px 8px; border-radius: 4px; color: var(
     <button class="nav-tab" onclick="switchTab('tab-general', this)">
       <span class="sidebar-dot"></span>Welcome Message
     </button>
+    <button class="nav-tab" onclick="switchTab('tab-reaction', this)">
+      <span class="sidebar-dot"></span>Reaction Roles
+    </button>
     <button class="nav-tab" onclick="switchTab('tab-leave', this)">
       <span class="sidebar-dot"></span>Leave Listener
     </button>
@@ -611,6 +614,59 @@ td code { background: #08101a; padding: 4px 8px; border-radius: 4px; color: var(
           </div>
         </div>
         <button id="save-leave-btn" class="btn-primary" style="margin-top: 20px;" onclick="saveLeaveEmbedConfig()">Save Leave Settings</button>
+      </div>
+    </div>
+
+    <div id="tab-reaction" class="tab-content">
+      <div class="requires-server-note" id="reaction-server-note">Choose a server from the left sidebar to edit reaction role templates.</div>
+      <div class="command-box">
+        <h3>Reaction Role Builder</h3>
+        <p style="color: var(--muted); font-size: 13px; margin-bottom: 16px; display: flex; align-items: center; flex-wrap: wrap; gap: 8px;">
+          Variables:
+          <span class="pill">$CHANNEL</span>
+          <span class="pill">$ROLE</span>
+        </p>
+
+        <div class="input-group" style="margin-bottom: 12px;">
+          <label>Live Reaction Roles</label>
+          <div id="rr-live-list" style="display:flex; flex-direction:column; gap:8px; color: var(--muted); font-size: 13px;">No live reaction roles yet. Click Send Message to create one.</div>
+          <div style="margin-top: 10px;">
+            <button class="btn-primary" type="button" id="rr-new-config-btn" onclick="startNewReactionRoleConfig()">New Reaction Role</button>
+          </div>
+        </div>
+
+        <div id="rr-editor-panel" style="display:none;">
+          <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-bottom: 12px;">
+            <div class="input-group" style="margin-bottom: 0;">
+              <label>Target Channel</label>
+              <select id="rr-channel-id" style="background: #08101a; border: 1px solid var(--border); color: var(--white); padding: 12px 16px; border-radius: 8px; font-family: 'JetBrains Mono', monospace; font-size: 13px; width: 100%;">
+                <option value="">Select a channel...</option>
+              </select>
+            </div>
+            <div class="input-group" style="margin-bottom: 0;">
+              <label>Message ID (optional for edits)</label>
+              <input type="text" id="rr-message-id" placeholder="Set existing message ID to edit it">
+            </div>
+          </div>
+
+          <div class="input-group">
+            <label>Message Content</label>
+            <textarea id="rr-content" placeholder="Choose your roles in $CHANNEL\nAvailable roles: $ROLE"></textarea>
+          </div>
+
+          <div class="input-group">
+            <label>Role Buttons</label>
+            <div id="rr-buttons-container" style="display:flex; flex-direction:column; gap:10px;"></div>
+            <div style="display:flex; gap:10px; margin-top: 12px; flex-wrap: wrap;">
+              <button class="btn-primary" type="button" onclick="addReactionRoleButtonRow()">Add Button</button>
+            </div>
+          </div>
+
+          <div style="display:flex; gap:10px; margin-top: 20px; flex-wrap: wrap;">
+            <button id="publish-reaction-btn" class="btn-primary" onclick="publishReactionRoleConfig()">Send Message</button>
+            <button id="cancel-reaction-btn" class="btn-danger" onclick="cancelReactionRoleEdit()">Cancel</button>
+          </div>
+        </div>
       </div>
     </div>
 

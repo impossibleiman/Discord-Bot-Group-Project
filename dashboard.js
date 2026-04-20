@@ -2,6 +2,10 @@ const API_BASE = "https://api.mmuminecraftsociety.co.uk";
 let currentGuildId = null;
 let welcomeEmbedBuilder = null;
 let leaveEmbedBuilder = null;
+let reactionRoleConfigsById = {};
+let currentGuildChannels = [];
+let currentGuildRoles = [];
+let activeReactionRoleId = null;
 
 const DASHBOARD_ACTIVE_TAB_KEY = 'dashboard_active_tab';
 const DASHBOARD_SELECTED_GUILD_KEY = 'dashboard_selected_guild';
@@ -15,6 +19,7 @@ document.addEventListener("DOMContentLoaded", () => {
         window.history.replaceState({}, document.title, "/dashboard.html");
     }
     initEmbedBuilders();
+    initReactionRoleEditor();
     restoreActiveTabFromStorage();
     verifySession();
 });
@@ -165,6 +170,7 @@ function updateServerRequiredState(activeTabId) {
     const needsServer = activeTabId !== 'tab-minecraft' && !currentGuildId;
     const identityNote = document.getElementById('identity-server-note');
     const generalNote = document.getElementById('general-server-note');
+    const reactionNote = document.getElementById('reaction-server-note');
     const invitesNote = document.getElementById('invites-server-note');
     const leaveNote = document.getElementById('leave-server-note');
 
@@ -174,6 +180,10 @@ function updateServerRequiredState(activeTabId) {
 
     if (generalNote) {
         generalNote.classList.toggle('visible', activeTabId === 'tab-general' && needsServer);
+    }
+
+    if (reactionNote) {
+        reactionNote.classList.toggle('visible', activeTabId === 'tab-reaction' && needsServer);
     }
 
     if (invitesNote) {
@@ -302,6 +312,12 @@ async function loadServerConfig() {
     document.getElementById('leave-emb-image').value = leaveEmbedData.image || "";
     document.getElementById('leave-emb-footer').value = leaveEmbedData.footer || "";
 
+    reactionRoleConfigsById = config.reactionRoleConfigs || {};
+    await loadGuildMetadata();
+    renderReactionRoleLiveList();
+    hideReactionRoleEditor();
+    activeReactionRoleId = null;
+
     renderAliasTable(config.inviteAliases || {});
     updateWelcomePreview();
     updateLeavePreview();
@@ -417,6 +433,377 @@ async function saveLeaveEmbedConfig() {
             successMessage: 'Leave listener embed saved successfully!'
         }
     );
+}
+
+function initReactionRoleEditor() {
+    hideReactionRoleEditor();
+}
+
+function generateReactionRoleConfigId() {
+    return `rr-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+}
+
+function normalizeDiscordId(value) {
+    const raw = (value || '').trim();
+    if (!raw) return '';
+
+    const mentionMatch = raw.match(/^<#(\d+)>$/);
+    if (mentionMatch) {
+        return mentionMatch[1];
+    }
+
+    return raw.replace(/\D/g, '');
+}
+
+function addReactionRoleButtonRow(buttonData = {}) {
+    const container = document.getElementById('rr-buttons-container');
+    if (!container) return;
+
+    const row = document.createElement('div');
+    row.className = 'rr-button-row';
+    row.style.display = 'grid';
+    row.style.gridTemplateColumns = 'minmax(120px, 1fr) minmax(180px, 1fr) 120px auto';
+    row.style.gap = '8px';
+    row.style.alignItems = 'end';
+
+    const roleOptions = ['<option value="">Select role...</option>']
+        .concat(currentGuildRoles.map(role => {
+            const isSelected = role.id === (buttonData.roleId || '') ? ' selected' : '';
+            return `<option value="${sanitize(role.id)}"${isSelected}>${sanitize(role.name)}</option>`;
+        }))
+        .join('');
+
+    row.innerHTML = `
+        <div class="input-group" style="margin-bottom:0;">
+            <label>Label</label>
+            <input type="text" class="rr-btn-label" placeholder="Member" value="${sanitize(buttonData.label || '')}">
+        </div>
+        <div class="input-group" style="margin-bottom:0;">
+            <label>Role</label>
+            <select class="rr-btn-role-select" style="background: #08101a; border: 1px solid var(--border); color: var(--white); padding: 12px 16px; border-radius: 8px; font-family: 'JetBrains Mono', monospace; font-size: 13px; width: 100%;">
+                ${roleOptions}
+            </select>
+        </div>
+        <div class="input-group" style="margin-bottom:0;">
+            <label>Emoji (Optional)</label>
+            <input type="text" class="rr-btn-emoji" placeholder=":thumbs_up:" value="${sanitize(buttonData.emoji || '')}">
+        </div>
+        <button class="btn-danger" type="button">Remove</button>
+    `;
+
+    const removeBtn = row.querySelector('.btn-danger');
+    if (removeBtn) {
+        removeBtn.addEventListener('click', () => row.remove());
+    }
+
+    container.appendChild(row);
+}
+
+function clearReactionRoleButtonRows() {
+    const container = document.getElementById('rr-buttons-container');
+    if (!container) return;
+    container.innerHTML = '';
+}
+
+function collectReactionRoleButtons() {
+    const container = document.getElementById('rr-buttons-container');
+    if (!container) return [];
+
+    const rows = Array.from(container.querySelectorAll('.rr-button-row'));
+    const buttons = rows.map(row => {
+        const label = row.querySelector('.rr-btn-label')?.value.trim() || '';
+        const roleId = normalizeDiscordId(row.querySelector('.rr-btn-role-select')?.value || '');
+        const emoji = row.querySelector('.rr-btn-emoji')?.value.trim() || '';
+        return { label, roleId, emoji };
+    }).filter(btn => btn.label && btn.roleId);
+
+    return buttons;
+}
+
+function loadReactionRoleTemplate(templateId) {
+    activeReactionRoleId = templateId;
+    const channelInput = document.getElementById('rr-channel-id');
+    const messageInput = document.getElementById('rr-message-id');
+    const contentInput = document.getElementById('rr-content');
+
+    renderReactionRoleLiveList();
+    showReactionRoleEditor();
+
+    const config = reactionRoleConfigsById?.[templateId] || null;
+    if (!config) {
+        if (channelInput) channelInput.value = '';
+        if (messageInput) messageInput.value = '';
+        if (contentInput) contentInput.value = 'Choose your roles in $CHANNEL\nAvailable roles: $ROLE';
+        clearReactionRoleButtonRows();
+        addReactionRoleButtonRow();
+        return;
+    }
+
+    renderReactionRoleChannelOptions(config.channelId || '');
+    if (channelInput) channelInput.value = config.channelId || '';
+    if (messageInput) messageInput.value = config.messageId || '';
+    if (contentInput) contentInput.value = config.content || '';
+
+    clearReactionRoleButtonRows();
+    const buttons = Array.isArray(config.buttons) ? config.buttons : [];
+    if (buttons.length === 0) {
+        addReactionRoleButtonRow();
+    } else {
+        buttons.forEach(btn => addReactionRoleButtonRow(btn));
+    }
+}
+
+function startNewReactionRoleConfig() {
+    activeReactionRoleId = generateReactionRoleConfigId();
+    const channelInput = document.getElementById('rr-channel-id');
+    const messageInput = document.getElementById('rr-message-id');
+    const contentInput = document.getElementById('rr-content');
+
+    renderReactionRoleChannelOptions('');
+    if (channelInput) channelInput.value = '';
+    if (messageInput) messageInput.value = '';
+    if (contentInput) contentInput.value = 'Choose your roles in $CHANNEL\nAvailable roles: $ROLE';
+
+    clearReactionRoleButtonRows();
+    addReactionRoleButtonRow();
+    showReactionRoleEditor();
+    renderReactionRoleLiveList();
+}
+
+function showReactionRoleEditor() {
+    const panel = document.getElementById('rr-editor-panel');
+    if (panel) {
+        panel.style.display = '';
+    }
+}
+
+function hideReactionRoleEditor() {
+    const panel = document.getElementById('rr-editor-panel');
+    if (panel) {
+        panel.style.display = 'none';
+    }
+}
+
+function cancelReactionRoleEdit() {
+    activeReactionRoleId = null;
+    hideReactionRoleEditor();
+    renderReactionRoleLiveList();
+}
+
+function renderReactionRoleLiveList() {
+    const container = document.getElementById('rr-live-list');
+    if (!container) return;
+
+    const entries = Object.entries(reactionRoleConfigsById || {});
+    if (entries.length === 0) {
+        container.innerHTML = '<div style="color: var(--muted); font-size: 13px;">No live reaction roles yet. Click Send Message to create one.</div>';
+        return;
+    }
+
+    const channelsById = Object.fromEntries((currentGuildChannels || []).map(c => [c.id, c.name]));
+
+    container.innerHTML = entries.map(([configId, cfg]) => {
+        const messageId = cfg?.messageId ? String(cfg.messageId) : 'Draft';
+        const channelName = cfg?.channelId && channelsById[cfg.channelId] ? `#${channelsById[cfg.channelId]}` : (cfg?.channelId ? `#${cfg.channelId}` : 'No channel');
+        const isActive = activeReactionRoleId === configId;
+        const activeStyles = isActive
+            ? 'border-color: var(--green); color: var(--green); background: rgba(74,222,128,.1);'
+            : '';
+
+        return `<button type="button" class="server-pill" data-rr-id="${sanitize(configId)}" style="${activeStyles}">Message ${sanitize(messageId)} in ${sanitize(channelName)}</button>`;
+    }).join('');
+
+    container.querySelectorAll('[data-rr-id]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const configId = btn.getAttribute('data-rr-id');
+            if (configId) {
+                loadReactionRoleTemplate(configId);
+            }
+        });
+    });
+}
+
+async function loadGuildMetadata() {
+    if (!currentGuildId) return;
+
+    const token = localStorage.getItem('admin_session');
+    try {
+        const response = await fetch(`${API_BASE}/guild-meta/${currentGuildId}`, {
+            headers: { 'Authorization': token }
+        });
+        if (!response.ok) {
+            return;
+        }
+
+        const data = await response.json();
+        currentGuildChannels = Array.isArray(data.channels) ? data.channels : [];
+        currentGuildRoles = Array.isArray(data.roles) ? data.roles : [];
+    } catch (err) {
+        currentGuildChannels = [];
+        currentGuildRoles = [];
+    }
+
+    renderReactionRoleChannelOptions();
+}
+
+function renderReactionRoleChannelOptions(selectedChannelId = '') {
+    const channelSelect = document.getElementById('rr-channel-id');
+    if (!channelSelect) return;
+
+    const options = ['<option value="">Select a channel...</option>']
+        .concat(currentGuildChannels.map(channel => {
+            const selected = channel.id === selectedChannelId ? ' selected' : '';
+            return `<option value="${sanitize(channel.id)}"${selected}>#${sanitize(channel.name)}</option>`;
+        }))
+        .join('');
+
+    channelSelect.innerHTML = options;
+    if (selectedChannelId) {
+        channelSelect.value = selectedChannelId;
+    }
+}
+
+async function saveReactionRoleConfig() {
+    const configId = activeReactionRoleId;
+    if (!configId) {
+        showToast('Click New Reaction Role first.', 'error');
+        return false;
+    }
+    const channelId = normalizeDiscordId(document.getElementById('rr-channel-id')?.value || '');
+    const messageId = normalizeDiscordId(document.getElementById('rr-message-id')?.value || '');
+    const content = document.getElementById('rr-content')?.value.trim() || '';
+    const buttons = collectReactionRoleButtons();
+
+    if (!channelId) {
+        showToast('Please provide a valid channel ID.', 'error');
+        return false;
+    }
+    if (!content) {
+        showToast('Reaction role message content is required.', 'error');
+        return false;
+    }
+    if (buttons.length === 0) {
+        showToast('Add at least one button with label and role ID.', 'error');
+        return false;
+    }
+
+    reactionRoleConfigsById[configId] = {
+        templateId: configId,
+        channelId,
+        messageId,
+        content,
+        buttons
+    };
+
+    const ok = await postConfigUpdate(
+        {
+            reactionRoleConfigs: reactionRoleConfigsById
+        },
+        {
+            successMessage: 'Reaction role draft saved!'
+        }
+    );
+
+    if (ok) {
+        renderReactionRoleLiveList();
+    }
+
+    return ok;
+}
+
+async function publishReactionRoleConfig() {
+    const configId = activeReactionRoleId;
+    if (!configId) {
+        showToast('Click New Reaction Role first.', 'error');
+        return;
+    }
+
+    const channelId = normalizeDiscordId(document.getElementById('rr-channel-id')?.value || '');
+    const messageId = normalizeDiscordId(document.getElementById('rr-message-id')?.value || '');
+    const content = document.getElementById('rr-content')?.value.trim() || '';
+    const buttons = collectReactionRoleButtons();
+
+    if (!channelId) {
+        showToast('Please select a channel.', 'error');
+        return;
+    }
+    if (!content) {
+        showToast('Reaction role message content is required.', 'error');
+        return;
+    }
+    if (buttons.length === 0) {
+        showToast('Add at least one button with label and role.', 'error');
+        return;
+    }
+
+    reactionRoleConfigsById[configId] = {
+        templateId: configId,
+        channelId,
+        messageId,
+        content,
+        buttons
+    };
+
+    if (!currentGuildId) {
+        showToast('Select a server from the sidebar first.', 'error');
+        return;
+    }
+
+    const token = localStorage.getItem('admin_session');
+    const publishBtn = document.getElementById('publish-reaction-btn');
+    if (publishBtn) {
+        publishBtn.innerText = 'Publishing...';
+        publishBtn.disabled = true;
+    }
+
+    try {
+        const saveRes = await fetch(`${API_BASE}/config/${currentGuildId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': token },
+            body: JSON.stringify({ reactionRoleConfigs: reactionRoleConfigsById })
+        });
+        if (!saveRes.ok) {
+            showToast('Failed to save reaction role config.', 'error');
+            return;
+        }
+
+        const response = await fetch(`${API_BASE}/reaction-roles/${currentGuildId}/publish?templateId=${encodeURIComponent(configId)}`, {
+            method: 'POST',
+            headers: { 'Authorization': token }
+        });
+
+        if (!response.ok) {
+            const errText = await response.text();
+            showToast(errText || 'Failed to publish reaction role message.', 'error');
+            return;
+        }
+
+        const result = await response.json();
+        const updatedMessageId = (result && result.messageId) ? String(result.messageId) : '';
+        if (updatedMessageId) {
+            const rrMessageIdInput = document.getElementById('rr-message-id');
+            if (rrMessageIdInput) rrMessageIdInput.value = updatedMessageId;
+            if (reactionRoleConfigsById[configId]) {
+                reactionRoleConfigsById[configId].messageId = updatedMessageId;
+            }
+
+            await fetch(`${API_BASE}/config/${currentGuildId}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': token },
+                body: JSON.stringify({ reactionRoleConfigs: reactionRoleConfigsById })
+            });
+        }
+
+        showToast(`Reaction role message ${result.action === 'updated' ? 'updated' : 'sent'} successfully!`);
+        renderReactionRoleLiveList();
+    } catch (err) {
+        showToast('Network error while publishing reaction role message.', 'error');
+    } finally {
+        if (publishBtn) {
+            publishBtn.innerText = 'Send Message';
+            publishBtn.disabled = false;
+        }
+    }
 }
 
 async function checkBotStatus() {
