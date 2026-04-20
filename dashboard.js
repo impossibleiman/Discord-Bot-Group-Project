@@ -63,7 +63,11 @@ function initEmbedBuilders() {
             '$INVITER': '<span style="color:#c9cdfb; background:rgba(88,101,242,.3); padding:0 2px; border-radius:3px;">@Friend</span>',
             '$INVITE': 'discord.gg/abcd123',
             '$AGE': '<span style="color:#c9cdfb; background:rgba(88,101,242,.3); padding:0 2px; border-radius:3px;">2 years, 3 months</span>',
+            '$PFP': '<span style="color:#c9cdfb; background:rgba(88,101,242,.3); padding:0 2px; border-radius:3px;">User profile picture URL</span>',
             '$TIME': 'Today at 12:00 PM'
+        },
+        mediaMocks: {
+            '$PFP': 'https://cdn.discordapp.com/embed/avatars/0.png'
         },
         defaultBotName: 'Society Bot',
         defaultBorderColor: '#1e1f22'
@@ -94,7 +98,12 @@ function initEmbedBuilders() {
             '$USER': '@User (<span style="color:#c9cdfb; background:rgba(88,101,242,.3); padding:0 2px; border-radius:3px;">@User</span>)',
             '$TIME_IN_SERVER': '<span style="color:#c9cdfb; background:rgba(88,101,242,.3); padding:0 2px; border-radius:3px;">2y 3mo 5d</span>',
             '$ROLES': '<span style="color:#c9cdfb; background:rgba(88,101,242,.3); padding:0 2px; border-radius:3px;">@Member, @Builder</span>',
+            '$MEMBER_COUNT': '41',
+            '$PFP': '<span style="color:#c9cdfb; background:rgba(88,101,242,.3); padding:0 2px; border-radius:3px;">User profile picture URL</span>',
             '$TIME': 'Today at 12:00 PM'
+        },
+        mediaMocks: {
+            '$PFP': 'https://cdn.discordapp.com/embed/avatars/1.png'
         },
         defaultBotName: 'Society Bot',
         defaultBorderColor: '#ef4444'
@@ -586,7 +595,8 @@ function createEmbedBuilder(config) {
             prevDesc.innerHTML = withMocks.replace(/\n/g, '<br>');
         }
 
-        const thumb = getInputValue(config.inputIds.thumb);
+        const thumbRaw = getInputValue(config.inputIds.thumb);
+        const thumb = thumbRaw ? replaceTemplateTokens(thumbRaw, config.mediaMocks || config.variableMocks) : '';
         if (thumb) {
             prevThumb.src = thumb;
             prevThumb.style.display = 'block';
@@ -594,7 +604,8 @@ function createEmbedBuilder(config) {
             prevThumb.style.display = 'none';
         }
 
-        const image = getInputValue(config.inputIds.image);
+        const imageRaw = getInputValue(config.inputIds.image);
+        const image = imageRaw ? replaceTemplateTokens(imageRaw, config.mediaMocks || config.variableMocks) : '';
         if (image) {
             prevImage.src = image;
             prevImage.style.display = 'block';

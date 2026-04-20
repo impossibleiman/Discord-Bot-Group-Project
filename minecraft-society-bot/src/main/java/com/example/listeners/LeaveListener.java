@@ -73,6 +73,8 @@ public class LeaveListener extends ListenerAdapter {
             }
 
             String userVar = username + " (" + mention + ")";
+            String pfpVar = event.getUser().getEffectiveAvatarUrl();
+            String memberCountVar = String.valueOf(event.getGuild().getMemberCount());
 
             ServerConfig config = MinecraftSocietyBot.getGuildConfig(event.getGuild().getId());
             JSONObject leaveEmbedData;
@@ -83,16 +85,18 @@ public class LeaveListener extends ListenerAdapter {
                 leaveEmbedData = new JSONObject();
             }
 
-            String title = replaceLeaveVars(leaveEmbedData.optString("title", "Member Left"), userVar, timeMessage, rolesMessage);
+                String title = replaceLeaveVars(leaveEmbedData.optString("title", "Member Left"), userVar, timeMessage, rolesMessage, memberCountVar, pfpVar);
             String description = replaceLeaveVars(
                     leaveEmbedData.optString("desc", "$USER left the server.\nTime in server: $TIME_IN_SERVER\nRoles: $ROLES"),
                     userVar,
                     timeMessage,
-                    rolesMessage
+                    rolesMessage,
+                    memberCountVar,
+                    pfpVar
             );
-            String footer = replaceLeaveVars(leaveEmbedData.optString("footer", ""), userVar, timeMessage, rolesMessage);
-            String thumbnailUrl = leaveEmbedData.optString("thumb", "").trim();
-            String imageUrl = leaveEmbedData.optString("image", "").trim();
+                String footer = replaceLeaveVars(leaveEmbedData.optString("footer", ""), userVar, timeMessage, rolesMessage, memberCountVar, pfpVar);
+                String thumbnailUrl = replaceLeaveVars(leaveEmbedData.optString("thumb", "").trim(), userVar, timeMessage, rolesMessage, memberCountVar, pfpVar);
+                String imageUrl = replaceLeaveVars(leaveEmbedData.optString("image", "").trim(), userVar, timeMessage, rolesMessage, memberCountVar, pfpVar);
             Color embedColor = parseColorSafely(leaveEmbedData.optString("color", ""), new Color(239, 68, 68));
 
             EmbedBuilder eb = new EmbedBuilder()
@@ -144,12 +148,18 @@ public class LeaveListener extends ListenerAdapter {
         return parts.isEmpty() ? "< 1m" : String.join(" ", parts);
     }
 
-    private String replaceLeaveVars(String input, String user, String timeInServer, String roles) {
+    private String replaceLeaveVars(String input, String user, String timeInServer, String roles, String memberCount, String pfp) {
+        if (input == null) {
+            return "";
+        }
+
         return input
-                .replaceAll("(?i)\\$USER\\b", user)
-                .replaceAll("(?i)\\$TIME_IN_SERVER\\b", timeInServer)
-                .replaceAll("(?i)\\$ROLES\\b", roles)
-                .replaceAll("(?i)\\$TIME\\b", "<t:" + (System.currentTimeMillis() / 1000L) + ":f>");
+                .replaceAll("(?i)\\$USER\\b", java.util.regex.Matcher.quoteReplacement(user))
+                .replaceAll("(?i)\\$TIME_IN_SERVER\\b", java.util.regex.Matcher.quoteReplacement(timeInServer))
+                .replaceAll("(?i)\\$ROLES\\b", java.util.regex.Matcher.quoteReplacement(roles))
+                .replaceAll("(?i)\\$MEMBER_COUNT\\b", java.util.regex.Matcher.quoteReplacement(memberCount))
+                .replaceAll("(?i)\\$PFP\\b", java.util.regex.Matcher.quoteReplacement(pfp))
+                .replaceAll("(?i)\\$TIME\\b", "<t:" + (System.currentTimeMillis() / 1000L) + ":R>");
     }
 
     private Color parseColorSafely(String hex, Color fallback) {

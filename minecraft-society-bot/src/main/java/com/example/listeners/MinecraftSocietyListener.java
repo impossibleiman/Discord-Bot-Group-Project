@@ -150,8 +150,9 @@ public class MinecraftSocietyListener extends ListenerAdapter {
             }
         }
 
-        String timeVar = "<t:" + (System.currentTimeMillis() / 1000) + ":f>";
+        String timeVar = "<t:" + (System.currentTimeMillis() / 1000) + ":R>";
         String ageVar = "<t:" + event.getUser().getTimeCreated().toEpochSecond() + ":R>";
+        String pfpVar = event.getUser().getEffectiveAvatarUrl();
 
         String desc = embedData.optString("desc", "");
         
@@ -162,6 +163,7 @@ public class MinecraftSocietyListener extends ListenerAdapter {
         desc = desc.replaceAll("(?i)\\$INVITER\\b", java.util.regex.Matcher.quoteReplacement(inviterVar));
         desc = desc.replaceAll("(?i)\\$INVITE\\b", java.util.regex.Matcher.quoteReplacement(inviteVar));
         desc = desc.replaceAll("(?i)\\$AGE\\b", java.util.regex.Matcher.quoteReplacement(ageVar));
+        desc = desc.replaceAll("(?i)\\$PFP\\b", java.util.regex.Matcher.quoteReplacement(pfpVar));
         desc = desc.replaceAll("(?i)\\$TIME\\b", java.util.regex.Matcher.quoteReplacement(timeVar));
 
         if (restoredRoles != null && !restoredRoles.isEmpty()) {
@@ -175,7 +177,15 @@ public class MinecraftSocietyListener extends ListenerAdapter {
         EmbedBuilder eb = new EmbedBuilder();
         eb.setDescription(desc);
 
-        String title = embedData.optString("title", "");
+        String title = embedData.optString("title", "")
+            .replaceAll("(?i)\\$USER\\b", java.util.regex.Matcher.quoteReplacement(event.getUser().getAsMention()))
+            .replaceAll("(?i)\\$GUILD\\b", java.util.regex.Matcher.quoteReplacement(guild.getName()))
+            .replaceAll("(?i)\\$MEMBER_COUNT\\b", String.valueOf(guild.getMemberCount()))
+            .replaceAll("(?i)\\$INVITER\\b", java.util.regex.Matcher.quoteReplacement(inviterVar))
+            .replaceAll("(?i)\\$INVITE\\b", java.util.regex.Matcher.quoteReplacement(inviteVar))
+            .replaceAll("(?i)\\$AGE\\b", java.util.regex.Matcher.quoteReplacement(ageVar))
+            .replaceAll("(?i)\\$PFP\\b", java.util.regex.Matcher.quoteReplacement(pfpVar))
+            .replaceAll("(?i)\\$TIME\\b", java.util.regex.Matcher.quoteReplacement(timeVar));
         if (!title.isEmpty()) eb.setTitle(title);
 
         String colorHex = embedData.optString("color", "");
@@ -183,14 +193,23 @@ public class MinecraftSocietyListener extends ListenerAdapter {
             try { eb.setColor(Color.decode(colorHex)); } catch (Exception ignored) {}
         }
 
-        String thumb = embedData.optString("thumb", "");
+        String thumb = embedData.optString("thumb", "")
+            .replaceAll("(?i)\\$PFP\\b", java.util.regex.Matcher.quoteReplacement(pfpVar));
         if (!thumb.isEmpty()) eb.setThumbnail(thumb);
 
-        String image = embedData.optString("image", "");
+        String image = embedData.optString("image", "")
+            .replaceAll("(?i)\\$PFP\\b", java.util.regex.Matcher.quoteReplacement(pfpVar));
         if (!image.isEmpty()) eb.setImage(image);
 
         String footer = embedData.optString("footer", "")
-            .replaceAll("(?i)\\$MEMBER_COUNT\\b", String.valueOf(guild.getMemberCount()));
+            .replaceAll("(?i)\\$USER\\b", java.util.regex.Matcher.quoteReplacement(event.getUser().getAsMention()))
+            .replaceAll("(?i)\\$GUILD\\b", java.util.regex.Matcher.quoteReplacement(guild.getName()))
+            .replaceAll("(?i)\\$MEMBER_COUNT\\b", String.valueOf(guild.getMemberCount()))
+            .replaceAll("(?i)\\$INVITER\\b", java.util.regex.Matcher.quoteReplacement(inviterVar))
+            .replaceAll("(?i)\\$INVITE\\b", java.util.regex.Matcher.quoteReplacement(inviteVar))
+            .replaceAll("(?i)\\$AGE\\b", java.util.regex.Matcher.quoteReplacement(ageVar))
+            .replaceAll("(?i)\\$PFP\\b", java.util.regex.Matcher.quoteReplacement(pfpVar))
+            .replaceAll("(?i)\\$TIME\\b", java.util.regex.Matcher.quoteReplacement(timeVar));
         if (!footer.isEmpty()) eb.setFooter(footer);
 
         channel.sendMessageEmbeds(eb.build()).queue();
