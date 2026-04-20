@@ -13,7 +13,7 @@
 <meta name="theme-color" content="#4ade80">
 
 <!-- Favicon -->
-<link rel="icon" href="/Inner.png">
+<link rel="icon" href="/media/Inner.png">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -124,16 +124,17 @@ section.visible { opacity:1; transform:translateY(0); }
 
 .command-media {
   width:100%;
+  display:flex;
+  align-items:center;
 }
 
 .command-gif {
   display:block;
   width:100%;
+  height:auto;
   border-radius:16px;
   border:1px solid var(--border);
-  background:var(--surface);
-  aspect-ratio:16 / 10;
-  object-fit:cover;
+  background:transparent;
   box-shadow:0 12px 40px rgba(0,0,0,.22);
   -webkit-user-select:none;
   user-select:none;
@@ -494,7 +495,7 @@ section.visible { opacity:1; transform:translateY(0); }
   display:grid;
   grid-template-columns:minmax(0, 1fr) minmax(260px, 360px);
   gap:20px;
-  align-items:start;
+  align-items:center;
 }
 .command-box::before {
   content:''; position:absolute; top:0; left:0;
@@ -776,7 +777,7 @@ footer {
         </div>
       </div>
       <div class="command-media">
-        <img class="command-gif" src="https://picsum.photos/seed/welcome-system/640/420" alt="Welcome system placeholder preview">
+        <img class="command-gif" src="/media/Welcome Message.png" alt="Welcome system preview">
       </div>
     </div>
   </section>
@@ -799,7 +800,7 @@ footer {
         </div>
       </div>
       <div class="command-media">
-        <img class="command-gif" src="https://picsum.photos/seed/magic-invites/640/420" alt="Magic invites placeholder preview">
+        <img class="command-gif" src="/media/Magic Invites.png" alt="Magic invites preview">
       </div>
     </div>
   </section>
@@ -822,7 +823,7 @@ footer {
         </div>
       </div>
       <div class="command-media">
-        <img class="command-gif" src="https://picsum.photos/seed/verification-system/640/420" alt="Verification system placeholder preview">
+        <img class="command-gif" src="/media/Verification.png" alt="Verification system preview">
       </div>
     </div>
   </section>
@@ -843,7 +844,7 @@ footer {
         </div>
       </div>
       <div class="command-media">
-        <img class="command-gif" src="https://picsum.photos/seed/sticky-roles/640/420" alt="Sticky roles placeholder preview">
+        <img class="command-gif" src="/media/Sticky Roles.png" alt="Sticky roles preview">
       </div>
     </div>
   </section>
@@ -868,7 +869,7 @@ footer {
         </div>
       </div>
       <div class="command-media">
-        <img class="command-gif" src="https://picsum.photos/seed/leave-listener/640/420" alt="Leave listener placeholder preview">
+        <img class="command-gif" src="/media/LeaveListener.png" alt="Leave listener preview">
       </div>
     </div>
   </section>
@@ -890,7 +891,7 @@ footer {
         </div>
       </div>
       <div class="command-media">
-        <img class="command-gif" src="https://picsum.photos/seed/ping-command/640/420" alt="Ping command placeholder preview">
+        <img class="command-gif" src="/media/Ping.png" alt="Ping command preview">
       </div>
     </div>
   </section>
@@ -906,7 +907,7 @@ footer {
         </div>
       </div>
       <div class="command-media">
-        <img class="command-gif" src="https://picsum.photos/seed/purge-command/640/420" alt="Purge command placeholder preview">
+        <img class="command-gif" src="/media/PurgeGif.gif" alt="Purge command preview">
       </div>
     </div>
   </section>
@@ -934,7 +935,7 @@ footer {
         </div>
       </div>
       <div class="command-media">
-        <img class="command-gif" src="https://picsum.photos/seed/reactionrole-command/640/420" alt="Reaction role placeholder preview">
+        <img class="command-gif" src="/media/ReactionRole.png" alt="Reaction role preview">
       </div>
     </div>
   </section>
@@ -969,7 +970,7 @@ footer {
         </div>
       </div>
       <div class="command-media">
-        <img class="command-gif" src="https://picsum.photos/seed/event-command/640/420" alt="Event command placeholder preview">
+        <img class="command-gif" src="/media/EventGif.gif" alt="Event command preview">
       </div>
     </div>
   </section>
@@ -993,7 +994,7 @@ footer {
         </div>
       </div>
       <div class="command-media">
-        <img class="command-gif" src="https://picsum.photos/seed/ticketpanel-command/640/420" alt="Ticket panel placeholder preview">
+        <img class="command-gif" src="/media/TicketPanel.png" alt="Ticket panel preview">
       </div>
     </div>
   </section>
@@ -1022,7 +1023,7 @@ footer {
         </div>
       </div>
       <div class="command-media">
-        <img class="command-gif" src="https://picsum.photos/seed/ai-chat-bot/640/420" alt="AI chat placeholder preview">
+        <img class="command-gif" src="/media/AI.png" alt="AI chat preview">
       </div>
     </div>
   </section>
@@ -1307,15 +1308,9 @@ footer {
     return null;
   }
 
-  function withRoleImageSeed(src, role) {
-    if (!src) return src;
-    return src.replace(/\/seed\/([^/]+)\//, (_, seed) => `/seed/${seed}-${role}/`);
-  }
-
   function setCardRole(card, role) {
     const roleKey = card.dataset.roleKey || card.closest('section')?.id;
     const descEl = findDescriptionValue(card);
-    const imgEl = card.querySelector('.command-gif');
 
     card.querySelectorAll('.role-btn').forEach(btn => {
       btn.classList.toggle('active', btn.dataset.role === role);
@@ -1330,13 +1325,6 @@ footer {
       } else if (role === 'user' && descEl.dataset.baseHtml) {
         descEl.innerHTML = descEl.dataset.baseHtml;
       }
-    }
-
-    if (imgEl) {
-      if (!imgEl.dataset.userSrc) {
-        imgEl.dataset.userSrc = imgEl.src;
-      }
-      imgEl.src = withRoleImageSeed(imgEl.dataset.userSrc, role);
     }
 
     // Toggle visibility of staff-only and user-only rows.
