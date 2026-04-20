@@ -410,7 +410,7 @@ section.visible { opacity:1; transform:translateY(0); }
 
 .content-category-value {
   font-family:'JetBrains Mono', monospace;
-  font-size:11px;
+  font-size:16px;
   letter-spacing:1.4px;
   text-transform:uppercase;
   color:var(--green);
@@ -679,7 +679,9 @@ footer {
         <img class="command-gif" src="https://picsum.photos/seed/welcome-system/640/420" alt="Welcome system placeholder preview">
       </div>
     </div>
+  </section>
 
+  <section id="magicinvites">
     <div class="command-box has-media" data-role-key="magicInvites">
       <div class="command-box-body">
         <div class="command-header">Magic Invites</div>
@@ -985,7 +987,7 @@ footer {
         if (a) a.classList.add('active');
       }
     });
-  }, { rootMargin: '-30% 0px -60% 0px' });
+  }, { rootMargin: '-20% 0px -60% 0px' });
   sections.forEach(s => { if (s.id) secObs.observe(s); });
 
   const helpTooltipOverlay = document.getElementById('helpTooltipOverlay');
