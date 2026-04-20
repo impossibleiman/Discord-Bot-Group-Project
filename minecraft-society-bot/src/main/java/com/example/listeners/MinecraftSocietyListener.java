@@ -3,6 +3,8 @@ package com.example.listeners;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Invite;
+import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
@@ -10,12 +12,17 @@ import org.json.JSONObject;
 
 import com.example.MinecraftSocietyBot;
 import com.example.managers.StickyRoleManager;
+import com.example.model.MemberData;
 import com.example.model.ServerConfig;
 
 import java.awt.Color;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 public class MinecraftSocietyListener extends ListenerAdapter {
 
@@ -36,6 +43,8 @@ public class MinecraftSocietyListener extends ListenerAdapter {
  @Override
     public void onGuildMemberJoin(GuildMemberJoinEvent event) {
         Guild guild = event.getGuild();
+
+        List<Role> restoredRoles = restoreStickyRoles(event);
 
         // Persist join time for leave duration calculations.
         StickyRoleManager.saveJoinTime(event.getUser().getId(), System.currentTimeMillis());
@@ -67,14 +76,51 @@ public class MinecraftSocietyListener extends ListenerAdapter {
                 }
 
                 updateInviteCache(guild); 
-                sendWelcomeMessage(event, targetChannel, usedInvite);
+                sendWelcomeMessage(event, targetChannel, usedInvite, restoredRoles);
             });
         } else {
-            sendWelcomeMessage(event, targetChannel, null); 
+            sendWelcomeMessage(event, targetChannel, null, restoredRoles); 
         }
     }
 
-    private void sendWelcomeMessage(GuildMemberJoinEvent event, TextChannel channel, Invite usedInvite) {
+    private List<Role> restoreStickyRoles(GuildMemberJoinEvent event) {
+        Guild guild = event.getGuild();
+        Member member = event.getMember();
+
+        if (!guild.getSelfMember().hasPermission(net.dv8tion.jda.api.Permission.MANAGE_ROLES)) {
+            System.out.println("Sticky roles skipped: Missing MANAGE_ROLES in " + guild.getName());
+            return Collections.emptyList();
+        }
+
+        MemberData data = StickyRoleManager.getMemberData(member.getId());
+        if (data == null || data.getRoleIds() == null || data.getRoleIds().isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        java.util.List<Role> rolesToReapply = new ArrayList<>();
+        for (String roleId : data.getRoleIds()) {
+            Role role = guild.getRoleById(roleId);
+            if (role == null) continue;
+            if (role.isManaged()) continue;
+            if (role.isPublicRole()) continue;
+            if (!guild.getSelfMember().canInteract(role)) continue;
+            if (member.getRoles().contains(role)) continue;
+            rolesToReapply.add(role);
+        }
+
+        if (rolesToReapply.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        guild.modifyMemberRoles(member, rolesToReapply, Collections.emptyList()).queue(
+                success -> System.out.println("Reapplied " + rolesToReapply.size() + " sticky role(s) to " + member.getUser().getName()),
+                error -> System.err.println("Failed to reapply sticky roles for " + member.getUser().getName() + ": " + error.getMessage())
+        );
+
+        return rolesToReapply;
+    }
+
+    private void sendWelcomeMessage(GuildMemberJoinEvent event, TextChannel channel, Invite usedInvite, List<Role> restoredRoles) {
         Guild guild = event.getGuild();
         ServerConfig config = MinecraftSocietyBot.getGuildConfig(guild.getId());
         
@@ -115,6 +161,14 @@ public class MinecraftSocietyListener extends ListenerAdapter {
         desc = desc.replaceAll("(?i)\\$INVITER\\b", java.util.regex.Matcher.quoteReplacement(inviterVar));
         desc = desc.replaceAll("(?i)\\$INVITE\\b", java.util.regex.Matcher.quoteReplacement(inviteVar));
         desc = desc.replaceAll("(?i)\\$TIME\\b", java.util.regex.Matcher.quoteReplacement(timeVar));
+
+        if (restoredRoles != null && !restoredRoles.isEmpty()) {
+            String restoredRoleText = restoredRoles.stream()
+                .map(Role::getAsMention)
+                .collect(Collectors.joining(", "));
+            String stickyLine = "Sticky roles restored: " + restoredRoleText;
+            desc = desc.isBlank() ? stickyLine : desc + "\n\n" + stickyLine;
+        }
 
         EmbedBuilder eb = new EmbedBuilder();
         eb.setDescription(desc);

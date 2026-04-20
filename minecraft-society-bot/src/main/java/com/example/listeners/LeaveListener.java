@@ -1,5 +1,6 @@
 package com.example.listeners;
 
+import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberRemoveEvent;
@@ -8,6 +9,7 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import com.example.managers.StickyRoleManager;
 import com.example.model.MemberData;
 
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -22,6 +24,7 @@ public class LeaveListener extends ListenerAdapter {
 
         String userId = event.getUser().getId();
         Member member = event.getMember();
+        MemberData existingMemberData = StickyRoleManager.getMemberData(userId);
 
         List<String> roleIds = new ArrayList<>();
 
@@ -30,6 +33,8 @@ public class LeaveListener extends ListenerAdapter {
                     .stream()
                     .map(role -> role.getId())
                     .collect(Collectors.toList());
+        } else if (existingMemberData != null && existingMemberData.getRoleIds() != null) {
+            roleIds = new ArrayList<>(existingMemberData.getRoleIds());
         } else {
             System.out.println("Member is null, could not read roles during leave event.");
         }
@@ -45,22 +50,7 @@ public class LeaveListener extends ListenerAdapter {
 
             if (joinTimestamp > 0) {
                 long timeInServer = leaveTimestamp - joinTimestamp;
-
-                long totalMinutes = timeInServer / (1000L * 60);
-                long totalHours = timeInServer / (1000L * 60 * 60);
-                long totalDays = timeInServer / (1000L * 60 * 60 * 24);
-
-                long years = totalDays / 365;
-                long months = (totalDays % 365) / 30;
-                long days = (totalDays % 365) % 30;
-                long hours = totalHours % 24;
-                long minutes = totalMinutes % 60;
-
-                timeMessage = years + " year(s), "
-                        + months + " month(s), "
-                        + days + " day(s), "
-                        + hours + " hour(s), "
-                        + minutes + " minute(s)";
+                timeMessage = formatDuration(timeInServer);
             }
         }
 
@@ -69,14 +59,48 @@ public class LeaveListener extends ListenerAdapter {
         if (leaveLogChannel != null) {
             String username = event.getUser().getName();
             String mention = "<@" + userId + ">";
-            String message = "**Member Left**\n"
-                + "User: " + username + " (" + mention + ")\n"
-                    + "Time in server: " + timeMessage + "\n"
-                    + "Roles saved: " + roleIds.size();
 
-            leaveLogChannel.sendMessage(message).queue();
+            String rolesMessage;
+            if (roleIds.isEmpty()) {
+                rolesMessage = "No roles saved.";
+            } else {
+                rolesMessage = roleIds.stream()
+                        .map(id -> "<@&" + id + ">")
+                        .collect(Collectors.joining(", "));
+            }
+
+            EmbedBuilder eb = new EmbedBuilder()
+                    .setTitle("Member Left")
+                    .setColor(new Color(239, 68, 68))
+                    .setThumbnail(event.getUser().getEffectiveAvatarUrl())
+                    .addField("User", username + " (" + mention + ")", false)
+                    .addField("Time in server", timeMessage, false)
+                    .addField("Roles", rolesMessage, false);
+
+            leaveLogChannel.sendMessageEmbeds(eb.build()).queue();
         } else {
             System.out.println("Leave log channel not found.");
         }
+    }
+
+    private String formatDuration(long millis) {
+        long totalMinutes = millis / (1000L * 60);
+        long totalHours = millis / (1000L * 60 * 60);
+        long totalDays = millis / (1000L * 60 * 60 * 24);
+
+        long years = totalDays / 365;
+        long months = (totalDays % 365) / 30;
+        long days = (totalDays % 365) % 30;
+        long hours = totalHours % 24;
+        long minutes = totalMinutes % 60;
+
+        List<String> parts = new ArrayList<>();
+        if (years > 0) parts.add(years + "y");
+        if (months > 0) parts.add(months + "mo");
+        if (days > 0) parts.add(days + "d");
+        if (hours > 0) parts.add(hours + "h");
+        if (minutes > 0) parts.add(minutes + "m");
+
+        return parts.isEmpty() ? "< 1m" : String.join(" ", parts);
     }
 }
