@@ -9,7 +9,7 @@
         const response = await fetch(`https://api.mmuminecraftsociety.co.uk/check-session?session=${sessionToken}`);
 
         if (response.ok) {
-          window.location.href = '/dashboard.html';
+          window.location.href = '/dashboard';
           return;
         }
 
