@@ -83,6 +83,7 @@ public class MinecraftSocietyBot {
         manager.addCommand(new StartEventCommand()); 
         manager.addCommand(new ReactionRoleCommand()); 
         manager.addCommand(new Purgecommand());
+        manager.addCommand(new TicketPanelCommand()); 
 
         MinecraftSocietyListener listener = new MinecraftSocietyListener();
         final JDA jdaHolder;
@@ -90,7 +91,12 @@ public class MinecraftSocietyBot {
         try {
             jdaHolder = JDABuilder.createDefault(token)
                     .enableIntents(GatewayIntent.MESSAGE_CONTENT, GatewayIntent.GUILD_MEMBERS, GatewayIntent.GUILD_MESSAGES)
-                    .addEventListeners(manager, listener)
+                    .addEventListeners(
+                                       manager,
+                                       listener,
+                                       new LeaveListener(),
+                                       new RoleUpdateListener()
+                                      )
                     .build();
             
             jdaHolder.awaitReady();

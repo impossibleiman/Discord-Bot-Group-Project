@@ -5,7 +5,19 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Members — Minecraft Society</title>
 
-<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet">
+<!-- Open Graph -->
+<meta property="og:title" content="Members — Minecraft Society">
+<meta property="og:description" content="Meet the student developers and staff powering the MMU Minecraft Society bot and community.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://mmuminecraftsociety.co.uk/members.html">
+<meta name="theme-color" content="#4ade80">
+
+<!-- Favicon -->
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%234ade80'/><rect x='4' y='4' width='11' height='11' rx='2' fill='%23052e16'/><rect x='17' y='4' width='11' height='11' rx='2' fill='%2314532d'/><rect x='4' y='17' width='11' height='11' rx='2' fill='%23166534'/><rect x='17' y='17' width='11' height='11' rx='2' fill='%23052e16'/></svg>">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
 
 <style>
 :root {
@@ -25,7 +37,7 @@ html { scroll-behavior:smooth; }
 
 body {
   background:var(--bg); color:var(--text);
-  font-family:'Syne', sans-serif;
+  font-family:'Inter', sans-serif;
   min-height:100vh; overflow-x:hidden;
 }
 
@@ -90,7 +102,7 @@ main {
   display:inline-flex; align-items:center; gap:7px;
   background:rgba(74,222,128,.1); border:1px solid rgba(74,222,128,.25);
   border-radius:999px; padding:5px 14px;
-  font-family:'Space Mono', monospace; font-size:12px; color:var(--green); margin-bottom:20px;
+  font-family:'JetBrains Mono', monospace; font-size:12px; color:var(--green); margin-bottom:20px;
 }
 .hero-badge::before {
   content:''; width:7px; height:7px; border-radius:50%;
@@ -104,7 +116,7 @@ main {
 .section-title { display:flex; align-items:center; gap:12px; margin-bottom:32px; }
 .section-title h2 { font-size:22px; font-weight:800; color:var(--white); letter-spacing:-.5px; }
 .section-title .tag {
-  font-family:'Space Mono', monospace; font-size:11px;
+  font-family:'JetBrains Mono', monospace; font-size:11px;
   background:rgba(74,222,128,.1); color:var(--green);
   border:1px solid rgba(74,222,128,.2); padding:3px 10px; border-radius:999px;
 }
@@ -143,7 +155,7 @@ main {
 
 .role-badge {
   display:inline-flex; align-items:center; gap:5px;
-  font-family:'Space Mono', monospace; font-size:10px;
+  font-family:'JetBrains Mono', monospace; font-size:10px;
   letter-spacing:.5px; padding:3px 10px; border-radius:999px; margin-bottom:10px;
 }
 .role-lead  { background:rgba(251,191,36,.08);  border:1px solid rgba(251,191,36,.22);  color:#fbbf24; }
@@ -152,7 +164,7 @@ main {
 .role-default { background:rgba(203,213,225,.06); border:1px solid rgba(203,213,225,.15); color:var(--muted); }
 
 .card h3 { font-size:16px; font-weight:800; color:var(--white); letter-spacing:-.3px; margin-bottom:4px; }
-.card .handle { font-family:'Space Mono', monospace; font-size:11px; color:var(--muted); }
+.card .handle { font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--muted); }
 
 /* ─── FOOTER ─────────────────────────────────────────────── */
 footer {
@@ -184,7 +196,7 @@ footer {
 .discord-btn:hover { background:rgba(74,222,128,.18); border-color:rgba(74,222,128,.5); }
 
 .footer-col h4 {
-  font-family:'Space Mono', monospace; font-size:10px;
+  font-family:'JetBrains Mono', monospace; font-size:10px;
   letter-spacing:2px; text-transform:uppercase; color:var(--muted); margin-bottom:18px;
 }
 .footer-col a { display:block; color:var(--text); text-decoration:none; font-size:14px; font-weight:600; margin-bottom:11px; transition:color .2s; }
@@ -194,7 +206,7 @@ footer {
   border-top:1px solid var(--border); padding-top:28px;
   display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;
 }
-.footer-bottom p { font-family:'Space Mono', monospace; font-size:11px; color:var(--muted); }
+.footer-bottom p { font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--muted); }
 .footer-bottom span { color:var(--green); }
 
 @keyframes fadeUp { from{opacity:0;transform:translateY(30px)} to{opacity:1;transform:translateY(0)} }
@@ -224,6 +236,7 @@ footer {
     <a href="index.html">Docs</a>
     <a href="events.html">Events</a>
     <a href="members.html" class="active">Members</a>
+    <a href="https://api.mmuminecraftsociety.co.uk/login" style="color: var(--green);">Dashboard Login</a>
     <a href="https://discord.gg/4qtZHA49dp" target="_blank" class="btn-join">↗ Join Server</a>
   </nav>
 </header>
@@ -242,39 +255,39 @@ footer {
 
   <div class="grid">
     <div class="card">
-      <div class="avatar-wrap"><div class="avatar">M</div></div>
+      <div class="avatar-wrap"><div class="avatar"><img src="https://cdn.discordapp.com/avatars/706550132560363590/b6317711bf972fbd58524079d339e44d.webp?size=1024" alt="Iman"></div></div>
       <div class="role-badge role-lead">⭐ Lead</div>
-      <h3>Member 1</h3>
+      <h3>Iman</h3>
       <div class="handle">@Iman</div>
     </div>
     <div class="card">
-      <div class="avatar-wrap"><div class="avatar">M</div></div>
+      <div class="avatar-wrap"><div class="avatar"><img src="https://cdn.discordapp.com/avatars/789253379892314152/bff96cd7e2a796c829a7e73d4da21afa.webp?size=1024" alt="Abubakar"></div></div>
       <div class="role-badge role-dev">⚙ Developer</div>
-      <h3>Member 2</h3>
+      <h3>Abubakar</h3>
       <div class="handle">@Abubakar</div>
     </div>
     <div class="card">
-      <div class="avatar-wrap"><div class="avatar">M</div></div>
+      <div class="avatar-wrap"><div class="avatar"><img src="https://cdn.discordapp.com/avatars/1030791291707068427/3c096179daecf5d2cfa3ef1944dae0dc.webp?size=1024" alt="Nahid"></div></div>
       <div class="role-badge role-dev">⚙ Developer</div>
-      <h3>Member 3</h3>
+      <h3>Nahid</h3>
       <div class="handle">@Nahid</div>
     </div>
     <div class="card">
-      <div class="avatar-wrap"><div class="avatar">M</div></div>
+      <div class="avatar-wrap"><div class="avatar"><img src="https://cdn.discordapp.com/avatars/321351146755063808/ea1c116762cfa55e6a179a6b9e5a00de.webp?size=1024" alt="Jack"></div></div>
       <div class="role-badge role-mod">⚙ Developer</div>
-      <h3>Member 4</h3>
+      <h3>Jack</h3>
       <div class="handle">@Jack</div>
     </div>
     <div class="card">
-      <div class="avatar-wrap"><div class="avatar">M</div></div>
+      <div class="avatar-wrap"><div class="avatar"><img src="https://cdn.discordapp.com/avatars/991379291990392882/04205155247012a390c6770482634dec.webp?size=1024" alt="Melissa"></div></div>
       <div class="role-badge role-mod">⚙ Developer</div>
-      <h3>Member 5</h3>
+      <h3>Melissa</h3>
       <div class="handle">@Melissa</div>
     </div>
     <div class="card">
-      <div class="avatar-wrap"><div class="avatar">M</div></div>
+      <div class="avatar-wrap"><div class="avatar"><img src="https://cdn.discordapp.com/avatars/1049702689585496114/617371d7200d57593279e5721410de54.webp?size=1024" alt="Mian"></div></div>
       <div class="role-badge role-mod">⚙ Developer</div>
-      <h3>Member 6</h3>
+      <h3>Mian</h3>
       <div class="handle">@Mian</div>
     </div>
   </div>

@@ -5,6 +5,16 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Minecraft Society Bot — Docs</title>
 
+<!-- Open Graph (previews nicely when shared on Discord) -->
+<meta property="og:title" content="Minecraft Society Bot — Docs">
+<meta property="og:description" content="Advanced Discord bot for the MMU Minecraft Society — automating moderation, onboarding, and events.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://mmuminecraftsociety.co.uk/">
+<meta name="theme-color" content="#4ade80">
+
+<!-- Favicon (matches the logo icon) -->
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%234ade80'/><rect x='4' y='4' width='11' height='11' rx='2' fill='%23052e16'/><rect x='17' y='4' width='11' height='11' rx='2' fill='%2314532d'/><rect x='4' y='17' width='11' height='11' rx='2' fill='%23166534'/><rect x='17' y='17' width='11' height='11' rx='2' fill='%23052e16'/></svg>">
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -96,6 +106,29 @@ nav a.active { color:var(--green); }
   box-shadow:inset 0 0 0 2px var(--green);
 }
 
+/* HAMBURGER */
+.hamburger {
+  display:none; flex-direction:column; justify-content:center;
+  gap:5px; background:none; border:none; cursor:pointer;
+  padding:6px; border-radius:8px; transition:background .2s;
+}
+.hamburger:hover { background:rgba(255,255,255,.06); }
+.hamburger span {
+  display:block; width:22px; height:2px;
+  background:var(--white); border-radius:2px;
+  transition:transform .3s, opacity .3s;
+}
+.hamburger.open span:nth-child(1) { transform:translateY(7px) rotate(45deg); }
+.hamburger.open span:nth-child(2) { opacity:0; }
+.hamburger.open span:nth-child(3) { transform:translateY(-7px) rotate(-45deg); }
+
+/* MOBILE SIDEBAR DRAWER OVERLAY */
+.sidebar-overlay {
+  display:none; position:fixed; inset:0;
+  background:rgba(0,0,0,.6); z-index:90; backdrop-filter:blur(2px);
+}
+.sidebar-overlay.open { display:block; }
+
 /* SIDEBAR */
 .sidebar {
   position:fixed; top:var(--header-h); left:0;
@@ -104,6 +137,7 @@ nav a.active { color:var(--green); }
   background:var(--surface);
   border-right:1px solid var(--border);
   padding:32px 20px; overflow-y:auto; z-index:100;
+  transition:transform .3s ease;
 }
 
 .sidebar-section { margin-bottom:28px; }
@@ -181,6 +215,11 @@ section.visible { opacity:1; transform:translateY(0); }
   background:rgba(74,222,128,.1); color:var(--green);
   border:1px solid rgba(74,222,128,.2); padding:3px 10px; border-radius:999px;
 }
+.section-title .tag-auto {
+  font-family:'JetBrains Mono', monospace; font-size:11px;
+  background:rgba(147,197,253,.08); color:#93c5fd;
+  border:1px solid rgba(147,197,253,.2); padding:3px 10px; border-radius:999px;
+}
 
 /* CARDS */
 .command-box {
@@ -205,6 +244,7 @@ section.visible { opacity:1; transform:translateY(0); }
   border-radius:8px; padding:6px 14px; margin-bottom:20px;
 }
 .command-header::before { content:'/'; opacity:.5; }
+.command-header.auto::before { content:'⚡'; font-style:normal; opacity:.7; font-size:13px; }
 
 .property-grid { display:grid; grid-template-columns:130px 1fr; gap:12px 16px; }
 
@@ -214,6 +254,21 @@ section.visible { opacity:1; transform:translateY(0); }
 }
 .label::before { content:'—'; opacity:.4; font-size:10px; }
 .value { font-size:14px; color:var(--white); font-weight:600; line-height:1.5; }
+
+/* COPY BUTTON */
+.usage-wrap {
+  display:inline-flex; align-items:center; gap:10px; width:100%;
+}
+.copy-btn {
+  flex-shrink:0;
+  background:rgba(74,222,128,.08); border:1px solid rgba(74,222,128,.2);
+  color:var(--green); border-radius:6px; padding:4px 12px;
+  font-family:'JetBrains Mono', monospace; font-size:11px; font-weight:700;
+  cursor:pointer; transition:background .2s, color .2s, border-color .2s;
+  white-space:nowrap;
+}
+.copy-btn:hover { background:rgba(74,222,128,.18); border-color:rgba(74,222,128,.4); }
+.copy-btn.copied { background:rgba(74,222,128,.25); color:var(--white); border-color:rgba(74,222,128,.5); }
 
 .status-card { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:16px; margin-bottom:16px; }
 
@@ -237,6 +292,13 @@ section.visible { opacity:1; transform:translateY(0); }
   font-size:12px; font-family:'JetBrains Mono', monospace;
 }
 
+.pill-blue {
+  display:inline-flex; align-items:center; gap:5px;
+  background:rgba(147,197,253,.08); border:1px solid rgba(147,197,253,.2);
+  color:#93c5fd; border-radius:999px; padding:3px 10px;
+  font-size:12px; font-family:'JetBrains Mono', monospace;
+}
+
 /* ─── FOOTER ─────────────────────────────────────────────── */
 footer {
   margin-left: var(--sidebar-w);
@@ -246,9 +308,7 @@ footer {
   z-index: 1;
 }
 
-.footer-inner {
-  padding: 52px 60px 32px;
-}
+.footer-inner { padding: 52px 60px 32px; }
 
 .footer-top {
   display: grid;
@@ -257,69 +317,42 @@ footer {
   margin-bottom: 40px;
 }
 
-.footer-brand .logo {
-  margin-bottom: 16px;
-}
+.footer-brand .logo { margin-bottom: 16px; }
 
 .footer-brand p {
-  font-size: 14px;
-  color: var(--muted);
-  line-height: 1.75;
-  max-width: 280px;
-  margin-bottom: 22px;
+  font-size: 14px; color: var(--muted);
+  line-height: 1.75; max-width: 280px; margin-bottom: 22px;
 }
 
 .discord-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  background: rgba(74,222,128,.1);
-  border: 1px solid rgba(74,222,128,.25);
-  color: var(--green);
-  text-decoration: none;
-  padding: 9px 20px;
-  border-radius: 9px;
-  font-size: 13px;
-  font-weight: 700;
+  display: inline-flex; align-items: center; gap: 8px;
+  background: rgba(74,222,128,.1); border: 1px solid rgba(74,222,128,.25);
+  color: var(--green); text-decoration: none;
+  padding: 9px 20px; border-radius: 9px;
+  font-size: 13px; font-weight: 700;
   transition: background .2s, border-color .2s;
 }
 .discord-btn:hover { background:rgba(74,222,128,.18); border-color:rgba(74,222,128,.5); }
 
 .footer-col h4 {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 10px;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  color: var(--muted);
-  margin-bottom: 18px;
+  font-size: 10px; letter-spacing: 2px;
+  text-transform: uppercase; color: var(--muted); margin-bottom: 18px;
 }
 
 .footer-col a {
-  display: block;
-  color: var(--text);
-  text-decoration: none;
-  font-size: 14px;
-  font-weight: 600;
-  margin-bottom: 11px;
-  transition: color .2s;
+  display: block; color: var(--text); text-decoration: none;
+  font-size: 14px; font-weight: 600; margin-bottom: 11px; transition: color .2s;
 }
 .footer-col a:hover { color: var(--green); }
 
 .footer-bottom {
-  border-top: 1px solid var(--border);
-  padding-top: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 10px;
+  border-top: 1px solid var(--border); padding-top: 28px;
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 10px;
 }
 
-.footer-bottom p {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
-  color: var(--muted);
-}
+.footer-bottom p { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--muted); }
 .footer-bottom span { color: var(--green); }
 
 /* ANIMATIONS */
@@ -331,13 +364,18 @@ footer {
 ::-webkit-scrollbar-thumb { background:var(--border); border-radius:99px; }
 ::-webkit-scrollbar-thumb:hover { background:var(--muted); }
 
+/* MOBILE */
 @media (max-width:768px) {
-  .sidebar { display:none; }
+  .sidebar { transform:translateX(-100%); display:flex; flex-direction:column; }
+  .sidebar.open { transform:translateX(0); box-shadow:4px 0 40px rgba(0,0,0,.5); }
+  .hamburger { display:flex; }
+  nav a:not(.btn-invite) { display:none; }
   main { margin-left:0; padding:calc(var(--header-h) + 40px) 24px 60px; }
   footer { margin-left:0; }
   .footer-inner { padding:40px 24px 24px; }
   .footer-top { grid-template-columns:1fr; gap:32px; }
   .property-grid { grid-template-columns:1fr; }
+  .copy-btn { display:none; }
 }
 </style>
 </head>
@@ -348,25 +386,41 @@ footer {
     <div class="logo-icon"><span></span><span></span><span></span><span></span></div>
     Minecraft Society
   </a>
-<nav>
+  <nav>
     <a href="index.html" class="active">Docs</a>
     <a href="events.html">Events</a>
     <a href="members.html">Members</a>
     <a href="https://api.mmuminecraftsociety.co.uk/login" style="color: var(--green);">Dashboard Login</a>
     <a href="https://discord.gg/x2tMfSAnut" target="_blank" class="btn-invite">↗ Join Server</a>
   </nav>
+  <button class="hamburger" id="hamburger" aria-label="Open menu">
+    <span></span><span></span><span></span>
+  </button>
 </header>
 
-<div class="sidebar">
+<!-- Mobile sidebar overlay -->
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<div class="sidebar" id="sidebar">
   <div class="sidebar-section">
     <div class="sidebar-label">Getting Started</div>
     <a href="#intro" class="active"><span class="sidebar-dot"></span>Introduction</a>
     <a href="#overview"><span class="sidebar-dot"></span>Server Overview</a>
   </div>
   <div class="sidebar-section">
+    <div class="sidebar-label">Automatic</div>
+    <a href="#welcome"><span class="sidebar-dot"></span>Welcome System</a>
+    <a href="#verification"><span class="sidebar-dot"></span>Verification</a>
+  </div>
+  <div class="sidebar-section">
     <div class="sidebar-label">Commands</div>
     <a href="#reactionrole"><span class="sidebar-dot"></span>Reaction Roles</a>
     <a href="#event"><span class="sidebar-dot"></span>Event System</a>
+    <a href="#ticket"><span class="sidebar-dot"></span>Ticket System</a>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-label">Bots</div>
+    <a href="#aichat"><span class="sidebar-dot"></span>AI Chat Bot</a>
   </div>
 </div>
 
@@ -383,7 +437,7 @@ footer {
       The <strong>Minecraft Society Bot</strong> is a collaborative project developed at Manchester Metropolitan University (MMU).
       It is designed to automate moderation, streamline onboarding, and enhance community interaction within the Minecraft Society Discord server.
       <br><br>
-      The system includes <strong>verification</strong>, <strong>invite tracking</strong>, <strong>role management</strong>, and <strong>event tools</strong> to support a growing community of students.
+      The system includes <strong>verification</strong>, <strong>invite tracking</strong>, <strong>role management</strong>, <strong>event tools</strong>, a <strong>ticket system</strong>, and an <strong>AI chat bot</strong> to support a growing community of students.
     </div>
   </section>
 
@@ -403,6 +457,32 @@ footer {
     </div>
   </section>
 
+  <section id="welcome">
+    <div class="section-title"><h2>Welcome System</h2><span class="tag-auto">Automatic</span></div>
+    <div class="command-box">
+      <div class="command-header auto">Welcome &amp; Invite Tracking</div>
+      <div class="property-grid">
+        <div class="label">Description</div><div class="value">Automatically fires when a new member joins. Sends a welcome embed to <strong>#test-welcome</strong> showing who invited them, which invite code was used, and how old their Discord account is.</div>
+        <div class="label">Trigger</div><div class="value">Member joins the server</div>
+        <div class="label">Channel</div><div class="value">#test-welcome</div>
+        <div class="label">Info shown</div><div class="value">Invite code · Inviter · Account age</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="verification">
+    <div class="section-title"><h2>Verification</h2><span class="tag-auto">Automatic</span></div>
+    <div class="command-box">
+      <div class="command-header auto">Button Verification</div>
+      <div class="property-grid">
+        <div class="label">Description</div><div class="value">Sends a verification embed in <strong>#verify</strong>. New members click the <em>Enter Server</em> button to receive the <strong>Member</strong> role and unlock full server access.</div>
+        <div class="label">Trigger</div><div class="value">Member clicks the verify button</div>
+        <div class="label">Channel</div><div class="value">#verify</div>
+        <div class="label">Role granted</div><div class="value">Member</div>
+      </div>
+    </div>
+  </section>
+
   <section id="reactionrole">
     <div class="section-title"><h2>Reaction Roles</h2><span class="tag">Command</span></div>
     <div class="command-box">
@@ -410,7 +490,13 @@ footer {
       <div class="property-grid">
         <div class="label">Description</div><div class="value">Creates interactive role-selection buttons in a specified channel. Members click to self-assign roles without staff involvement.</div>
         <div class="label">Permissions</div><div class="value"><span class="pill">⚙ Manage Roles</span></div>
-        <div class="label">Usage</div><div class="value">/reactionrole [channel] [role] [emoji]</div>
+        <div class="label">Usage</div>
+        <div class="value">
+          <div class="usage-wrap">
+            <span>/reactionrole [channel] [role] [emoji]</span>
+            <button class="copy-btn" onclick="copyUsage(this, '/reactionrole [channel] [role] [emoji]')">Copy</button>
+          </div>
+        </div>
       </div>
     </div>
   </section>
@@ -422,10 +508,48 @@ footer {
       <div class="property-grid">
         <div class="label">Description</div><div class="value">Creates and manages temporary event channels. Channels are automatically archived or removed after the event concludes.</div>
         <div class="label">Permissions</div><div class="value"><span class="pill">⚙ Manage Channels</span></div>
-        <div class="label">Usage</div><div class="value">/event create [name] [date]</div>
+        <div class="label">Usage</div>
+        <div class="value">
+          <div class="usage-wrap">
+            <span>/event create [name] [date]</span>
+            <button class="copy-btn" onclick="copyUsage(this, '/event create [name] [date]')">Copy</button>
+          </div>
+        </div>
       </div>
     </div>
   </section>
+
+  <section id="ticket">
+    <div class="section-title"><h2>Ticket System</h2><span class="tag">Command</span></div>
+    <div class="command-box">
+      <div class="command-header">ticket</div>
+      <div class="property-grid">
+        <div class="label">Description</div><div class="value">Opens a private support ticket channel for the member. Staff can view and respond to tickets, and close them once resolved.</div>
+        <div class="label">Permissions</div><div class="value"><span class="pill">⚙ Manage Channels</span></div>
+        <div class="label">Usage</div>
+        <div class="value">
+          <div class="usage-wrap">
+            <span>/ticket</span>
+            <button class="copy-btn" onclick="copyUsage(this, '/ticket')">Copy</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="aichat">
+    <div class="section-title"><h2>AI Chat Bot</h2><span class="tag-auto">Passive</span></div>
+    <div class="command-box">
+      <div class="command-header auto">AI Chat</div>
+      <div class="property-grid">
+        <div class="label">Description</div><div class="value">An AI bot that listens in designated channels and replies to messages automatically. No command needed — just type and it will respond.</div>
+        <div class="label">Trigger</div><div class="value">Any message in the designated channel</div>
+        <div class="label">Usage</div><div class="value">Just type a message</div>
+        <div class="label">Note</div><div class="value"><span class="pill-blue">ℹ Availability depends on bot uptime</span></div>
+      </div>
+    </div>
+  </section>
+
 </main>
 
 <footer>
@@ -448,8 +572,12 @@ footer {
       <div class="footer-col">
         <h4>Docs</h4>
         <a href="index.html#intro">Introduction</a>
+        <a href="index.html#welcome">Welcome System</a>
+        <a href="index.html#verification">Verification</a>
         <a href="index.html#reactionrole">Reaction Roles</a>
         <a href="index.html#event">Event System</a>
+        <a href="index.html#ticket">Ticket System</a>
+        <a href="index.html#aichat">AI Chat Bot</a>
       </div>
     </div>
     <div class="footer-bottom">
@@ -460,6 +588,7 @@ footer {
 </footer>
 
 <script>
+  // Sidebar scroll highlight
   const sections = document.querySelectorAll('section');
   const observer = new IntersectionObserver(entries => {
     entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
@@ -477,6 +606,40 @@ footer {
     });
   }, { rootMargin: '-30% 0px -60% 0px' });
   sections.forEach(s => { if (s.id) secObs.observe(s); });
+
+  // Copy button
+  function copyUsage(btn, text) {
+    navigator.clipboard.writeText(text).then(() => {
+      btn.textContent = '✓ Copied';
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.textContent = 'Copy';
+        btn.classList.remove('copied');
+      }, 2000);
+    });
+  }
+
+  // Mobile hamburger — opens sidebar as drawer
+  const hamburger = document.getElementById('hamburger');
+  const sidebar   = document.getElementById('sidebar');
+  const overlay   = document.getElementById('sidebarOverlay');
+
+  function toggleSidebar(open) {
+    hamburger.classList.toggle('open', open);
+    sidebar.classList.toggle('open', open);
+    overlay.classList.toggle('open', open);
+    document.body.style.overflow = open ? 'hidden' : '';
+  }
+
+  hamburger.addEventListener('click', () => toggleSidebar(!sidebar.classList.contains('open')));
+  overlay.addEventListener('click', () => toggleSidebar(false));
+
+  // Close sidebar when a link is clicked on mobile
+  sidebar.querySelectorAll('a').forEach(a => {
+    a.addEventListener('click', () => {
+      if (window.innerWidth <= 768) toggleSidebar(false);
+    });
+  });
 </script>
 </body>
 </html>
