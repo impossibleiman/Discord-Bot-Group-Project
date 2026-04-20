@@ -182,6 +182,18 @@ section.visible { opacity:1; transform:translateY(0); }
   box-shadow:0 8px 18px rgba(37,99,235,.12);
 }
 
+.usage-item.is-required::after {
+  background:linear-gradient(180deg, rgba(248,113,113,.3), rgba(239,68,68,.15));
+  border-color:rgba(248,113,113,.72);
+  color:#fee2e2;
+}
+
+.usage-item.is-required.is-open::after {
+  background:linear-gradient(180deg, rgba(248,113,113,.45), rgba(239,68,68,.25));
+  border-color:rgba(254,202,202,.9);
+  color:#ffffff;
+}
+
 .usage-item-text {
   display:inline-flex;
   align-items:center;
@@ -244,6 +256,13 @@ section.visible { opacity:1; transform:translateY(0); }
   border-left:1px solid rgba(147,197,253,.22);
   border-top:1px solid rgba(147,197,253,.22);
   transform:rotate(45deg);
+}
+
+.help-tooltip .required-text {
+  color:#f87171;
+  font-weight:700;
+  display:block;
+  margin-bottom:2px;
 }
 
 .image-overlay {
@@ -370,6 +389,10 @@ section.visible { opacity:1; transform:translateY(0); }
   border-top:1px solid var(--border);
 }
 
+.content-category-spacer {
+  margin-top:182px;
+}
+
 .content-category-row {
   display:flex;
   align-items:center;
@@ -430,6 +453,49 @@ section.visible { opacity:1; transform:translateY(0); }
   border:1px solid rgba(74,222,128,.18);
   border-radius:8px; padding:6px 14px; margin-bottom:20px;
 }
+.command-toolbar {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  flex-wrap:wrap;
+  margin-bottom:20px;
+}
+
+.command-toolbar .command-header {
+  margin-bottom:0;
+}
+
+.role-switch {
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+}
+
+.role-btn {
+  border:1px solid rgba(148,163,184,.32);
+  background:rgba(15,23,42,.55);
+  color:#cbd5e1;
+  border-radius:999px;
+  padding:5px 10px;
+  font-family:'JetBrains Mono', monospace;
+  font-size:11px;
+  letter-spacing:.3px;
+  text-transform:uppercase;
+  cursor:pointer;
+  transition:all .2s ease;
+}
+
+.role-btn:hover {
+  border-color:rgba(96,165,250,.65);
+  color:#dbeafe;
+}
+
+.role-btn.active {
+  border-color:rgba(74,222,128,.55);
+  background:rgba(74,222,128,.12);
+  color:var(--green);
+}
 .command-header::before { content:'/'; opacity:.5; }
 .command-header.auto::before { content:'⚡'; font-style:normal; opacity:.7; font-size:13px; }
 
@@ -483,6 +549,10 @@ section.visible { opacity:1; transform:translateY(0); }
   background:rgba(147,197,253,.08); border:1px solid rgba(147,197,253,.2);
   color:#93c5fd; border-radius:999px; padding:3px 10px;
   font-size:12px; font-family:'JetBrains Mono', monospace;
+}
+
+.footer-scroll-buffer {
+  height:clamp(120px, 20vh, 220px);
 }
 
 /* ─── FOOTER ─────────────────────────────────────────────── */
@@ -584,7 +654,7 @@ footer {
     </div>
   </section>
 
-  <div class="content-category">
+  <div class="content-category content-category-spacer">
     <div class="content-category-row">
       <div class="content-category-label">Category</div>
       <div class="content-category-value">Automatic</div>
@@ -627,7 +697,7 @@ footer {
     </div>
   </section>
 
-  <div class="content-category">
+  <div class="content-category content-category-spacer">
     <div class="content-category-row">
       <div class="content-category-label">Category</div>
       <div class="content-category-value">Commands</div>
@@ -642,15 +712,6 @@ footer {
         <div class="property-grid">
           <div class="label">Description</div><div class="value">Replies with <strong>Pong!</strong> and gives a quick signal that the bot is online and responsive.</div>
           <div class="label">Permissions</div><div class="value"><span class="pill">Open to everyone</span></div>
-          <div class="label">Arguments</div>
-          <div class="value">
-            <div class="command-arg-row">
-              <div class="usage-pills">
-                <span class="pill-blue command-root">/ping</span>
-                <span class="pill-blue command-note">no arguments</span>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
       <div class="command-media">
@@ -671,8 +732,7 @@ footer {
           <div class="value">
             <div class="command-arg-row">
               <div class="usage-pills">
-                <span class="pill-blue command-root">/purge</span>
-                <span class="usage-item" role="button" tabindex="0" onclick="toggleHelpHint(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleHelpHint(this);}">amount<span class="help-popover" role="tooltip">Required amount of messages to delete.</span></span>
+                <span class="usage-item is-required" role="button" tabindex="0" onclick="toggleHelpHint(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleHelpHint(this);}">amount<span class="help-popover" role="tooltip"><span class="required-text">Required</span>Amount of messages to delete.</span></span>
                 <span class="usage-item command-note" role="button" tabindex="0" onclick="toggleHelpHint(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleHelpHint(this);}">1-100<span class="help-popover" role="tooltip">Allowed range for the amount argument.</span></span>
               </div>
             </div>
@@ -697,20 +757,19 @@ footer {
           <div class="value">
             <div class="command-arg-row">
               <div class="usage-pills">
-                <span class="pill-blue command-root">/reactionrole</span>
-                <span class="usage-item" role="button" tabindex="0" onclick="toggleHelpHint(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleHelpHint(this);}">channel<span class="help-popover" role="tooltip">Destination text channel for the button panel.</span></span>
-                <span class="usage-item" role="button" tabindex="0" onclick="toggleHelpHint(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleHelpHint(this);}">role<span class="help-popover" role="tooltip">Role assigned when a member clicks the button.</span></span>
-                <span class="usage-item" role="button" tabindex="0" onclick="toggleHelpHint(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleHelpHint(this);}">emoji<span class="help-popover" role="tooltip">Emoji shown on the role button.</span></span>
+                <span class="usage-item is-required" role="button" tabindex="0" onclick="toggleHelpHint(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleHelpHint(this);}">channel<span class="help-popover" role="tooltip"><span class="required-text">Required</span>Destination text channel for the button panel.</span></span>
+                <span class="usage-item is-required" role="button" tabindex="0" onclick="toggleHelpHint(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleHelpHint(this);}">role<span class="help-popover" role="tooltip"><span class="required-text">Required</span>Role assigned when a member clicks the button.</span></span>
+                <span class="usage-item is-required" role="button" tabindex="0" onclick="toggleHelpHint(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleHelpHint(this);}">emoji<span class="help-popover" role="tooltip"><span class="required-text">Required</span>Emoji shown on the role button.</span></span>
               </div>
             </div>
           </div>
           <div class="label">Actions</div>
           <div class="value">
             <div class="usage-pills">
-              <span class="usage-item command-note" role="button" tabindex="0" onclick="toggleHelpHint(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleHelpHint(this);}">select channel<span class="help-popover" role="tooltip">Pick the destination channel for the setup wizard.</span></span>
-              <span class="usage-item command-note" role="button" tabindex="0" onclick="toggleHelpHint(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleHelpHint(this);}">type message<span class="help-popover" role="tooltip">Enter the embed or panel message content.</span></span>
-              <span class="usage-item command-note" role="button" tabindex="0" onclick="toggleHelpHint(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleHelpHint(this);}">select role<span class="help-popover" role="tooltip">Choose the role the button will grant.</span></span>
-              <span class="usage-item command-note" role="button" tabindex="0" onclick="toggleHelpHint(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleHelpHint(this);}">enter label<span class="help-popover" role="tooltip">Set the text shown on the button.</span></span>
+              <span class="usage-item command-note is-required" role="button" tabindex="0" onclick="toggleHelpHint(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleHelpHint(this);}">select channel<span class="help-popover" role="tooltip"><span class="required-text">Required</span>Pick the destination channel for the setup wizard.</span></span>
+              <span class="usage-item command-note is-required" role="button" tabindex="0" onclick="toggleHelpHint(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleHelpHint(this);}">type message<span class="help-popover" role="tooltip"><span class="required-text">Required</span>Enter the embed or panel message content.</span></span>
+              <span class="usage-item command-note is-required" role="button" tabindex="0" onclick="toggleHelpHint(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleHelpHint(this);}">select role<span class="help-popover" role="tooltip"><span class="required-text">Required</span>Choose the role the button will grant.</span></span>
+              <span class="usage-item command-note is-required" role="button" tabindex="0" onclick="toggleHelpHint(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleHelpHint(this);}">enter label<span class="help-popover" role="tooltip"><span class="required-text">Required</span>Set the text shown on the button.</span></span>
               <span class="usage-item command-note" role="button" tabindex="0" onclick="toggleHelpHint(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleHelpHint(this);}">add emoji<span class="help-popover" role="tooltip">Add the emoji shown alongside the label.</span></span>
             </div>
           </div>
@@ -734,10 +793,9 @@ footer {
           <div class="value">
             <div class="command-arg-row">
               <div class="usage-pills">
-                <span class="pill-blue command-root">/event</span>
-                <span class="usage-item" role="button" tabindex="0" onclick="toggleHelpHint(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleHelpHint(this);}">action<span class="help-popover" role="tooltip">Choose start, append, or end.</span></span>
-                <span class="usage-item" role="button" tabindex="0" onclick="toggleHelpHint(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleHelpHint(this);}">category<span class="help-popover" role="tooltip">Select the voice channel category.</span></span>
-                <span class="usage-item" role="button" tabindex="0" onclick="toggleHelpHint(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleHelpHint(this);}">count<span class="help-popover" role="tooltip">Set how many voice channels to create.</span></span>
+                <span class="usage-item is-required" role="button" tabindex="0" onclick="toggleHelpHint(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleHelpHint(this);}">action<span class="help-popover" role="tooltip"><span class="required-text">Required</span>Choose start, append, or end.</span></span>
+                <span class="usage-item is-required" role="button" tabindex="0" onclick="toggleHelpHint(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleHelpHint(this);}">category<span class="help-popover" role="tooltip"><span class="required-text">Required</span>Select the voice channel category.</span></span>
+                <span class="usage-item is-required" role="button" tabindex="0" onclick="toggleHelpHint(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleHelpHint(this);}">count<span class="help-popover" role="tooltip"><span class="required-text">Required</span>Set how many voice channels to create.</span></span>
                 <span class="usage-item" role="button" tabindex="0" onclick="toggleHelpHint(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleHelpHint(this);}">limit<span class="help-popover" role="tooltip">Optional user limit for appended channels.</span></span>
               </div>
             </div>
@@ -766,15 +824,6 @@ footer {
         <div class="property-grid">
           <div class="label">Description</div><div class="value">Sends the support panel that lets members open a ticket for general help or purchase support.</div>
           <div class="label">Permissions</div><div class="value"><span class="pill">⚙ Send Messages</span></div>
-          <div class="label">Arguments</div>
-          <div class="value">
-            <div class="command-arg-row">
-              <div class="usage-pills">
-                <span class="pill-blue command-root">/ticketpanel</span>
-                <span class="pill-blue command-note">no arguments</span>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
       <div class="command-media">
@@ -783,7 +832,7 @@ footer {
     </div>
   </section>
 
-  <div class="content-category">
+  <div class="content-category content-category-spacer">
     <div class="content-category-row">
       <div class="content-category-label">Category</div>
       <div class="content-category-value">Bots</div>
@@ -799,7 +848,6 @@ footer {
           <div class="label">Description</div><div class="value">An AI bot that listens in designated channels and replies to messages automatically. No command needed — just type and it will respond.</div>
           <div class="label">Trigger</div><div class="value">Any message in the designated channel</div>
           <div class="label">Arguments</div><div class="value">Just type a message</div>
-          <div class="label">Note</div><div class="value"><span class="pill-blue">ℹ Availability depends on bot uptime</span></div>
         </div>
       </div>
       <div class="command-media">
@@ -807,6 +855,8 @@ footer {
       </div>
     </div>
   </section>
+
+  <div class="footer-scroll-buffer" aria-hidden="true"></div>
 
 </main>
 
@@ -939,7 +989,7 @@ footer {
     const source = item.querySelector('.help-popover');
     if (!helpTooltip || !helpTooltipOverlay || !source) return;
 
-    helpTooltip.textContent = source.textContent.trim();
+    helpTooltip.innerHTML = source.innerHTML.trim();
     helpTooltipOverlay.classList.add('open');
     helpTooltipOverlay.setAttribute('aria-hidden', 'false');
     requestAnimationFrame(() => {
@@ -1055,6 +1105,122 @@ footer {
 
   initSidebarDrawer();
   document.addEventListener('site-header:ready', initSidebarDrawer);
+
+  // Card role toggles: switch command perspective content and preview image.
+  const roleContentBySection = {
+    welcome: {
+      user: 'Shows new members who invited them and confirms account context right as they join.',
+      staff: 'Lets staff verify invite attribution quickly and spot suspicious fresh accounts at join-time.'
+    },
+    verification: {
+      user: 'Users press Enter Server to unlock channels and receive the Member role immediately.',
+      staff: 'Staff get a low-friction gate that reduces manual role assignment and onboarding confusion.'
+    },
+    ping: {
+      user: 'Quickly checks if the bot is responsive before using other features.',
+      staff: 'Useful as a lightweight health check before moderation or setup actions.'
+    },
+    purge: {
+      user: 'Regular users usually cannot run this unless they have moderation permissions.',
+      staff: 'Staff can remove recent clutter fast by specifying an amount in the allowed range.'
+    },
+    reactionrole: {
+      user: 'Users click the posted buttons to self-assign roles without needing manual help.',
+      staff: 'Staff configure channel, role, and emoji to create self-service onboarding flows.'
+    },
+    event: {
+      user: 'Members join generated event voice channels as they appear during active sessions.',
+      staff: 'Staff can start, expand, and end event voice channel sets with controlled capacity.'
+    },
+    ticketpanel: {
+      user: 'Users open support tickets from the panel for help and purchase-related requests.',
+      staff: 'Staff publish and maintain the panel to route incoming support conversations consistently.'
+    },
+    aichat: {
+      user: 'Users can chat naturally in the designated channel and receive AI responses automatically.',
+      staff: 'Staff supervise channel usage and can tune where AI interaction is available.'
+    }
+  };
+
+  function findDescriptionValue(card) {
+    const labels = card.querySelectorAll('.property-grid .label');
+    for (const label of labels) {
+      if (label.textContent.trim().toLowerCase() === 'description') {
+        return label.nextElementSibling;
+      }
+    }
+    return null;
+  }
+
+  function withRoleImageSeed(src, role) {
+    if (!src || role === 'overview') return src;
+    return src.replace(/\/seed\/([^/]+)\//, (_, seed) => `/seed/${seed}-${role}/`);
+  }
+
+  function setCardRole(card, role) {
+    const sectionId = card.closest('section')?.id;
+    const descEl = findDescriptionValue(card);
+    const imgEl = card.querySelector('.command-gif');
+
+    card.querySelectorAll('.role-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.role === role);
+    });
+
+    if (descEl) {
+      if (!descEl.dataset.overviewHtml) {
+        descEl.dataset.overviewHtml = descEl.innerHTML;
+      }
+
+      if (role === 'overview') {
+        descEl.innerHTML = descEl.dataset.overviewHtml;
+      } else {
+        const roleText = roleContentBySection[sectionId]?.[role];
+        if (roleText) {
+          descEl.textContent = roleText;
+        }
+      }
+    }
+
+    if (imgEl) {
+      if (!imgEl.dataset.overviewSrc) {
+        imgEl.dataset.overviewSrc = imgEl.src;
+      }
+      imgEl.src = withRoleImageSeed(imgEl.dataset.overviewSrc, role);
+    }
+  }
+
+  function initCardRoleSwitches() {
+    const cards = document.querySelectorAll('.command-box.has-media');
+    cards.forEach(card => {
+      const header = card.querySelector('.command-header');
+      if (!header || header.dataset.roleBound === '1') return;
+
+      const toolbar = document.createElement('div');
+      toolbar.className = 'command-toolbar';
+
+      header.parentNode.insertBefore(toolbar, header);
+      toolbar.appendChild(header);
+
+      const switchWrap = document.createElement('div');
+      switchWrap.className = 'role-switch';
+
+      ['overview', 'user', 'staff'].forEach((role, index) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = `role-btn${index === 0 ? ' active' : ''}`;
+        btn.dataset.role = role;
+        btn.textContent = role;
+        btn.addEventListener('click', () => setCardRole(card, role));
+        switchWrap.appendChild(btn);
+      });
+
+      toolbar.appendChild(switchWrap);
+      header.dataset.roleBound = '1';
+      setCardRole(card, 'overview');
+    });
+  }
+
+  initCardRoleSwitches();
 </script>
 </body>
 </html>
