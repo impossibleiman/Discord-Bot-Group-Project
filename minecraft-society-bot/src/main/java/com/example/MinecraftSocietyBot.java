@@ -532,6 +532,35 @@ public class MinecraftSocietyBot {
                 ctx.status(500).result("Failed to publish reaction role template.");
             }
         });
+
+        app.delete("/reaction-roles/{guildId}/{templateId}", ctx -> {
+            SessionData session = requireSession(ctx);
+            if (session == null) {
+                return;
+            }
+
+            String guildId = ctx.pathParam("guildId");
+            if (!requireGuildAccess(ctx, session, guildId)) {
+                return;
+            }
+
+            String templateId = ctx.pathParam("templateId");
+            if (templateId == null || templateId.trim().isEmpty()) {
+                ctx.status(400).result("Template ID is required.");
+                return;
+            }
+
+            try {
+                Map<String, String> result = deleteReactionRoleTemplate(jdaHolder, guildId, templateId.trim());
+                ctx.json(result);
+            } catch (IllegalArgumentException e) {
+                ctx.status(400).result(e.getMessage());
+            } catch (IllegalStateException e) {
+                ctx.status(404).result(e.getMessage());
+            } catch (Exception e) {
+                ctx.status(500).result("Failed to delete reaction role template.");
+            }
+        });
     }
 
     private static Map<String, String> createAndStoreMagicInvite(JDA jdaHolder, String guildId, String alias) {
@@ -654,6 +683,47 @@ public class MinecraftSocietyBot {
                 "templateId", templateId,
                 "messageId", template.messageId == null ? "" : template.messageId,
                 "action", action
+        );
+    }
+
+    private static Map<String, String> deleteReactionRoleTemplate(JDA jdaHolder, String guildId, String templateId) {
+        Guild guild = jdaHolder.getGuildById(guildId);
+        if (guild == null) {
+            throw new IllegalStateException("Guild not found.");
+        }
+
+        ServerConfig config = guildConfigs.getOrDefault(guildId, new ServerConfig());
+        if (config.reactionRoleConfigs == null || config.reactionRoleConfigs.isEmpty()) {
+            throw new IllegalArgumentException("No reaction role templates configured for this server.");
+        }
+
+        ReactionRoleConfig template = config.reactionRoleConfigs.remove(templateId);
+        if (template == null) {
+            throw new IllegalArgumentException("Template not found: " + templateId);
+        }
+
+        String messageDeleteStatus = "not_configured";
+        if (template.channelId != null && !template.channelId.isBlank() && template.messageId != null && !template.messageId.isBlank()) {
+            TextChannel channel = guild.getTextChannelById(template.channelId);
+            if (channel == null) {
+                messageDeleteStatus = "channel_not_found";
+            } else {
+                try {
+                    channel.deleteMessageById(template.messageId).complete();
+                    messageDeleteStatus = "deleted";
+                } catch (Exception ignored) {
+                    messageDeleteStatus = "not_found_or_no_permission";
+                }
+            }
+        }
+
+        guildConfigs.put(guildId, config);
+        saveConfigs();
+
+        return Map.of(
+                "templateId", templateId,
+                "messageDeleteStatus", messageDeleteStatus,
+                "removed", "true"
         );
     }
 

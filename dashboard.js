@@ -618,7 +618,12 @@ function renderReactionRoleLiveList() {
             ? 'border-color: var(--green); color: var(--green); background: rgba(74,222,128,.1);'
             : '';
 
-        return `<button type="button" class="server-pill" data-rr-id="${sanitize(configId)}" style="${activeStyles}">Message ${sanitize(messageId)} in ${sanitize(channelName)}</button>`;
+        return `
+            <div style="display:flex; gap:8px; align-items:center;">
+                <button type="button" class="server-pill" data-rr-id="${sanitize(configId)}" style="${activeStyles}; flex:1;">Message ${sanitize(messageId)} in ${sanitize(channelName)}</button>
+                <button type="button" class="btn-danger" data-rr-delete-id="${sanitize(configId)}">Delete</button>
+            </div>
+        `;
     }).join('');
 
     container.querySelectorAll('[data-rr-id]').forEach(btn => {
@@ -629,6 +634,60 @@ function renderReactionRoleLiveList() {
             }
         });
     });
+
+    container.querySelectorAll('[data-rr-delete-id]').forEach(btn => {
+        btn.addEventListener('click', async (event) => {
+            event.stopPropagation();
+            const configId = btn.getAttribute('data-rr-delete-id');
+            if (configId) {
+                await deleteReactionRoleConfig(configId);
+            }
+        });
+    });
+}
+
+async function deleteReactionRoleConfig(configId) {
+    if (!currentGuildId) {
+        showToast('Select a server from the sidebar first.', 'error');
+        return;
+    }
+
+    const config = reactionRoleConfigsById?.[configId];
+    if (!config) {
+        showToast('Reaction role entry not found.', 'error');
+        return;
+    }
+
+    const messageLabel = config.messageId ? `message ${config.messageId}` : 'this reaction role';
+    const confirmed = confirm(`Delete ${messageLabel} and remove it from live reaction roles?`);
+    if (!confirmed) {
+        return;
+    }
+
+    const token = localStorage.getItem('admin_session');
+    try {
+        const response = await fetch(`${API_BASE}/reaction-roles/${currentGuildId}/${encodeURIComponent(configId)}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': token }
+        });
+
+        if (!response.ok) {
+            const errText = await response.text();
+            showToast(errText || 'Failed to delete reaction role.', 'error');
+            return;
+        }
+
+        delete reactionRoleConfigsById[configId];
+        if (activeReactionRoleId === configId) {
+            cancelReactionRoleEdit();
+        } else {
+            renderReactionRoleLiveList();
+        }
+
+        showToast('Reaction role deleted successfully.');
+    } catch (err) {
+        showToast('Network error while deleting reaction role.', 'error');
+    }
 }
 
 async function loadGuildMetadata() {
