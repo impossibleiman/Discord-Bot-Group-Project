@@ -1,4 +1,4 @@
-package com.example;
+package com.example.commands;
 
 import net.dv8tion.jda.api.entities.channel.ChannelType;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;

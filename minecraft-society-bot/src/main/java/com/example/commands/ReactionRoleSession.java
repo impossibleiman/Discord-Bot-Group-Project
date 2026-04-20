@@ -1,4 +1,4 @@
-package com.example;
+package com.example.commands;
 
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import java.util.ArrayList;

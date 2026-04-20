@@ -1,4 +1,4 @@
-package com.example;
+package com.example.listeners;
 
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Guild;
@@ -7,6 +7,9 @@ import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.json.JSONObject;
+
+import com.example.MinecraftSocietyBot;
+import com.example.model.ServerConfig;
 
 import java.awt.Color;
 import java.util.HashMap;
