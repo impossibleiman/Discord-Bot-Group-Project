@@ -286,37 +286,9 @@ footer {
   </div>
 </main>
 
-<footer>
-  <div class="footer-inner">
-    <div class="footer-top">
-      <div class="footer-brand">
-        <a href="index.html" class="logo">
-          <div class="logo-icon"><span></span><span></span><span></span><span></span></div>
-          Minecraft Society
-        </a>
-        <p>A student-run Minecraft community at Manchester Metropolitan University. Everyone is welcome.</p>
-        <a href="https://discord.gg/4qtZHA49dp" target="_blank" class="discord-btn">↗ Join our Discord</a>
-      </div>
-      <div class="footer-col">
-        <h4>Pages</h4>
-        <a href="index.html">Documentation</a>
-        <a href="events.html">Events</a>
-        <a href="members.html">Members</a>
-      </div>
-      <div class="footer-col">
-        <h4>Docs</h4>
-        <a href="index.html#intro">Introduction</a>
-        <a href="index.html#reactionrole">Reaction Roles</a>
-        <a href="index.html#event">Event System</a>
-      </div>
-    </div>
-    <div class="footer-bottom">
-      <p>© 2026 <span>Minecraft Society</span> · Manchester Metropolitan University</p>
-      <p>Built with ♥ by the MMU Minecraft Society team</p>
-    </div>
-  </div>
-</footer>
+<div id="site-footer"></div>
 
+<script src="scripts/footer-loader.js"></script>
 <script>
   const revealEls = document.querySelectorAll('.card, .idea-section');
   const observer = new IntersectionObserver(entries => {

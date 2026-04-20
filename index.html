@@ -237,46 +237,86 @@ footer {
   z-index: 1;
 }
 
-.footer-inner { padding: 52px 60px 32px; }
+.footer-inner { padding: 34px 60px 20px; }
 
 .footer-top {
   display: grid;
-  grid-template-columns: 1.6fr 1fr 1fr;
-  gap: 48px;
-  margin-bottom: 40px;
+  grid-template-columns: 1.7fr 1fr 1fr;
+  gap: 40px;
+  margin-bottom: 18px;
 }
 
-.footer-brand .logo { margin-bottom: 16px; }
+.footer-brand .logo { margin-bottom: 10px; }
 
 .footer-brand p {
   font-size: 14px; color: var(--muted);
-  line-height: 1.75; max-width: 280px; margin-bottom: 22px;
+  line-height: 1.65; max-width: 460px; margin-bottom: 12px;
 }
 
-.discord-btn {
-  display: inline-flex; align-items: center; gap: 8px;
-  background: rgba(74,222,128,.1); border: 1px solid rgba(74,222,128,.25);
-  color: var(--green); text-decoration: none;
-  padding: 9px 20px; border-radius: 9px;
-  font-size: 13px; font-weight: 700;
-  transition: background .2s, border-color .2s;
+.social-list {
+  display:flex;
+  align-items:center;
+  gap:8px;
+  flex-wrap:wrap;
 }
-.discord-btn:hover { background:rgba(74,222,128,.18); border-color:rgba(74,222,128,.5); }
+
+.social-icon {
+  width:38px;
+  height:38px;
+  position:relative;
+  border-radius:50%;
+  border:1px solid rgba(241,245,249,.32);
+  background:rgba(241,245,249,.06);
+  color:var(--white);
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  line-height:0;
+  padding:0;
+  text-decoration:none;
+  transition:background .2s, border-color .2s, transform .2s;
+}
+
+.social-icon svg {
+  position:absolute;
+  inset:0;
+  margin:auto;
+  width:18px;
+  height:18px;
+  display:block;
+  flex-shrink:0;
+}
+
+.social-icon.discord svg {
+  width:17px;
+  height:17px;
+}
+
+.social-icon.youtube svg {
+  width:20px;
+  height:14px;
+}
+
+.social-icon:hover {
+  background:rgba(241,245,249,.14);
+  border-color:rgba(241,245,249,.62);
+  transform:translateY(-1px);
+}
 
 .footer-col h4 {
   font-family: 'JetBrains Mono', monospace;
   font-size: 10px; letter-spacing: 2px;
-  text-transform: uppercase; color: var(--muted); margin-bottom: 18px;
+  text-transform: uppercase; color: var(--muted); margin-bottom: 12px;
 }
 
 .footer-col a {
   display: block; color: var(--text); text-decoration: none;
-  font-size: 14px; font-weight: 600; margin-bottom: 11px; transition: color .2s;
+  font-size: 14px; font-weight: 600; margin-bottom: 8px; transition: color .2s;
 }
 .footer-col a:hover { color: var(--green); }
 
 .footer-bottom {
-  border-top: 1px solid var(--border); padding-top: 28px;
+  border-top: 1px solid var(--border); padding-top: 14px;
   display: flex; align-items: center; justify-content: space-between;
   flex-wrap: wrap; gap: 10px;
 }
@@ -308,8 +348,8 @@ footer {
     padding:calc(var(--header-h) + 40px) 24px 60px;
   }
   footer { margin-left:0; }
-  .footer-inner { padding:40px 24px 24px; }
-  .footer-top { grid-template-columns:1fr; gap:32px; }
+  .footer-inner { padding:24px 24px 16px; }
+  .footer-top { grid-template-columns:1fr; gap:18px; }
   .property-grid { grid-template-columns:1fr; }
   .copy-btn { display:none; }
 }
@@ -345,7 +385,7 @@ footer {
 <div class="sidebar" id="sidebar">
   <div class="sidebar-section">
     <div class="sidebar-label">Getting Started</div>
-    <a href="#overview" class="active"><span class="sidebar-dot"></span>Overview</a>
+    <a href="#aboutus" class="active"><span class="sidebar-dot"></span>About Us</a>
   </div>
   <div class="sidebar-section">
     <div class="sidebar-label">Automatic</div>
@@ -365,11 +405,11 @@ footer {
 </div>
 
 <main>
-  <section id="overview">
+  <section id="aboutus">
   <div class="top-showcase">
     <div class="hero">
       <h1>Minecraft Society<br><span>Bot Documentation</span></h1>
-      <p>Advanced Discord bot built for community management at Manchester Metropolitan University — automating moderation, onboarding, and events.</p>
+      <p>A student-built Discord bot project developed for Manchester Metropolitan University, documenting our design, workflow, and implementation journey.</p>
     </div>
 
     <div class="overview-aside">
@@ -380,14 +420,11 @@ footer {
       </div>
     </div>
   </div>
-
-
-    <div class="section-title"><h2>Overview</h2></div>
+    <div class="section-title"><h2>About Us</h2></div>
     <div class="prose intro-prose">
-      The <strong>Minecraft Society Bot</strong> is a collaborative project developed at Manchester Metropolitan University (MMU).
-      It is designed to automate moderation, streamline onboarding, and enhance community interaction within the Minecraft Society Discord server.
+      This bot is a collaborative second-year group project at <strong>Manchester Metropolitan University (MMU)</strong>, created as part of our software development coursework and delivered by the Minecraft Society team.
       <br><br>
-      The system includes <strong>verification</strong>, <strong>invite tracking</strong>, <strong>role management</strong>, <strong>event tools</strong>, a <strong>ticket system</strong>, and an <strong>AI chat bot</strong> to support a growing community of students.
+      You can learn more about the team behind the project on the <a href="members.html" style="color: var(--green); text-decoration: none; font-weight: 700;">Members page</a>.
     </div>
   </section>
 
@@ -507,41 +544,9 @@ footer {
 
 </main>
 
-<footer>
-  <div class="footer-inner">
-    <div class="footer-top">
-      <div class="footer-brand">
-        <a href="index.html" class="logo">
-          <div class="logo-icon"><span></span><span></span><span></span><span></span></div>
-          Minecraft Society
-        </a>
-        <p>A student-run Minecraft community at Manchester Metropolitan University. Everyone is welcome.</p>
-        <a href="https://discord.gg/4qtZHA49dp" target="_blank" class="discord-btn">↗ Join our Discord</a>
-      </div>
-      <div class="footer-col">
-        <h4>Pages</h4>
-        <a href="index.html">Documentation</a>
-        <a href="events.html">Events</a>
-        <a href="members.html">Members</a>
-      </div>
-      <div class="footer-col">
-        <h4>Docs</h4>
-        <a href="index.html#overview">Overview</a>
-        <a href="index.html#welcome">Welcome System</a>
-        <a href="index.html#verification">Verification</a>
-        <a href="index.html#reactionrole">Reaction Roles</a>
-        <a href="index.html#event">Event System</a>
-        <a href="index.html#ticket">Ticket System</a>
-        <a href="index.html#aichat">AI Chat Bot</a>
-      </div>
-    </div>
-    <div class="footer-bottom">
-      <p>© 2026 <span>Minecraft Society</span> · Manchester Metropolitan University</p>
-      <p>Built with ♥ by the MMU Minecraft Society team</p>
-    </div>
-  </div>
-</footer>
+<div id="site-footer"></div>
 
+<script src="scripts/footer-loader.js"></script>
 <script>
   // Sidebar scroll highlight
   const sections = document.querySelectorAll('section');
