@@ -200,7 +200,7 @@ async function verifySession() {
         } else {
             document.getElementById('session-info').innerHTML = "Session Expired";
             localStorage.removeItem('admin_session');
-            window.location.href = '/login.html';
+            window.location.href = '/';
         }
     } catch (err) {
         showToast("Could not connect to API.", "error");
