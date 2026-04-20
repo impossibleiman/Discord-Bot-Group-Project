@@ -1,7 +1,5 @@
 package com.example;
 
-import com.example.StickyRoleManager;
-import com.example.MemberData;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberRemoveEvent;

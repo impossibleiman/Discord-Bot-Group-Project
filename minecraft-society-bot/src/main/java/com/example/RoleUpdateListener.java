@@ -1,6 +1,5 @@
 package com.example;
 
-import com.example.StickyRoleManager;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberRoleAddEvent;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberRoleRemoveEvent;
 import net.dv8tion.jda.api.events.guild.member.GenericGuildMemberEvent;

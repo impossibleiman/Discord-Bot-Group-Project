@@ -6,7 +6,8 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
-import net.dv8tion.jda.api.interactions.components.buttons.Button;
+import net.dv8tion.jda.api.components.actionrow.ActionRow;
+import net.dv8tion.jda.api.components.buttons.Button;
 
 import java.util.Collections;
 import java.util.List;
@@ -46,10 +47,10 @@ public class TicketPanelCommand implements ICommand {
                 **General Help** - for normal support questions
                 **Purchased Support** - for purchase-related help
                 """)
-                .addActionRow(
+                .addComponents(ActionRow.of(
                         Button.primary("ticketpanel:general", "General Help"),
                         Button.success("ticketpanel:purchase", "Purchased Support")
-                )
+                ))
                 .queue();
     }
 

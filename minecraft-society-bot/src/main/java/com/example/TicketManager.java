@@ -6,7 +6,8 @@ import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.interactions.InteractionHook;
-import net.dv8tion.jda.api.interactions.components.buttons.Button;
+import net.dv8tion.jda.api.components.actionrow.ActionRow;
+import net.dv8tion.jda.api.components.buttons.Button;
 
 import java.awt.Color;
 import java.util.EnumSet;
@@ -89,9 +90,9 @@ public class TicketManager {
                 );
 
         channel.sendMessage("Click below to close this ticket.")
-                .setActionRow(
+                .addComponents(ActionRow.of(
                         Button.danger("ticketpanel:close", "Close Ticket")
-                )
+                ))
                 .queue();
     }
 
