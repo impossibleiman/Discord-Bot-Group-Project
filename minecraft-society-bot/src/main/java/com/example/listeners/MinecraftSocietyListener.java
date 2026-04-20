@@ -9,6 +9,7 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.json.JSONObject;
 
 import com.example.MinecraftSocietyBot;
+import com.example.managers.StickyRoleManager;
 import com.example.model.ServerConfig;
 
 import java.awt.Color;
@@ -35,6 +36,9 @@ public class MinecraftSocietyListener extends ListenerAdapter {
  @Override
     public void onGuildMemberJoin(GuildMemberJoinEvent event) {
         Guild guild = event.getGuild();
+
+        // Persist join time for leave duration calculations.
+        StickyRoleManager.saveJoinTime(event.getUser().getId(), System.currentTimeMillis());
 
         TextChannel welcomeChannel = null;
         for (TextChannel c : guild.getTextChannels()) {

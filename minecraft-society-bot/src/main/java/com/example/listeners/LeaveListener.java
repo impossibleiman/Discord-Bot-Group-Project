@@ -64,15 +64,13 @@ public class LeaveListener extends ListenerAdapter {
             }
         }
 
-        System.out.println(event.getUser().getName() + " left the server.");
-        System.out.println("Time in server: " + timeMessage);
-        System.out.println("Roles saved: " + roleIds.size());
-
         TextChannel leaveLogChannel = event.getGuild().getTextChannelById(LEAVE_LOG_CHANNEL_ID);
 
         if (leaveLogChannel != null) {
+            String username = event.getUser().getName();
+            String mention = "<@" + userId + ">";
             String message = "**Member Left**\n"
-                    + "User: " + event.getUser().getAsTag() + "\n"
+                + "User: " + username + " (" + mention + ")\n"
                     + "Time in server: " + timeMessage + "\n"
                     + "Roles saved: " + roleIds.size();
 
