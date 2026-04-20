@@ -172,7 +172,7 @@ public class MinecraftSocietyBot {
                 if (!allowedGuilds.isEmpty()) {
                     String sessionId = java.util.UUID.randomUUID().toString();
                     activeSessions.put(sessionId, new SessionData(userId, username, allowedGuilds));
-                    ctx.redirect("https://mmuminecraftsociety.co.uk/dashboard.htmlsession=" + sessionId);
+                    ctx.redirect("https://mmuminecraftsociety.co.uk/dashboard?session=" + sessionId);
                 } else {
                     ctx.status(403).result("Access Denied: You must be an Admin in a server where the bot is present.");
                 }
