@@ -2,6 +2,7 @@ package com.example;
 
 import io.github.cdimascio.dotenv.Dotenv;
 import io.javalin.Javalin;
+import io.javalin.http.Context;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.Guild;
@@ -12,6 +13,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -35,16 +37,27 @@ import com.example.model.ServerConfig;
 
 public class MinecraftSocietyBot {
 
-    // Store the latest Minecraft data in memory
+    private static final String CONFIG_FILE = "guild_configs.json";
+    private static final String CORS_ALLOW_HOST = "https://mmuminecraftsociety.co.uk";
+    private static final String OAUTH_REDIRECT_URI = "https://api.mmuminecraftsociety.co.uk/callback";
+    private static final String DASHBOARD_URL = "https://mmuminecraftsociety.co.uk/dashboard";
+
+    private static final String MC_SYNC_AUTH_HEADER = "X-MC-Auth";
+    private static final String MC_SYNC_SECRET = "MMU_Soc_7721_x92_SecretSync_!99";
+
+    private static final String TARGET_GUILD_ID = "1468598134241230851";
+    private static final String TARGET_BOT_ID = "1493768627256688772";
+
+    // Store latest Minecraft data in memory
     private static final List<Map<String, String>> liveChat = new java.util.concurrent.CopyOnWriteArrayList<>();
     private static final List<String> webToGameQueue = new java.util.concurrent.CopyOnWriteArrayList<>();
-    private static final Map<String, Object> mcStatus = new java.util.concurrent.ConcurrentHashMap<>();
+    private static final Map<String, Object> mcStatus = new ConcurrentHashMap<>();
     
-    // --- NEW SECURITY ARCHITECTURE ---
+    // Session-based auth model for dashboard endpoints
     static class SessionData {
         String userId;
         String username;
-        Set<String> adminGuilds; // Only servers this specific user is allowed to edit
+        Set<String> adminGuilds;
         
         SessionData(String userId, String username, Set<String> adminGuilds) {
             this.userId = userId;
@@ -53,12 +66,9 @@ public class MinecraftSocietyBot {
         }
     }
     
-    // Maps the session token to the user's secure SessionData
-    private static final Map<String, SessionData> activeSessions = new HashMap<>();
-    // ---------------------------------
+    private static final Map<String, SessionData> activeSessions = new ConcurrentHashMap<>();
     
     private static Map<String, ServerConfig> guildConfigs = new HashMap<>();
-    private static final String CONFIG_FILE = "guild_configs.json";
 
     private static void saveConfigs() {
         try (FileWriter writer = new FileWriter(CONFIG_FILE)) {
@@ -81,6 +91,7 @@ public class MinecraftSocietyBot {
     }
 
     public static void main(String[] args) {
+        // 1) Boot config + env
         Dotenv dotenv = Dotenv.configure().directory("./minecraft-society-bot").load();
         String token = dotenv.get("DISCORD_TOKEN");
 
@@ -89,65 +100,105 @@ public class MinecraftSocietyBot {
             return; 
         }
         
-        CommandManager manager = new CommandManager();
-        manager.addCommand(new PingCommand()); 
-        manager.addCommand(new StartEventCommand()); 
-        manager.addCommand(new ReactionRoleCommand()); 
-        manager.addCommand(new Purgecommand());
-        manager.addCommand(new TicketPanelCommand()); 
+        loadConfigs();
+
+        // 2) Boot Discord bot + listeners
+        CommandManager manager = buildCommandManager();
 
         MinecraftSocietyListener listener = new MinecraftSocietyListener();
-        final JDA jdaHolder;
+        JDA jdaHolder = startJda(token, manager, listener);
+        if (jdaHolder == null) {
+            return;
+        }
 
+        warmInviteCaches(jdaHolder);
+
+        // 3) Boot HTTP API and register routes
+        Javalin app = createApp();
+        registerRoutes(app, dotenv, jdaHolder);
+    }
+
+    private static CommandManager buildCommandManager() {
+        CommandManager manager = new CommandManager();
+        manager.addCommand(new PingCommand());
+        manager.addCommand(new StartEventCommand());
+        manager.addCommand(new ReactionRoleCommand());
+        manager.addCommand(new Purgecommand());
+        manager.addCommand(new TicketPanelCommand());
+        return manager;
+    }
+
+    private static JDA startJda(String token, CommandManager manager, MinecraftSocietyListener listener) {
         try {
-            jdaHolder = JDABuilder.createDefault(token)
+            JDA jda = JDABuilder.createDefault(token)
                     .enableIntents(GatewayIntent.MESSAGE_CONTENT, GatewayIntent.GUILD_MEMBERS, GatewayIntent.GUILD_MESSAGES, GatewayIntent.GUILD_PRESENCES)
                     .setMemberCachePolicy(net.dv8tion.jda.api.utils.MemberCachePolicy.ALL)
                     .enableCache(net.dv8tion.jda.api.utils.cache.CacheFlag.ONLINE_STATUS)
                     .addEventListeners(
-                                       manager,
-                                       listener,
-                                       new LeaveListener(),
-                                       new RoleUpdateListener()
-                                      )
+                            manager,
+                            listener,
+                            new LeaveListener(),
+                            new RoleUpdateListener()
+                    )
                     .build();
-            
-            jdaHolder.awaitReady();
+
+            jda.awaitReady();
             System.out.println("Bot is online!");
-            for (Guild guild : jdaHolder.getGuilds()) {
-                // Check for permission before trying to fetch invites
-                if (guild.getSelfMember().hasPermission(net.dv8tion.jda.api.Permission.MANAGE_SERVER)) {
-                    updateInviteCache(guild);
-                } else {
-                    System.err.println("⚠️ Skipping invite cache for " + guild.getName() + " (Missing MANAGE_SERVER permission)");
-                }
-            }
+            return jda;
         } catch (Exception e) {
             System.err.println("Failed to start bot:");
             e.printStackTrace();
-            return;
+            return null;
         }
+    }
 
-        var app = Javalin.create(config -> {
+    private static void warmInviteCaches(JDA jdaHolder) {
+        for (Guild guild : jdaHolder.getGuilds()) {
+            if (guild.getSelfMember().hasPermission(net.dv8tion.jda.api.Permission.MANAGE_SERVER)) {
+                updateInviteCache(guild);
+            } else {
+                System.err.println("⚠️ Skipping invite cache for " + guild.getName() + " (Missing MANAGE_SERVER permission)");
+            }
+        }
+    }
+
+    private static Javalin createApp() {
+        return Javalin.create(config -> {
             config.bundledPlugins.enableCors(cors -> {
-                cors.addRule(it -> {
-                    it.allowHost("https://mmuminecraftsociety.co.uk");
-                });
+                cors.addRule(it -> it.allowHost(CORS_ALLOW_HOST));
             });
         }).start(8080);
+    }
 
+    private static void registerRoutes(Javalin app, Dotenv dotenv, JDA jdaHolder) {
+        registerHealthRoutes(app);
+        registerAuthRoutes(app, dotenv, jdaHolder);
+        registerConfigRoutes(app, jdaHolder);
+        registerMinecraftRoutes(app);
+        registerDiscordStatsRoute(app, jdaHolder);
+    }
+
+    private static void registerHealthRoutes(Javalin app) {
         app.get("/status", ctx -> ctx.result("Bot is running!"));
+    }
 
+    private static void registerAuthRoutes(Javalin app, Dotenv dotenv, JDA jdaHolder) {
         app.get("/login", ctx -> {
             String clientId = dotenv.get("DISCORD_CLIENT_ID");
-            String redirectUri = "https://api.mmuminecraftsociety.co.uk/callback";
-            String url = "https://discord.com/api/oauth2/authorize?client_id=" + clientId + "&redirect_uri=" + redirectUri + "&response_type=code&scope=identify+guilds";
+            String url = "https://discord.com/api/oauth2/authorize?client_id="
+                    + clientId
+                    + "&redirect_uri="
+                    + OAUTH_REDIRECT_URI
+                    + "&response_type=code&scope=identify+guilds";
             ctx.redirect(url);
         });
 
         app.get("/callback", ctx -> {
             String code = ctx.queryParam("code");
-            if (code == null) { ctx.status(400).result("Auth code missing."); return; }
+            if (code == null) {
+                ctx.status(400).result("Auth code missing.");
+                return;
+            }
 
             OkHttpClient httpClient = new OkHttpClient();
             RequestBody formBody = new FormBody.Builder()
@@ -155,103 +206,156 @@ public class MinecraftSocietyBot {
                     .add("client_secret", dotenv.get("DISCORD_CLIENT_SECRET"))
                     .add("grant_type", "authorization_code")
                     .add("code", code)
-                    .add("redirect_uri", "https://api.mmuminecraftsociety.co.uk/callback")
+                    .add("redirect_uri", OAUTH_REDIRECT_URI)
                     .build();
 
             Request tokenRequest = new Request.Builder().url("https://discord.com/api/oauth2/token").post(formBody).build();
 
             try (Response tokenResponse = httpClient.newCall(tokenRequest).execute()) {
+                if (tokenResponse.body() == null) {
+                    ctx.status(500).result("Error during auth: Empty token response.");
+                    return;
+                }
+
                 JSONObject tokenJson = new JSONObject(tokenResponse.body().string());
                 String accessToken = tokenJson.getString("access_token");
 
                 String userId = getDiscordUserId(accessToken, httpClient);
                 String username = getDiscordUsername(accessToken, httpClient);
-                if (userId == null) { ctx.status(500).result("Failed to fetch Discord user."); return; }
-
-                // SECURE: Fetch only the servers this user is an admin of
-                Set<String> allowedGuilds = getAdminGuilds(accessToken, httpClient, jdaHolder);
-
-                if (!allowedGuilds.isEmpty()) {
-                    String sessionId = java.util.UUID.randomUUID().toString();
-                    activeSessions.put(sessionId, new SessionData(userId, username, allowedGuilds));
-                    ctx.redirect("https://mmuminecraftsociety.co.uk/dashboard?session=" + sessionId);
-                } else {
-                    ctx.status(403).result("Access Denied: You must be an Admin in a server where the bot is present.");
+                if (userId == null) {
+                    ctx.status(500).result("Failed to fetch Discord user.");
+                    return;
                 }
+
+                Set<String> allowedGuilds = getAdminGuilds(accessToken, httpClient, jdaHolder);
+                if (allowedGuilds.isEmpty()) {
+                    ctx.status(403).result("Access Denied: You must be an Admin in a server where the bot is present.");
+                    return;
+                }
+
+                String sessionId = java.util.UUID.randomUUID().toString();
+                activeSessions.put(sessionId, new SessionData(userId, username, allowedGuilds));
+                ctx.redirect(DASHBOARD_URL + "?session=" + sessionId);
             } catch (Exception e) {
                 ctx.status(500).result("Error during auth: " + e.getMessage());
             }
         });
 
         app.get("/my-guilds", ctx -> {
-            String sessionId = ctx.header("Authorization");
-            SessionData session = activeSessions.get(sessionId);
-            if (session == null) { ctx.status(401).result("Unauthorized"); return; }
+            SessionData session = requireSession(ctx);
+            if (session == null) {
+                return;
+            }
 
-            // SECURE: Return ONLY the servers this specific user is allowed to manage
             var guilds = session.adminGuilds.stream()
-                .map(id -> jdaHolder.getGuildById(id))
-                .filter(java.util.Objects::nonNull)
-                .map(g -> Map.of("id", g.getId(), "name", g.getName()))
-                .toList();
-            
+                    .map(jdaHolder::getGuildById)
+                    .filter(java.util.Objects::nonNull)
+                    .map(g -> Map.of("id", g.getId(), "name", g.getName()))
+                    .toList();
+
             ctx.json(guilds);
         });
 
-        app.get("/create-magic-invite/{guildId}", ctx -> {
-            String sessionId = ctx.header("Authorization");
+        app.get("/check-session", ctx -> {
+            String sessionId = ctx.queryParam("session");
             SessionData session = activeSessions.get(sessionId);
-            if (session == null) { ctx.status(401); return; }
+
+            if (session == null) {
+                ctx.status(401).result("Session invalid.");
+                return;
+            }
+            ctx.result("Logged in as User ID: " + session.userId);
+        });
+    }
+
+    private static void registerConfigRoutes(Javalin app, JDA jdaHolder) {
+        app.get("/create-magic-invite/{guildId}", ctx -> {
+            SessionData session = requireSession(ctx);
+            if (session == null) {
+                return;
+            }
 
             String guildId = ctx.pathParam("guildId");
-            
-            // SECURE: Deny if they don't have access to this specific server
-            if (!session.adminGuilds.contains(guildId)) { ctx.status(403).result("Forbidden"); return; }
+            if (!requireGuildAccess(ctx, session, guildId)) {
+                return;
+            }
 
             String requestedAlias = ctx.queryParam("alias");
             if (requestedAlias == null || requestedAlias.trim().isEmpty()) {
-                ctx.status(400).result("Error: Alias name is required."); return;
+                ctx.status(400).result("Error: Alias name is required.");
+                return;
             }
 
-            var guild = jdaHolder.getGuildById(guildId);
-            if (guild == null) { ctx.status(404); return; }
+            try {
+                Map<String, String> invite = createAndStoreMagicInvite(jdaHolder, guildId, requestedAlias.trim());
+                // Keep legacy behavior for current frontend compatibility.
+                ctx.result(invite.get("code"));
+            } catch (IllegalArgumentException e) {
+                ctx.status(400).result(e.getMessage());
+            } catch (IllegalStateException e) {
+                ctx.status(404).result(e.getMessage());
+            } catch (Exception e) {
+                ctx.status(500).result("Failed to communicate with Discord.");
+            }
+        });
 
-            var channels = guild.getTextChannelsByName("test-welcome", true);
-            var targetChannel = !channels.isEmpty() ? channels.get(0) : guild.getSystemChannel();
+        app.post("/magic-invites/{guildId}", ctx -> {
+            SessionData session = requireSession(ctx);
+            if (session == null) {
+                return;
+            }
 
-            if (targetChannel == null) { ctx.status(400).result("No suitable channel found."); return; }
+            String guildId = ctx.pathParam("guildId");
+            if (!requireGuildAccess(ctx, session, guildId)) {
+                return;
+            }
+
+            String requestedAlias = ctx.formParam("alias");
+            if (requestedAlias == null || requestedAlias.trim().isEmpty()) {
+                requestedAlias = ctx.queryParam("alias");
+            }
+            if ((requestedAlias == null || requestedAlias.trim().isEmpty()) && ctx.body() != null && !ctx.body().isBlank()) {
+                try {
+                    requestedAlias = new JSONObject(ctx.body()).optString("alias", null);
+                } catch (Exception ignored) {
+                    // Invalid JSON body, handled by alias validation below.
+                }
+            }
+
+            if (requestedAlias == null || requestedAlias.trim().isEmpty()) {
+                ctx.status(400).result("Error: Alias name is required.");
+                return;
+            }
 
             try {
-                // FIXED: Using .complete() ensures the invite exists before the website refreshes
-                var invite = targetChannel.createInvite().setMaxAge(0).setMaxUses(0).setUnique(true).complete();
-
-                ServerConfig config = guildConfigs.getOrDefault(guildId, new ServerConfig());
-                if (config.inviteAliases == null) config.inviteAliases = new HashMap<>();
-                config.inviteAliases.put(invite.getCode(), requestedAlias.trim());
-                
-                guildConfigs.put(guildId, config);
-                saveConfigs(); 
-
-                ctx.result(invite.getCode());
+                Map<String, String> invite = createAndStoreMagicInvite(jdaHolder, guildId, requestedAlias.trim());
+                ctx.json(invite);
+            } catch (IllegalArgumentException e) {
+                ctx.status(400).result(e.getMessage());
+            } catch (IllegalStateException e) {
+                ctx.status(404).result(e.getMessage());
             } catch (Exception e) {
                 ctx.status(500).result("Failed to communicate with Discord.");
             }
         });
 
         app.delete("/delete-invite/{guildId}/{code}", ctx -> {
-            String sessionId = ctx.header("Authorization");
-            SessionData session = activeSessions.get(sessionId);
-            if (session == null) { ctx.status(401); return; }
+            SessionData session = requireSession(ctx);
+            if (session == null) {
+                return;
+            }
 
             String guildId = ctx.pathParam("guildId");
-            if (!session.adminGuilds.contains(guildId)) { ctx.status(403).result("Forbidden"); return; }
+            if (!requireGuildAccess(ctx, session, guildId)) {
+                return;
+            }
 
             String code = ctx.pathParam("code");
 
             net.dv8tion.jda.api.entities.Invite.resolve(jdaHolder, code).queue(invite -> {
                 invite.delete().queue(
-                    s -> System.out.println("Deleted invite " + code),
-                    e -> System.err.println("Failed to delete from Discord: " + e.getMessage())
+                        s -> System.out.println("Deleted invite " + code),
+                        e -> System.err.println("Failed to delete from Discord: " + e.getMessage())
                 );
             }, t -> System.err.println("Invite " + code + " not found."));
 
@@ -265,47 +369,41 @@ public class MinecraftSocietyBot {
             }
         });
 
-        app.get("/check-session", ctx -> {
-            String sessionId = ctx.queryParam("session");
-            SessionData session = activeSessions.get(sessionId);
-            
-            if (session == null) {
-                ctx.status(401).result("Session invalid."); return;
-            }
-            ctx.result("Logged in as User ID: " + session.userId);
-        });
-
-        loadConfigs();
-
         app.get("/config/{guildId}", ctx -> {
-            String sessionId = ctx.header("Authorization");
-            SessionData session = activeSessions.get(sessionId);
-            if (session == null) { ctx.status(401).result("Unauthorized"); return; }
+            SessionData session = requireSession(ctx);
+            if (session == null) {
+                return;
+            }
 
             String guildId = ctx.pathParam("guildId");
-            if (!session.adminGuilds.contains(guildId)) { ctx.status(403).result("Forbidden"); return; }
+            if (!requireGuildAccess(ctx, session, guildId)) {
+                return;
+            }
 
             ServerConfig config = guildConfigs.getOrDefault(guildId, new ServerConfig());
             ctx.json(config);
         });
 
         app.post("/config/{guildId}", ctx -> {
-            String sessionId = ctx.header("Authorization");
-            SessionData session = activeSessions.get(sessionId);
-            if (session == null) { ctx.status(401).result("Unauthorized"); return; }
+            SessionData session = requireSession(ctx);
+            if (session == null) {
+                return;
+            }
 
             String guildId = ctx.pathParam("guildId");
-            if (!session.adminGuilds.contains(guildId)) { ctx.status(403).result("Forbidden"); return; }
+            if (!requireGuildAccess(ctx, session, guildId)) {
+                return;
+            }
 
             ServerConfig newConfig = ctx.bodyAsClass(ServerConfig.class);
-            
+
             ServerConfig existing = guildConfigs.get(guildId);
             if (existing != null && (newConfig.inviteAliases == null || newConfig.inviteAliases.isEmpty())) {
                 newConfig.inviteAliases = existing.inviteAliases;
             }
 
             guildConfigs.put(guildId, newConfig);
-            saveConfigs(); 
+            saveConfigs();
 
             var guild = jdaHolder.getGuildById(guildId);
             if (guild != null && newConfig.nickname != null && !newConfig.nickname.trim().isEmpty()) {
@@ -314,21 +412,53 @@ public class MinecraftSocietyBot {
 
             ctx.result("Config updated and applied!");
         });
+    }
 
+    private static Map<String, String> createAndStoreMagicInvite(JDA jdaHolder, String guildId, String alias) {
+        if (alias == null || alias.trim().isEmpty()) {
+            throw new IllegalArgumentException("Error: Alias name is required.");
+        }
 
-        // --- MINECRAFT SYNC ENDPOINTS ---
+        var guild = jdaHolder.getGuildById(guildId);
+        if (guild == null) {
+            throw new IllegalStateException("Guild not found.");
+        }
 
-        // 1. DATA FROM PLUGIN -> BOT
+        var channels = guild.getTextChannelsByName("test-welcome", true);
+        var targetChannel = !channels.isEmpty() ? channels.get(0) : guild.getSystemChannel();
+        if (targetChannel == null) {
+            throw new IllegalArgumentException("No suitable channel found.");
+        }
+
+        var invite = targetChannel.createInvite().setMaxAge(0).setMaxUses(0).setUnique(true).complete();
+
+        ServerConfig config = guildConfigs.getOrDefault(guildId, new ServerConfig());
+        if (config.inviteAliases == null) {
+            config.inviteAliases = new HashMap<>();
+        }
+        config.inviteAliases.put(invite.getCode(), alias.trim());
+
+        guildConfigs.put(guildId, config);
+        saveConfigs();
+
+        return Map.of(
+                "code", invite.getCode(),
+                "inviteUrl", "https://discord.gg/" + invite.getCode(),
+                "alias", alias.trim()
+        );
+    }
+
+    private static void registerMinecraftRoutes(Javalin app) {
+        // 1) DATA FROM PLUGIN -> BOT
         app.post("/mc-sync/update", ctx -> {
-            if (!"MMU_Soc_7721_x92_SecretSync_!99".equals(ctx.header("X-MC-Auth"))) { 
-                ctx.status(401); 
-                return; 
+            if (!MC_SYNC_SECRET.equals(ctx.header(MC_SYNC_AUTH_HEADER))) {
+                ctx.status(401);
+                return;
             }
 
-            org.json.JSONObject data = new org.json.JSONObject(ctx.body());
+            JSONObject data = new JSONObject(ctx.body());
             String now = java.time.LocalTime.now().format(java.time.format.DateTimeFormatter.ofPattern("HH:mm"));
 
-            // Update Global Stats
             if (data.has("onlinePlayers")) {
                 mcStatus.put("online", data.getInt("onlinePlayers"));
                 mcStatus.put("max", data.getInt("maxPlayers"));
@@ -336,62 +466,58 @@ public class MinecraftSocietyBot {
                 mcStatus.put("time", data.getLong("gameTime"));
             }
 
-            // Sync Chat Messages from Game
             if (data.has("newChat")) {
-                org.json.JSONArray newMsgs = data.getJSONArray("newChat");
+                JSONArray newMsgs = data.getJSONArray("newChat");
                 for (int i = 0; i < newMsgs.length(); i++) {
-                    org.json.JSONObject m = newMsgs.getJSONObject(i);
+                    JSONObject m = newMsgs.getJSONObject(i);
                     liveChat.add(0, java.util.Map.of(
-                        "user", m.getString("player"), 
-                        "text", m.getString("content"),
-                        "time", now
+                            "user", m.getString("player"),
+                            "text", m.getString("content"),
+                            "time", now
                     ));
                 }
-                while (liveChat.size() > 50) liveChat.remove(liveChat.size() - 1);
+                while (liveChat.size() > 50) {
+                    liveChat.remove(liveChat.size() - 1);
+                }
             }
 
-            // Send back any messages queued from the Website to the Game
-            org.json.JSONArray responseQueue = new org.json.JSONArray(webToGameQueue);
+            JSONArray responseQueue = new JSONArray(webToGameQueue);
             webToGameQueue.clear();
             ctx.json(responseQueue.toString());
         });
 
-        // 2. DATA FROM BOT -> WEBSITE
-        app.get("/mc-data", ctx -> {
-            ctx.json(java.util.Map.of("status", mcStatus, "chat", liveChat));
-        });
+        // 2) DATA FROM BOT -> WEBSITE
+        app.get("/mc-data", ctx -> ctx.json(java.util.Map.of("status", mcStatus, "chat", liveChat)));
 
-        // 3. CHAT FROM WEBSITE -> GAME
+        // 3) CHAT FROM WEBSITE -> GAME
         app.post("/mc-send-chat", ctx -> {
             String sessionId = ctx.header("Authorization");
-            if (!activeSessions.containsKey(sessionId)) { ctx.status(401); return; }
+            if (!activeSessions.containsKey(sessionId)) {
+                ctx.status(401);
+                return;
+            }
 
-            org.json.JSONObject body = new org.json.JSONObject(ctx.body());
+            JSONObject body = new JSONObject(ctx.body());
             String message = body.getString("message");
             String user = activeSessions.get(sessionId).username;
             String now = java.time.LocalTime.now().format(java.time.format.DateTimeFormatter.ofPattern("HH:mm"));
-            
-            // Add to the queue for the plugin to pick up on its next sync
+
             webToGameQueue.add("§a[Web] §f" + user + ": " + message);
-            
-            // Add to web chat immediately so the sender sees it on the dashboard
+
             liveChat.add(0, java.util.Map.of(
-                "user", user + " (Web)", 
-                "text", message,
-                "time", now
+                    "user", user + " (Web)",
+                    "text", message,
+                    "time", now
             ));
-            
+
             ctx.status(200);
         });
+    }
 
-        // --- DISCORD STATS ENDPOINT ---
+    private static void registerDiscordStatsRoute(Javalin app, JDA jdaHolder) {
         app.get("/discord-stats", ctx -> {
-            // HARDCODE YOUR IDs HERE
-            String targetGuildId = "1468598134241230851"; 
-            String targetBotId = "1493768627256688772"; 
+            Guild guild = jdaHolder.getGuildById(TARGET_GUILD_ID);
 
-            net.dv8tion.jda.api.entities.Guild guild = jdaHolder.getGuildById(targetGuildId);
-            
             if (guild == null) {
                 ctx.status(404).json(java.util.Map.of("error", "Server not found."));
                 return;
@@ -400,18 +526,33 @@ public class MinecraftSocietyBot {
             int memberCount = guild.getMemberCount();
             String botStatus = "offline";
 
-            net.dv8tion.jda.api.entities.Member targetBot = guild.getMemberById(targetBotId);
+            net.dv8tion.jda.api.entities.Member targetBot = guild.getMemberById(TARGET_BOT_ID);
             if (targetBot != null && targetBot.getOnlineStatus() != net.dv8tion.jda.api.OnlineStatus.OFFLINE) {
                 botStatus = "online";
             }
 
             ctx.json(java.util.Map.of(
-                "memberCount", memberCount,
-                "botStatus", botStatus
+                    "memberCount", memberCount,
+                    "botStatus", botStatus
             ));
         });
+    }
 
+    private static SessionData requireSession(Context ctx) {
+        String sessionId = ctx.header("Authorization");
+        SessionData session = activeSessions.get(sessionId);
+        if (session == null) {
+            ctx.status(401).result("Unauthorized");
+        }
+        return session;
+    }
 
+    private static boolean requireGuildAccess(Context ctx, SessionData session, String guildId) {
+        if (!session.adminGuilds.contains(guildId)) {
+            ctx.status(403).result("Forbidden");
+            return false;
+        }
+        return true;
     }
 
     private static String getDiscordUserId(String accessToken, OkHttpClient client) {
