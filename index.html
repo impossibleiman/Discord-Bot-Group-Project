@@ -267,24 +267,9 @@ footer {
 }
 </style>
 </head>
-<body>
+<body data-page="docs">
 
-<header>
-  <a href="index.html" class="logo">
-    <div class="logo-icon"><span></span><span></span><span></span><span></span></div>
-    Minecraft Society
-  </a>
-  <nav>
-    <a href="index.html" class="active">Docs</a>
-    <a href="events.html">Events</a>
-    <a href="members.html">Members</a>
-    <a href="https://api.mmuminecraftsociety.co.uk/login" style="color: var(--green);">Dashboard Login</a>
-    <a href="https://discord.gg/x2tMfSAnut" target="_blank" class="btn-invite">↗ Join Server</a>
-  </nav>
-  <button class="hamburger" id="hamburger" aria-label="Open menu">
-    <span></span><span></span><span></span>
-  </button>
-</header>
+<div id="site-header"></div>
 
 <!-- Mobile sidebar overlay -->
 <div class="sidebar-overlay" id="sidebarOverlay"></div>
@@ -453,6 +438,7 @@ footer {
 
 <div id="site-footer"></div>
 
+<script src="scripts/header-loader.js"></script>
 <script src="scripts/footer-loader.js"></script>
 <script>
   // Sidebar scroll highlight
@@ -487,26 +473,37 @@ footer {
   }
 
   // Mobile hamburger — opens sidebar as drawer
-  const hamburger = document.getElementById('hamburger');
-  const sidebar   = document.getElementById('sidebar');
-  const overlay   = document.getElementById('sidebarOverlay');
+  function initSidebarDrawer() {
+    const hamburger = document.getElementById('hamburger');
+    const sidebar   = document.getElementById('sidebar');
+    const overlay   = document.getElementById('sidebarOverlay');
 
-  function toggleSidebar(open) {
-    hamburger.classList.toggle('open', open);
-    sidebar.classList.toggle('open', open);
-    overlay.classList.toggle('open', open);
-    document.body.style.overflow = open ? 'hidden' : '';
+    if (!hamburger || !sidebar || !overlay || hamburger.dataset.bound === '1') {
+      return;
+    }
+
+    function toggleSidebar(open) {
+      hamburger.classList.toggle('open', open);
+      sidebar.classList.toggle('open', open);
+      overlay.classList.toggle('open', open);
+      document.body.style.overflow = open ? 'hidden' : '';
+    }
+
+    hamburger.addEventListener('click', () => toggleSidebar(!sidebar.classList.contains('open')));
+    overlay.addEventListener('click', () => toggleSidebar(false));
+
+    // Close sidebar when a link is clicked on mobile
+    sidebar.querySelectorAll('a').forEach(a => {
+      a.addEventListener('click', () => {
+        if (window.innerWidth <= 768) toggleSidebar(false);
+      });
+    });
+
+    hamburger.dataset.bound = '1';
   }
 
-  hamburger.addEventListener('click', () => toggleSidebar(!sidebar.classList.contains('open')));
-  overlay.addEventListener('click', () => toggleSidebar(false));
-
-  // Close sidebar when a link is clicked on mobile
-  sidebar.querySelectorAll('a').forEach(a => {
-    a.addEventListener('click', () => {
-      if (window.innerWidth <= 768) toggleSidebar(false);
-    });
-  });
+  initSidebarDrawer();
+  document.addEventListener('site-header:ready', initSidebarDrawer);
 </script>
 </body>
 </html>

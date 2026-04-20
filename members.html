@@ -113,21 +113,9 @@ main {
 }
 </style>
 </head>
-<body>
+<body data-page="members">
 
-<header>
-  <a href="index.html" class="logo">
-    <div class="logo-icon"><span></span><span></span><span></span><span></span></div>
-    Minecraft Society
-  </a>
-  <nav>
-    <a href="index.html">Docs</a>
-    <a href="events.html">Events</a>
-    <a href="members.html" class="active">Members</a>
-    <a href="https://api.mmuminecraftsociety.co.uk/login" style="color: var(--green);">Dashboard Login</a>
-    <a href="https://discord.gg/4qtZHA49dp" target="_blank" class="btn-join">↗ Join Server</a>
-  </nav>
-</header>
+<div id="site-header"></div>
 
 <main>
   <div class="hero">
@@ -183,6 +171,7 @@ main {
 
 <div id="site-footer"></div>
 
+<script src="scripts/header-loader.js"></script>
 <script src="scripts/footer-loader.js"></script>
 <script>
   const cards = document.querySelectorAll('.card');
