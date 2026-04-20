@@ -6,6 +6,10 @@ import io.javalin.http.Context;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
+import net.dv8tion.jda.api.entities.emoji.Emoji;
+import net.dv8tion.jda.api.components.actionrow.ActionRow;
+import net.dv8tion.jda.api.components.buttons.Button;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import okhttp3.*;
 
@@ -14,6 +18,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -33,6 +38,8 @@ import com.example.commands.TicketPanelCommand;
 import com.example.listeners.LeaveListener;
 import com.example.listeners.MinecraftSocietyListener;
 import com.example.listeners.RoleUpdateListener;
+import com.example.model.ReactionRoleButtonConfig;
+import com.example.model.ReactionRoleConfig;
 import com.example.model.ServerConfig;
 
 public class MinecraftSocietyBot {
@@ -47,6 +54,19 @@ public class MinecraftSocietyBot {
 
     private static final String TARGET_GUILD_ID = "1468598134241230851";
     private static final String TARGET_BOT_ID = "1493768627256688772";
+
+        private static final Map<String, String> EMOJI_ALIAS_MAP = Map.ofEntries(
+            Map.entry("thumbs_up", "👍"),
+            Map.entry("+1", "👍"),
+            Map.entry("thumbsup", "👍"),
+            Map.entry("thumbs_down", "👎"),
+            Map.entry("-1", "👎"),
+            Map.entry("check", "✅"),
+            Map.entry("x", "❌"),
+            Map.entry("fire", "🔥"),
+            Map.entry("sparkles", "✨"),
+            Map.entry("warning", "⚠️")
+        );
 
     // Store latest Minecraft data in memory
     private static final List<Map<String, String>> liveChat = new java.util.concurrent.CopyOnWriteArrayList<>();
@@ -369,6 +389,42 @@ public class MinecraftSocietyBot {
             }
         });
 
+        app.get("/guild-meta/{guildId}", ctx -> {
+            SessionData session = requireSession(ctx);
+            if (session == null) {
+                return;
+            }
+
+            String guildId = ctx.pathParam("guildId");
+            if (!requireGuildAccess(ctx, session, guildId)) {
+                return;
+            }
+
+            Guild guild = jdaHolder.getGuildById(guildId);
+            if (guild == null) {
+                ctx.status(404).result("Guild not found.");
+                return;
+            }
+
+            var channels = guild.getTextChannels().stream()
+                    .map(ch -> Map.of("id", ch.getId(), "name", ch.getName()))
+                    .toList();
+
+            var selfMember = guild.getSelfMember();
+            var roles = guild.getRoles().stream()
+                    .filter(role -> !role.isManaged())
+                    .filter(role -> !role.isPublicRole())
+                    .filter(selfMember::canInteract)
+                    .sorted(java.util.Comparator.comparingInt(net.dv8tion.jda.api.entities.Role::getPositionRaw).reversed())
+                    .map(role -> Map.of("id", role.getId(), "name", role.getName()))
+                    .toList();
+
+            ctx.json(Map.of(
+                    "channels", channels,
+                    "roles", roles
+            ));
+        });
+
         app.get("/config/{guildId}", ctx -> {
             SessionData session = requireSession(ctx);
             if (session == null) {
@@ -402,6 +458,9 @@ public class MinecraftSocietyBot {
                 if (newConfig.inviteAliases == null || newConfig.inviteAliases.isEmpty()) {
                     newConfig.inviteAliases = existing.inviteAliases;
                 }
+                if (newConfig.reactionRoleConfigs == null || newConfig.reactionRoleConfigs.isEmpty()) {
+                    newConfig.reactionRoleConfigs = existing.reactionRoleConfigs;
+                }
                 if (newConfig.welcomeMessage == null) {
                     newConfig.welcomeMessage = existing.welcomeMessage;
                 }
@@ -422,6 +481,56 @@ public class MinecraftSocietyBot {
             }
 
             ctx.result("Config updated and applied!");
+        });
+
+        app.post("/reaction-roles/{guildId}/publish", ctx -> {
+            SessionData session = requireSession(ctx);
+            if (session == null) {
+                return;
+            }
+
+            String guildId = ctx.pathParam("guildId");
+            if (!requireGuildAccess(ctx, session, guildId)) {
+                return;
+            }
+
+            String templateId = ctx.queryParam("templateId");
+            if (templateId == null || templateId.trim().isEmpty()) {
+                templateId = ctx.queryParam("reactionRoleId");
+            }
+            if ((templateId == null || templateId.trim().isEmpty())) {
+                templateId = ctx.formParam("templateId");
+            }
+            if ((templateId == null || templateId.trim().isEmpty())) {
+                templateId = ctx.formParam("reactionRoleId");
+            }
+            if ((templateId == null || templateId.trim().isEmpty()) && ctx.body() != null && !ctx.body().isBlank()) {
+                try {
+                    JSONObject body = new JSONObject(ctx.body());
+                    templateId = body.optString("templateId", null);
+                    if (templateId == null || templateId.trim().isEmpty()) {
+                        templateId = body.optString("reactionRoleId", null);
+                    }
+                } catch (Exception ignored) {
+                    // Invalid JSON, handled below.
+                }
+            }
+
+            if (templateId == null || templateId.trim().isEmpty()) {
+                ctx.status(400).result("Template ID is required.");
+                return;
+            }
+
+            try {
+                Map<String, String> result = publishReactionRoleTemplate(jdaHolder, guildId, templateId.trim());
+                ctx.json(result);
+            } catch (IllegalArgumentException e) {
+                ctx.status(400).result(e.getMessage());
+            } catch (IllegalStateException e) {
+                ctx.status(404).result(e.getMessage());
+            } catch (Exception e) {
+                ctx.status(500).result("Failed to publish reaction role template.");
+            }
         });
     }
 
@@ -457,6 +566,155 @@ public class MinecraftSocietyBot {
                 "inviteUrl", "https://discord.gg/" + invite.getCode(),
                 "alias", alias.trim()
         );
+    }
+
+    private static Map<String, String> publishReactionRoleTemplate(JDA jdaHolder, String guildId, String templateId) {
+        Guild guild = jdaHolder.getGuildById(guildId);
+        if (guild == null) {
+            throw new IllegalStateException("Guild not found.");
+        }
+
+        ServerConfig config = guildConfigs.getOrDefault(guildId, new ServerConfig());
+        if (config.reactionRoleConfigs == null || config.reactionRoleConfigs.isEmpty()) {
+            throw new IllegalArgumentException("No reaction role templates configured for this server.");
+        }
+
+        ReactionRoleConfig template = config.reactionRoleConfigs.get(templateId);
+        if (template == null) {
+            throw new IllegalArgumentException("Template not found: " + templateId);
+        }
+
+        if (template.channelId == null || template.channelId.isBlank()) {
+            throw new IllegalArgumentException("Template is missing target channel ID.");
+        }
+
+        TextChannel channel = guild.getTextChannelById(template.channelId);
+        if (channel == null) {
+            throw new IllegalStateException("Target channel not found for template.");
+        }
+
+        if (template.buttons == null || template.buttons.isEmpty()) {
+            throw new IllegalArgumentException("Template needs at least one role button.");
+        }
+
+        List<Button> roleButtons = new ArrayList<>();
+        for (ReactionRoleButtonConfig buttonConfig : template.buttons) {
+            if (buttonConfig == null || buttonConfig.roleId == null || buttonConfig.roleId.isBlank() || buttonConfig.label == null || buttonConfig.label.isBlank()) {
+                continue;
+            }
+
+            Button button = Button.secondary("reactionrole:give:" + buttonConfig.roleId, buttonConfig.label);
+            if (buttonConfig.emoji != null && !buttonConfig.emoji.isBlank()) {
+                Emoji emoji = resolveEmoji(buttonConfig.emoji);
+                if (emoji != null) {
+                    button = button.withEmoji(emoji);
+                }
+            }
+
+            roleButtons.add(button);
+            if (roleButtons.size() >= 25) {
+                break;
+            }
+        }
+
+        if (roleButtons.isEmpty()) {
+            throw new IllegalArgumentException("Template buttons are invalid. Add at least one valid label and role ID.");
+        }
+
+        String content = renderReactionRoleContent(template, channel.getId());
+        List<ActionRow> rows = buildReactionRoleRows(roleButtons);
+
+        String action;
+        String messageId = template.messageId;
+
+        if (messageId != null && !messageId.isBlank()) {
+            try {
+                var existingMessage = channel.retrieveMessageById(messageId).complete();
+                existingMessage.editMessage(content).setComponents(rows).complete();
+                action = "updated";
+            } catch (Exception ignored) {
+                var sentMessage = channel.sendMessage(content).setComponents(rows).complete();
+                template.messageId = sentMessage.getId();
+                action = "sent_new";
+            }
+        } else {
+            var sentMessage = channel.sendMessage(content).setComponents(rows).complete();
+            template.messageId = sentMessage.getId();
+            action = "sent_new";
+        }
+
+        if (config.reactionRoleConfigs == null) {
+            config.reactionRoleConfigs = new HashMap<>();
+        }
+        config.reactionRoleConfigs.put(templateId, template);
+        guildConfigs.put(guildId, config);
+        saveConfigs();
+
+        return Map.of(
+                "templateId", templateId,
+                "messageId", template.messageId == null ? "" : template.messageId,
+                "action", action
+        );
+    }
+
+    private static String renderReactionRoleContent(ReactionRoleConfig template, String channelId) {
+        String content = template.content == null ? "" : template.content;
+
+        List<String> roleMentions = new ArrayList<>();
+        if (template.buttons != null) {
+            for (ReactionRoleButtonConfig buttonConfig : template.buttons) {
+                if (buttonConfig != null && buttonConfig.roleId != null && !buttonConfig.roleId.isBlank()) {
+                    roleMentions.add("<@&" + buttonConfig.roleId + ">");
+                }
+            }
+        }
+
+        String roleList = roleMentions.isEmpty() ? "No roles configured." : String.join(", ", roleMentions);
+
+        content = content.replaceAll("(?i)\\$CHANNEL\\b", java.util.regex.Matcher.quoteReplacement("<#" + channelId + ">"));
+        content = content.replaceAll("(?i)\\$ROLE\\b", java.util.regex.Matcher.quoteReplacement(roleList));
+        return content;
+    }
+
+    private static List<ActionRow> buildReactionRoleRows(List<Button> buttons) {
+        List<ActionRow> rows = new ArrayList<>();
+        for (int i = 0; i < buttons.size(); i += 5) {
+            int end = Math.min(i + 5, buttons.size());
+            rows.add(ActionRow.of(buttons.subList(i, end)));
+        }
+        return rows;
+    }
+
+    private static Emoji resolveEmoji(String rawEmoji) {
+        if (rawEmoji == null || rawEmoji.trim().isEmpty()) {
+            return null;
+        }
+
+        String value = rawEmoji.trim();
+
+        try {
+            return Emoji.fromFormatted(value);
+        } catch (Exception ignored) {
+            // Continue to fallback parsing.
+        }
+
+        if (value.startsWith(":") && value.endsWith(":") && value.length() > 2) {
+            String alias = value.substring(1, value.length() - 1).toLowerCase();
+            String mapped = EMOJI_ALIAS_MAP.get(alias);
+            if (mapped != null) {
+                try {
+                    return Emoji.fromUnicode(mapped);
+                } catch (Exception ignored) {
+                    // Continue fallback.
+                }
+            }
+        }
+
+        try {
+            return Emoji.fromUnicode(value);
+        } catch (Exception ignored) {
+            return null;
+        }
     }
 
     private static void registerMinecraftRoutes(Javalin app) {

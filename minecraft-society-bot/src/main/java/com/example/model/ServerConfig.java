@@ -7,4 +7,5 @@ public class ServerConfig {
     public String welcomeMessage; // Make sure this is public!
     public String leaveMessage;
     public Map<String, String> inviteAliases;
+    public Map<String, ReactionRoleConfig> reactionRoleConfigs;
 }
