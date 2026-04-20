@@ -1,5 +1,9 @@
 const API_BASE = "https://api.mmuminecraftsociety.co.uk";
 let currentGuildId = null;
+let welcomeEmbedBuilder = null;
+
+const DASHBOARD_ACTIVE_TAB_KEY = 'dashboard_active_tab';
+const DASHBOARD_SELECTED_GUILD_KEY = 'dashboard_selected_guild';
 
 document.addEventListener("DOMContentLoaded", () => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -9,8 +13,64 @@ document.addEventListener("DOMContentLoaded", () => {
         localStorage.setItem('admin_session', sessionToken);
         window.history.replaceState({}, document.title, "/dashboard.html");
     }
+    initEmbedBuilders();
+    restoreActiveTabFromStorage();
     verifySession();
 });
+
+function getNavButtonForTab(tabId) {
+    return document.querySelector(`.nav-tab[onclick*="'${tabId}'"]`);
+}
+
+function restoreActiveTabFromStorage() {
+    const savedTabId = localStorage.getItem(DASHBOARD_ACTIVE_TAB_KEY);
+    if (!savedTabId) return;
+
+    const tabEl = document.getElementById(savedTabId);
+    const navBtn = getNavButtonForTab(savedTabId);
+    if (!tabEl || !navBtn) return;
+
+    switchTab(savedTabId, navBtn, false);
+}
+
+function initEmbedBuilders() {
+    welcomeEmbedBuilder = createEmbedBuilder({
+        nicknameInputId: 'config-nickname',
+        inputIds: {
+            title: 'emb-title',
+            desc: 'emb-desc',
+            color: 'emb-color',
+            thumb: 'emb-thumb',
+            image: 'emb-image',
+            footer: 'emb-footer'
+        },
+        previewIds: {
+            botName: 'prev-bot-name',
+            container: 'prev-container',
+            title: 'prev-title',
+            desc: 'prev-desc',
+            thumb: 'prev-thumb',
+            image: 'prev-image',
+            footerWrap: 'prev-footer-wrap',
+            footerText: 'prev-footer-text'
+        },
+        defaultDescriptionHtml: 'Hello <span style="color:#c9cdfb; background:rgba(88,101,242,.3); padding:0 2px; border-radius:3px;">@User</span>, welcome to the server!<br>Joined via: discord.gg/abcd123<br>Invited by: <span style="color:#c9cdfb; background:rgba(88,101,242,.3); padding:0 2px; border-radius:3px;">@Friend</span><br>Time: Today at 12:00 PM',
+        variableMocks: {
+            '$USER': '<span style="color:#c9cdfb; background:rgba(88,101,242,.3); padding:0 2px; border-radius:3px;">@User</span>',
+            '$GUILD': 'MMU Minecraft Society',
+            '$MEMBER_COUNT': '42',
+            '$INVITER': '<span style="color:#c9cdfb; background:rgba(88,101,242,.3); padding:0 2px; border-radius:3px;">@Friend</span>',
+            '$INVITE': 'discord.gg/abcd123',
+            '$TIME': 'Today at 12:00 PM'
+        },
+        defaultBotName: 'Society Bot',
+        defaultBorderColor: '#1e1f22'
+    });
+
+    if (welcomeEmbedBuilder) {
+        welcomeEmbedBuilder.update();
+    }
+}
 
 // Toast System (Replaces Alerts)
 function showToast(message, type = 'success') {
@@ -29,12 +89,16 @@ function showToast(message, type = 'success') {
 }
 
 // Tab Switching Logic
-function switchTab(tabId, buttonElement) {
+function switchTab(tabId, buttonElement, persist = true) {
     document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
     document.querySelectorAll('.nav-tab').forEach(btn => btn.classList.remove('active'));
     
     document.getElementById(tabId).classList.add('active');
     buttonElement.classList.add('active');
+
+    if (persist) {
+        localStorage.setItem(DASHBOARD_ACTIVE_TAB_KEY, tabId);
+    }
 
     updateServerRequiredState(tabId);
 }
@@ -84,9 +148,14 @@ async function loadGuilds() {
         const guilds = await response.json();
         const serverBar = document.getElementById('guild-list');
         serverBar.innerHTML = '';
+        let firstButton = null;
+        const savedGuildId = localStorage.getItem(DASHBOARD_SELECTED_GUILD_KEY);
+        let restored = false;
 
         if (guilds.length === 0) {
             serverBar.innerHTML = '<span style="color:var(--muted); font-size:14px;">No managed servers found.</span>';
+            currentGuildId = null;
+            localStorage.removeItem(DASHBOARD_SELECTED_GUILD_KEY);
             updateServerRequiredState('tab-minecraft');
             return;
         }
@@ -98,11 +167,19 @@ async function loadGuilds() {
             btn.onclick = () => selectServer(g.id, btn);
             serverBar.appendChild(btn);
 
-            // Auto-select the first server
             if (index === 0) {
+                firstButton = btn;
+            }
+
+            if (savedGuildId && g.id === savedGuildId) {
                 selectServer(g.id, btn);
+                restored = true;
             }
         });
+
+        if (!restored && guilds.length > 0 && firstButton) {
+            selectServer(guilds[0].id, firstButton);
+        }
 
         const activeTab = document.querySelector('.tab-content.active');
         updateServerRequiredState(activeTab ? activeTab.id : 'tab-minecraft');
@@ -113,6 +190,7 @@ async function loadGuilds() {
 
 function selectServer(guildId, buttonElement) {
     currentGuildId = guildId;
+    localStorage.setItem(DASHBOARD_SELECTED_GUILD_KEY, guildId);
     
     // Update active pill styling
     document.querySelectorAll('.server-pill').forEach(btn => btn.classList.remove('active'));
@@ -159,14 +237,16 @@ async function saveServerConfig() {
     if (btn) { btn.innerText = "Saving..."; btn.disabled = true; }
     
     try {
-        const embedData = {
-            title: document.getElementById('emb-title').value,
-            desc: document.getElementById('emb-desc').value,
-            color: document.getElementById('emb-color').value,
-            thumb: document.getElementById('emb-thumb').value,
-            image: document.getElementById('emb-image').value,
-            footer: document.getElementById('emb-footer').value
-        };
+        const embedData = welcomeEmbedBuilder
+            ? welcomeEmbedBuilder.getPayload()
+            : {
+                title: document.getElementById('emb-title').value,
+                desc: document.getElementById('emb-desc').value,
+                color: document.getElementById('emb-color').value,
+                thumb: document.getElementById('emb-thumb').value,
+                image: document.getElementById('emb-image').value,
+                footer: document.getElementById('emb-footer').value
+            };
 
         // RESTORED: Send the nickname to the Java Backend!
         const payload = { 
@@ -296,80 +376,114 @@ async function deleteAlias(code) {
 }
 
 function updatePreview() {
-    // 0. Bot Nickname Update
-    const nickInput = document.getElementById('config-nickname');
-    const prevBotName = document.getElementById('prev-bot-name');
-    if (prevBotName) {
-        // If the box has text, use it. Otherwise, default to "Society Bot"
-        prevBotName.innerText = (nickInput && nickInput.value.trim() !== '') ? nickInput.value.trim() : 'Society Bot';
+    if (!welcomeEmbedBuilder) {
+        initEmbedBuilders();
     }
-    // 1. Color
-    const colorEl = document.getElementById('emb-color');
-    const hex = (colorEl ? colorEl.value.trim() : '') || '#1e1f22';
-    document.getElementById('prev-container').style.borderLeftColor = hex;
+    if (welcomeEmbedBuilder) {
+        welcomeEmbedBuilder.update();
+    }
+}
 
-    // 2. Title
-    const titleElInput = document.getElementById('emb-title');
-    const title = titleElInput ? titleElInput.value.trim() : '';
-    const titleEl = document.getElementById('prev-title');
-    if (title) { 
-        titleEl.style.display = 'block'; 
-        titleEl.innerText = title; 
-    } else { 
-        titleEl.style.display = 'none'; 
+function createEmbedBuilder(config) {
+    if (!config || !config.inputIds || !config.previewIds) {
+        return null;
     }
 
-// 3. Description (With Live Variable Mockups!)
-    const descEl = document.getElementById('emb-desc');
-    let desc = descEl ? descEl.value.trim() : '';
-    
-    if (!desc) {
-        desc = 'Hello <span style="color:#c9cdfb; background:rgba(88,101,242,.3); padding:0 2px; border-radius:3px;">@User</span>, welcome to the server!\nJoined via: discord.gg/abcd123\nInvited by: <span style="color:#c9cdfb; background:rgba(88,101,242,.3); padding:0 2px; border-radius:3px;">@Friend</span>\nTime: Today at 12:00 PM';
-    } else {
-        // The \b ensures $INVITE doesn't accidentally overwrite $INVITER
-        desc = desc.replace(/\$USER\b/gi, '<span style="color:#c9cdfb; background:rgba(88,101,242,.3); padding:0 2px; border-radius:3px;">@User</span>')
-                   .replace(/\$GUILD\b/gi, 'MMU Minecraft Society')
-                   .replace(/\$MEMBER_COUNT\b/gi, '42')
-                   .replace(/\$INVITER\b/gi, '<span style="color:#c9cdfb; background:rgba(88,101,242,.3); padding:0 2px; border-radius:3px;">@Friend</span>')
-                   .replace(/\$INVITE\b/gi, 'discord.gg/abcd123')
-                   .replace(/\$TIME\b/gi, 'Today at 12:00 PM');
-    }
-    // We use innerHTML here instead of innerText so the blue @User tags render properly
-    document.getElementById('prev-desc').innerHTML = desc.replace(/\n/g, '<br>');
+    const getInputValue = id => {
+        const el = document.getElementById(id);
+        return el ? el.value.trim() : '';
+    };
 
-    // 4. Thumbnail
-    const thumbElInput = document.getElementById('emb-thumb');
-    const thumb = thumbElInput ? thumbElInput.value.trim() : '';
-    const prevThumb = document.getElementById('prev-thumb');
-    if (thumb) { 
-        prevThumb.src = thumb; 
-        prevThumb.style.display = 'block'; 
-    } else { 
-        prevThumb.style.display = 'none'; 
-    }
+    const replaceTemplateTokens = (text, replacements) => {
+        let output = text;
+        Object.entries(replacements || {}).forEach(([token, replacement]) => {
+            const pattern = new RegExp(escapeRegExp(token) + '\\b', 'gi');
+            output = output.replace(pattern, replacement);
+        });
+        return output;
+    };
 
-    // 5. Main Image
-    const imgElInput = document.getElementById('emb-image');
-    const img = imgElInput ? imgElInput.value.trim() : '';
-    const prevImg = document.getElementById('prev-image');
-    if (img) { 
-        prevImg.src = img; 
-        prevImg.style.display = 'block'; 
-    } else { 
-        prevImg.style.display = 'none'; 
-    }
+    const update = () => {
+        const prevBotName = document.getElementById(config.previewIds.botName);
+        const prevContainer = document.getElementById(config.previewIds.container);
+        const prevTitle = document.getElementById(config.previewIds.title);
+        const prevDesc = document.getElementById(config.previewIds.desc);
+        const prevThumb = document.getElementById(config.previewIds.thumb);
+        const prevImage = document.getElementById(config.previewIds.image);
+        const prevFooterWrap = document.getElementById(config.previewIds.footerWrap);
+        const prevFooterText = document.getElementById(config.previewIds.footerText);
 
-    // 6. Footer
-    const footerElInput = document.getElementById('emb-footer');
-    let footerTxt = footerElInput ? footerElInput.value.trim() : '';
-    const footerWrap = document.getElementById('prev-footer-wrap');
-    if (footerTxt) {
-        footerTxt = footerTxt.replace(/\$MEMBER_COUNT/g, '42');
-        footerWrap.style.display = 'flex';
-        document.getElementById('prev-footer-text').innerText = footerTxt;
-    } else {
-        footerWrap.style.display = 'none';
-    }
+        if (!prevContainer || !prevTitle || !prevDesc || !prevThumb || !prevImage || !prevFooterWrap || !prevFooterText) {
+            return;
+        }
+
+        const nicknameEl = document.getElementById(config.nicknameInputId);
+        if (prevBotName) {
+            prevBotName.innerText = (nicknameEl && nicknameEl.value.trim() !== '')
+                ? nicknameEl.value.trim()
+                : (config.defaultBotName || 'Society Bot');
+        }
+
+        const color = getInputValue(config.inputIds.color) || (config.defaultBorderColor || '#1e1f22');
+        prevContainer.style.borderLeftColor = color;
+
+        const title = getInputValue(config.inputIds.title);
+        if (title) {
+            prevTitle.style.display = 'block';
+            prevTitle.innerText = title;
+        } else {
+            prevTitle.style.display = 'none';
+        }
+
+        const rawDesc = getInputValue(config.inputIds.desc);
+        if (!rawDesc) {
+            prevDesc.innerHTML = config.defaultDescriptionHtml || '';
+        } else {
+            const safeDesc = sanitize(rawDesc);
+            const withMocks = replaceTemplateTokens(safeDesc, config.variableMocks);
+            prevDesc.innerHTML = withMocks.replace(/\n/g, '<br>');
+        }
+
+        const thumb = getInputValue(config.inputIds.thumb);
+        if (thumb) {
+            prevThumb.src = thumb;
+            prevThumb.style.display = 'block';
+        } else {
+            prevThumb.style.display = 'none';
+        }
+
+        const image = getInputValue(config.inputIds.image);
+        if (image) {
+            prevImage.src = image;
+            prevImage.style.display = 'block';
+        } else {
+            prevImage.style.display = 'none';
+        }
+
+        const footerRaw = getInputValue(config.inputIds.footer);
+        if (footerRaw) {
+            const footerText = replaceTemplateTokens(footerRaw, { '$MEMBER_COUNT': '42' });
+            prevFooterWrap.style.display = 'flex';
+            prevFooterText.innerText = footerText;
+        } else {
+            prevFooterWrap.style.display = 'none';
+        }
+    };
+
+    const getPayload = () => ({
+        title: getInputValue(config.inputIds.title),
+        desc: getInputValue(config.inputIds.desc),
+        color: getInputValue(config.inputIds.color),
+        thumb: getInputValue(config.inputIds.thumb),
+        image: getInputValue(config.inputIds.image),
+        footer: getInputValue(config.inputIds.footer)
+    });
+
+    return { update, getPayload };
+}
+
+function escapeRegExp(str) {
+    return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
 /**

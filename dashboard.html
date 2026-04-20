@@ -29,19 +29,6 @@
   gap:8px;
 }
 
-.sidebar-status {
-  display:flex;
-  flex-direction:column;
-  gap:8px;
-  margin-bottom:20px;
-}
-
-.sidebar-status-item {
-  font-family:'JetBrains Mono', monospace;
-  font-size:11px;
-  color:var(--muted);
-}
-
 .server-pill {
   width:100%;
   background:var(--card); border:1px solid var(--border); color:var(--text);
@@ -293,12 +280,26 @@ td code { background: #08101a; padding: 4px 8px; border-radius: 4px; color: var(
 }
 
 /* LIVE DISCORD PREVIEW STYLES */
+.embed-preview-panel {
+  position: sticky;
+  top: 100px;
+}
+
+.embed-preview-title {
+  display:block;
+  margin-bottom: 12px;
+  font-family:'JetBrains Mono', monospace;
+  font-size:11px;
+  letter-spacing:1px;
+  text-transform:uppercase;
+  color:#9cb3c9;
+}
+
 .embed-preview-container {
   background: #313338; /* Exact Discord background */
   border-radius: 8px;
   padding: 16px;
-  position: sticky;
-  top: 100px; /* Keeps the preview in view when scrolling down the inputs */
+  border:1px solid rgba(148,163,184,.18);
 }
 
 .discord-message-header { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
@@ -337,13 +338,17 @@ td code { background: #08101a; padding: 4px 8px; border-radius: 4px; color: var(
 
 <div id="site-header"></div>
 
+<div style="position:fixed; top:14px; right:24px; display:flex; align-items:center; gap:16px; z-index:250;">
+  <div id="bot-status" style="font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--muted);">
+    Checking Bot...
+  </div>
+  <div id="session-info" style="font-family:'JetBrains Mono', monospace; font-size:12px; color:var(--muted);">
+    Verifying session...
+  </div>
+</div>
+
 
 <div class="sidebar">
-  <div class="sidebar-status">
-    <div id="bot-status" class="sidebar-status-item">Checking Bot...</div>
-    <div id="session-info" class="sidebar-status-item" style="font-size:12px;">Verifying session...</div>
-  </div>
-
   <div class="sidebar-section">
     <div class="sidebar-label">Live</div>
     <button class="nav-tab active" onclick="switchTab('tab-minecraft', this)">
@@ -462,9 +467,9 @@ td code { background: #08101a; padding: 4px 8px; border-radius: 4px; color: var(
     </div>
     </div>
 
-<div class="embed-preview-container">
-      <span class="server-bar-label" style="margin-bottom: 16px;">Live Preview</span>
-      
+<div class="embed-preview-panel">
+  <span class="embed-preview-title">Live Preview</span>
+  <div class="embed-preview-container">
       <div class="discord-message-header">
         <img class="discord-avatar" src="https://cdn.discordapp.com/app-icons/1493768627256688772/92a33a206de225c5086eea041cd0ee77.png" style="object-fit: cover;">
         
@@ -492,6 +497,7 @@ td code { background: #08101a; padding: 4px 8px; border-radius: 4px; color: var(
           <span id="prev-footer-text"></span>
         </div>
       </div>
+    </div>
     </div>
   </div>
 </div>
