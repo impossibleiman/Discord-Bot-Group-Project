@@ -1,13 +1,13 @@
 (function () {
   var FALLBACK_HEADER_HTML = '<header>' +
-    '<a href="index.html" class="logo">' +
+    '<a href="/" class="logo">' +
       '<div class="logo-icon"><span></span><span></span><span></span><span></span></div>' +
       'Minecraft Society' +
     '</a>' +
     '<nav>' +
-      '<a href="index.html" data-nav="docs">Docs</a>' +
-      '<a href="events.html" data-nav="events">Events</a>' +
-      '<a href="members.html" data-nav="members">Members</a>' +
+      '<a href="/" data-nav="docs">Docs</a>' +
+      '<a href="/events" data-nav="events">Events</a>' +
+      '<a href="/members" data-nav="members">Members</a>' +
       '<a href="https://api.mmuminecraftsociety.co.uk/login" style="color: var(--green);">Dashboard Login</a>' +
       '<a href="https://discord.gg/x2tMfSAnut" target="_blank" class="btn-invite">↗ Join Server</a>' +
     '</nav>' +
