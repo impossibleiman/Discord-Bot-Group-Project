@@ -322,20 +322,16 @@ td code { background: #08101a; padding: 4px 8px; border-radius: 4px; color: var(
 </head>
 <body>
 
-<header>
-  <a href="https://mmuminecraftsociety.co.uk/" class="logo">
-    <div class="logo-icon"><span></span><span></span><span></span><span></span></div>
-    Dashboard
-  </a>
-  <div style="display:flex; align-items:center; gap:16px;">
-    
-    <div id="bot-status" style="font-family:'JetBrains Mono', monospace; font-size:11px; padding:4px 10px; border-radius:99px; border:1px solid var(--border); color:var(--muted);">
-      Checking Bot...
-    </div>
+<div id="site-header"></div>
 
-    <div id="session-info" style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--muted);">Verifying session...</div>
+<div style="position:fixed; top:14px; right:24px; display:flex; align-items:center; gap:16px; z-index:250;">
+  <div id="bot-status" style="font-family:'JetBrains Mono', monospace; font-size:11px; padding:4px 10px; border-radius:99px; border:1px solid var(--border); color:var(--muted); background:rgba(5,10,15,.65);">
+    Checking Bot...
   </div>
-</header>
+  <div id="session-info" style="font-family:'JetBrains Mono', monospace; font-size:12px; color:var(--muted); background:rgba(5,10,15,.65); border:1px solid var(--border); border-radius:99px; padding:4px 10px;">
+    Verifying session...
+  </div>
+</div>
 
 
 <div class="sidebar">
@@ -522,6 +518,7 @@ td code { background: #08101a; padding: 4px 8px; border-radius: 4px; color: var(
 
 <div id="toast-container"></div>
 
+<script src="scripts/header-loader.js"></script>
 <script src="dashboard.js"></script>
 <div class="modal-overlay" id="help-modal" onclick="closeHelpModal()">
   <div class="modal" onclick="event.stopPropagation()">

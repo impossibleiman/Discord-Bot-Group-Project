@@ -1,17 +1,26 @@
 (function () {
-  var FALLBACK_HEADER_HTML = '<header>' +
-    '<a href="/" class="logo">' +
-      '<div class="logo-icon"><span></span><span></span><span></span><span></span></div>' +
-      'Minecraft Society' +
-    '</a>' +
-    '<nav>' +
-      '<a href="/" data-nav="docs">Docs</a>' +
-      '<a href="/events" data-nav="events">Events</a>' +
-      '<a href="/members" data-nav="members">Members</a>' +
-      '<a href="https://api.mmuminecraftsociety.co.uk/login" style="color: var(--green);">Dashboard Login</a>' +
-      '<a href="https://discord.gg/x2tMfSAnut" target="_blank" class="btn-invite">↗ Join Server</a>' +
-    '</nav>' +
-  '</header>';
+  window.handleLoginClick = async function (event) {
+    event.preventDefault();
+
+    const sessionToken = localStorage.getItem('admin_session');
+
+    if (sessionToken) {
+      try {
+        const response = await fetch(`https://api.mmuminecraftsociety.co.uk/check-session?session=${sessionToken}`);
+
+        if (response.ok) {
+          window.location.href = '/dashboard.html';
+          return;
+        }
+
+        localStorage.removeItem('admin_session');
+      } catch (error) {
+        console.error('Failed to check session status.');
+      }
+    }
+
+    window.location.href = 'https://api.mmuminecraftsociety.co.uk/login';
+  };
 
   function applyHeaderBehavior(target) {
     var page = document.body.getAttribute('data-page');
@@ -42,12 +51,6 @@
       return;
     }
 
-    if (window.location.protocol === 'file:') {
-      target.innerHTML = FALLBACK_HEADER_HTML;
-      applyHeaderBehavior(target);
-      return;
-    }
-
     fetch('header.html', { cache: 'no-store' })
       .then(function (response) {
         if (!response.ok) {
@@ -60,8 +63,6 @@
         applyHeaderBehavior(target);
       })
       .catch(function (error) {
-        target.innerHTML = FALLBACK_HEADER_HTML;
-        applyHeaderBehavior(target);
         console.error(error);
       });
   }

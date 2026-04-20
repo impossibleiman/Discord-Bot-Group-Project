@@ -112,6 +112,258 @@ section.visible { opacity:1; transform:translateY(0); }
   border:1px solid rgba(147,197,253,.2); padding:3px 10px; border-radius:999px;
 }
 
+.command-media {
+  width:100%;
+}
+
+.command-gif {
+  display:block;
+  width:100%;
+  border-radius:16px;
+  border:1px solid var(--border);
+  background:var(--surface);
+  aspect-ratio:16 / 10;
+  object-fit:cover;
+  box-shadow:0 12px 40px rgba(0,0,0,.22);
+  -webkit-user-select:none;
+  user-select:none;
+  -webkit-user-drag:none;
+}
+
+.usage-pills {
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  gap:8px;
+}
+
+.usage-item {
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  position:relative;
+  background:rgba(147,197,253,.08);
+  border:1px solid rgba(147,197,253,.2);
+  border-radius:999px;
+  padding:5px 10px 5px 12px;
+  cursor:pointer;
+  user-select:none;
+  transition:transform .2s ease, border-color .2s ease, background .2s ease, box-shadow .2s ease;
+}
+
+.usage-item::after {
+  content:'?';
+  width:18px;
+  height:18px;
+  border-radius:999px;
+  background:linear-gradient(180deg, rgba(96,165,250,.24), rgba(59,130,246,.12));
+  border:1px solid rgba(147,197,253,.36);
+  color:#dbeafe;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  font-family:'JetBrains Mono', monospace;
+  font-size:10px;
+  line-height:1;
+  flex-shrink:0;
+  transition:inherit;
+}
+
+.usage-pills .pill-blue {
+  border-color:rgba(147,197,253,.28);
+}
+
+.usage-item:hover,
+.usage-item:focus-visible,
+.usage-item:focus-within {
+  transform:translateY(-1px);
+  border-color:rgba(191,219,254,.72);
+  background:rgba(96,165,250,.12);
+  box-shadow:0 8px 18px rgba(37,99,235,.12);
+}
+
+.usage-item-text {
+  display:inline-flex;
+  align-items:center;
+  font-size:inherit;
+}
+
+.help-popover {
+  display:none !important;
+}
+
+.usage-item.is-open::after {
+  background:linear-gradient(180deg, rgba(96,165,250,.4), rgba(59,130,246,.2));
+  border-color:rgba(191,219,254,.95);
+  color:#ffffff;
+}
+
+.help-tooltip-overlay {
+  position:fixed;
+  inset:0;
+  display:none;
+  pointer-events:none;
+  z-index:6000;
+}
+
+.help-tooltip-overlay.open {
+  display:block;
+}
+
+.help-tooltip {
+  position:fixed;
+  min-width:220px;
+  max-width:min(280px, 70vw);
+  background:#091423;
+  border:1px solid rgba(147,197,253,.22);
+  border-radius:12px;
+  padding:10px 12px;
+  color:var(--text);
+  font-size:12px;
+  line-height:1.5;
+  box-shadow:0 16px 40px rgba(0,0,0,.35);
+  opacity:0;
+  transform:translateY(8px) scale(.98);
+  transition:opacity .18s ease, transform .18s ease;
+  will-change:top, left, opacity, transform;
+}
+
+.help-tooltip.open {
+  opacity:1;
+  transform:translateY(0) scale(1);
+}
+
+.help-tooltip::before {
+  content:'';
+  position:absolute;
+  top:-6px;
+  left:18px;
+  width:10px;
+  height:10px;
+  background:#091423;
+  border-left:1px solid rgba(147,197,253,.22);
+  border-top:1px solid rgba(147,197,253,.22);
+  transform:rotate(45deg);
+}
+
+.image-overlay {
+  position:fixed;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:rgba(2,6,23,.78);
+  backdrop-filter:blur(8px);
+  z-index:5000;
+  padding:24px;
+  opacity:0;
+  visibility:hidden;
+  pointer-events:none;
+  transition:opacity .24s ease, visibility 0s linear .24s;
+}
+
+.image-overlay.open {
+  opacity:1;
+  visibility:visible;
+  pointer-events:auto;
+  transition:opacity .24s ease;
+}
+
+.image-overlay-panel {
+  position:relative;
+  width:min(1100px, 100%);
+  max-height:100%;
+  padding:18px;
+}
+
+.image-overlay-img {
+  width:100%;
+  max-height:calc(100vh - 48px);
+  object-fit:contain;
+  border-radius:18px;
+  box-shadow:0 24px 80px rgba(0,0,0,.6);
+  background:#0b1420;
+  border:1px solid rgba(148,163,184,.18);
+  opacity:0;
+  transform:translateY(12px) scale(.92);
+  transition:transform .24s ease, opacity .24s ease;
+  -webkit-user-select:none;
+  user-select:none;
+  -webkit-user-drag:none;
+}
+
+.image-overlay-img.ready {
+  opacity:1;
+  transform:translateY(0) scale(1);
+}
+
+.image-overlay-close {
+  position:absolute;
+  top:0;
+  right:0;
+  width:36px;
+  height:36px;
+  border-radius:999px;
+  border:1px solid rgba(148,163,184,.25);
+  background:#091423;
+  color:var(--white);
+  font-size:22px;
+  line-height:1;
+  cursor:pointer;
+  box-shadow:0 12px 30px rgba(0,0,0,.45);
+  z-index:2;
+  transform:translate(50%, -50%);
+  opacity:0;
+  pointer-events:none;
+  transition:opacity .16s ease;
+}
+
+.image-overlay.open .image-overlay-close {
+  opacity:1;
+  pointer-events:auto;
+}
+
+.image-overlay-close:hover {
+  background:#0f1e30;
+}
+
+.usage-pills .pill-blue.command-root {
+  background:rgba(59,130,246,.12);
+  border-color:rgba(59,130,246,.28);
+  color:#bfdbfe;
+}
+
+.usage-pills .pill-blue.command-note {
+  background:rgba(147,197,253,.06);
+  color:#bfdbfe;
+}
+
+.variable-grid {
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+  gap:16px;
+}
+
+.variable-card {
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:22px 24px;
+}
+
+.variable-card h3 {
+  font-size:16px;
+  color:var(--white);
+  margin-bottom:12px;
+}
+
+.variable-card p {
+  font-size:14px;
+  color:var(--muted);
+  line-height:1.7;
+  margin-top:10px;
+}
+
 .content-category {
   margin:54px 0 24px;
   padding-top:20px;
@@ -152,6 +404,12 @@ section.visible { opacity:1; transform:translateY(0); }
   transition:border-color .25s, box-shadow .25s, transform .25s;
   position:relative; overflow:hidden;
 }
+.command-box.has-media {
+  display:grid;
+  grid-template-columns:minmax(0, 1fr) minmax(260px, 360px);
+  gap:20px;
+  align-items:start;
+}
 .command-box::before {
   content:''; position:absolute; top:0; left:0;
   width:3px; height:100%; background:var(--green);
@@ -179,20 +437,14 @@ section.visible { opacity:1; transform:translateY(0); }
 .label::before { content:'—'; opacity:.4; font-size:10px; }
 .value { font-size:14px; color:var(--white); font-weight:600; line-height:1.5; }
 
-/* COPY BUTTON */
-.usage-wrap {
-  display:inline-flex; align-items:center; gap:10px; width:100%;
+.command-arg-row {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  width:100%;
+  flex-wrap:wrap;
 }
-.copy-btn {
-  flex-shrink:0;
-  background:rgba(74,222,128,.08); border:1px solid rgba(74,222,128,.2);
-  color:var(--green); border-radius:6px; padding:4px 12px;
-  font-family:'JetBrains Mono', monospace; font-size:11px; font-weight:700;
-  cursor:pointer; transition:background .2s, color .2s, border-color .2s;
-  white-space:nowrap;
-}
-.copy-btn:hover { background:rgba(74,222,128,.18); border-color:rgba(74,222,128,.4); }
-.copy-btn.copied { background:rgba(74,222,128,.25); color:var(--white); border-color:rgba(74,222,128,.5); }
 
 .status-card { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:16px; margin-bottom:16px; }
 
@@ -245,6 +497,7 @@ footer {
 /* MOBILE */
 @media (max-width:777px) {
   .top-showcase { grid-template-columns:1fr; gap:20px; margin-bottom:32px; }
+  .command-box.has-media { grid-template-columns:1fr; }
   .sidebar { transform:translateX(-100%); display:flex; flex-direction:column; }
   .sidebar.open { transform:translateX(0); box-shadow:4px 0 40px rgba(0,0,0,.5); }
   .hamburger { display:flex; }
@@ -258,7 +511,7 @@ footer {
   }
   footer { margin-left:0; }
   .property-grid { grid-template-columns:1fr; }
-  .copy-btn { display:none; }
+  .command-media { order:2; }
 }
 
 @media (max-width:423px) {
@@ -267,7 +520,7 @@ footer {
 }
 </style>
 </head>
-< data-page="docs">
+<body data-page="docs">
 
 <div id="site-header"></div>
 
@@ -286,9 +539,11 @@ footer {
   </div>
   <div class="sidebar-section">
     <div class="sidebar-label">Commands</div>
+    <a href="#ping"><span class="sidebar-dot"></span>Ping</a>
+    <a href="#purge"><span class="sidebar-dot"></span>Purge</a>
     <a href="#reactionrole"><span class="sidebar-dot"></span>Reaction Roles</a>
     <a href="#event"><span class="sidebar-dot"></span>Event System</a>
-    <a href="#ticket"><span class="sidebar-dot"></span>Ticket System</a>
+    <a href="#ticketpanel"><span class="sidebar-dot"></span>Ticket Panel</a>
   </div>
   <div class="sidebar-section">
     <div class="sidebar-label">Bots</div>
@@ -298,14 +553,14 @@ footer {
 
 <main>
   <section id="aboutus">
-  <div class="top-showcase">
-    <div class="hero">
-      <h1>Minecraft Society<br><span>Bot Documentation</span></h1>
-      <p>A student-built Discord bot project developed for Manchester Metropolitan University, documenting our design, workflow, and implementation journey.</p>
-    </div>
+    <div class="top-showcase">
+      <div class="hero">
+        <h1>Minecraft Society<br><span>Bot Documentation</span></h1>
+        <p>A student-built Discord bot project developed for Manchester Metropolitan University, documenting our design, workflow, and implementation journey.</p>
+      </div>
 
-    <div class="overview-aside">
-      <div class="section-title"><h2>Server Status</h2><span class="tag">v 1.0</span></div>
+      <div class="overview-aside">
+        <div class="section-title"><h2>Server Status</h2><span class="tag">v 1.0</span></div>
         <div class="status-card">
           <div class="stat">
             <div class="stat-label">Discord Member Count</div>
@@ -315,9 +570,9 @@ footer {
             <div class="stat-label">Status</div>
             <div class="stat-value" id="index-bot-status">--</div>
           </div>
+        </div>
       </div>
     </div>
-  </div>
     <div class="section-title"><h2>About Us</h2></div>
     <div class="prose intro-prose">
       This bot is a collaborative second-year group project at <strong>Manchester Metropolitan University (MMU)</strong>, created as part of our software development coursework and delivered by the Minecraft Society team.
@@ -326,35 +581,72 @@ footer {
     </div>
   </section>
 
-  <div class="content-category">
-    <div class="content-category-row">
-      <div class="content-category-label">Category</div>
-      <div class="content-category-value">Automatic</div>
-    </div>
-  </div>
-
   <section id="welcome">
     <div class="section-title"><h2>Welcome System</h2></div>
-    <div class="command-box">
-      <div class="command-header auto">Welcome &amp; Invite Tracking</div>
-      <div class="property-grid">
-        <div class="label">Description</div><div class="value">Automatically fires when a new member joins. Sends a welcome embed to <strong>#test-welcome</strong> showing who invited them, which invite code was used, and how old their Discord account is.</div>
-        <div class="label">Trigger</div><div class="value">Member joins the server</div>
-        <div class="label">Channel</div><div class="value">#test-welcome</div>
-        <div class="label">Info shown</div><div class="value">Invite code · Inviter · Account age</div>
+    <div class="command-box has-media">
+      <div class="command-box-body">
+        <div class="command-header auto">Welcome &amp; Invite Tracking</div>
+        <div class="property-grid">
+          <div class="label">Description</div><div class="value">Automatically fires when a new member joins. Sends a welcome embed to <strong>#test-welcome</strong> showing who invited them, which invite code was used, and how old their Discord account is.</div>
+          <div class="label">Trigger</div><div class="value">Member joins the server</div>
+          <div class="label">Channel</div><div class="value">#test-welcome</div>
+          <div class="label">Info shown</div><div class="value">Invite code · Inviter · Account age</div>
+        </div>
+      </div>
+      <div class="command-media">
+        <img class="command-gif" src="https://picsum.photos/seed/welcome-system/640/420" alt="Welcome system placeholder preview">
       </div>
     </div>
   </section>
 
   <section id="verification">
     <div class="section-title"><h2>Verification</h2></div>
-    <div class="command-box">
-      <div class="command-header auto">Button Verification</div>
-      <div class="property-grid">
-        <div class="label">Description</div><div class="value">Sends a verification embed in <strong>#verify</strong>. New members click the <em>Enter Server</em> button to receive the <strong>Member</strong> role and unlock full server access.</div>
-        <div class="label">Trigger</div><div class="value">Member clicks the verify button</div>
-        <div class="label">Channel</div><div class="value">#verify</div>
-        <div class="label">Role granted</div><div class="value">Member</div>
+    <div class="command-box has-media">
+      <div class="command-box-body">
+        <div class="command-header auto">Button Verification</div>
+        <div class="property-grid">
+          <div class="label">Description</div><div class="value">Sends a verification embed in <strong>#verify</strong>. New members click the <em>Enter Server</em> button to receive the <strong>Member</strong> role and unlock full server access.</div>
+          <div class="label">Trigger</div><div class="value">Member clicks the verify button</div>
+          <div class="label">Channel</div><div class="value">#verify</div>
+          <div class="label">Role granted</div><div class="value">Member</div>
+        </div>
+      </div>
+      <div class="command-media">
+        <img class="command-gif" src="https://picsum.photos/seed/verification-system/640/420" alt="Verification system placeholder preview">
+      </div>
+    </div>
+  </section>
+
+  <div class="content-category">
+    <div class="content-category-row">
+      <div class="content-category-label">Reference</div>
+      <div class="content-category-value">Dashboard Variables</div>
+    </div>
+  </div>
+
+  <section id="variables">
+    <div class="section-title"><h2>Dashboard Variables</h2></div>
+    <div class="command-box has-media">
+      <div class="command-box-body">
+        <div class="command-header auto">Embed Builder Tokens</div>
+        <div class="property-grid">
+          <div class="label">Use case</div><div class="value">These tokens can be dropped into dashboard embed fields to render live server and member data.</div>
+          <div class="label">Available tokens</div>
+          <div class="value">
+            <div class="usage-pills">
+              <span class="pill-blue command-root">$USER</span>
+              <span class="pill-blue command-root">$GUILD</span>
+              <span class="pill-blue command-root">$MEMBER_COUNT</span>
+              <span class="pill-blue command-root">$INVITE</span>
+              <span class="pill-blue command-root">$INVITER</span>
+              <span class="pill-blue command-root">$TIME</span>
+            </div>
+          </div>
+          <div class="label">Example</div><div class="value"><span class="pill-blue command-note">Hello $USER, welcome to $GUILD at $TIME</span></div>
+        </div>
+      </div>
+      <div class="command-media">
+        <img class="command-gif" src="https://picsum.photos/seed/dashboard-variables/640/420" alt="Dashboard variable placeholder preview">
       </div>
     </div>
   </section>
@@ -366,56 +658,151 @@ footer {
     </div>
   </div>
 
-  <section id="reactionrole">
-    <div class="section-title"><h2>Reaction Roles</h2></div>
-    <div class="command-box">
-      <div class="command-header">reactionrole</div>
-      <div class="property-grid">
-        <div class="label">Description</div><div class="value">Creates interactive role-selection buttons in a specified channel. Members click to self-assign roles without staff involvement.</div>
-        <div class="label">Permissions</div><div class="value"><span class="pill">⚙ Manage Roles</span></div>
-        <div class="label">Usage</div>
-        <div class="value">
-          <div class="usage-wrap">
-            <span>/reactionrole [channel] [role] [emoji]</span>
-            <button class="copy-btn" onclick="copyUsage(this, '/reactionrole [channel] [role] [emoji]')">Copy</button>
+  <section id="ping">
+    <div class="section-title"><h2>Ping</h2></div>
+    <div class="command-box has-media">
+      <div class="command-box-body">
+        <div class="command-header">ping</div>
+        <div class="property-grid">
+          <div class="label">Description</div><div class="value">Replies with <strong>Pong!</strong> and gives a quick signal that the bot is online and responsive.</div>
+          <div class="label">Permissions</div><div class="value"><span class="pill">Open to everyone</span></div>
+          <div class="label">Arguments</div>
+          <div class="value">
+            <div class="command-arg-row">
+              <div class="usage-pills">
+                <span class="pill-blue command-root">/ping</span>
+                <span class="pill-blue command-note">no arguments</span>
+              </div>
+            </div>
           </div>
         </div>
+      </div>
+      <div class="command-media">
+        <img class="command-gif" src="https://picsum.photos/seed/ping-command/640/420" alt="Ping command placeholder preview">
+      </div>
+    </div>
+  </section>
+
+  <section id="purge">
+    <div class="section-title"><h2>Purge</h2></div>
+    <div class="command-box has-media">
+      <div class="command-box-body">
+        <div class="command-header">purge</div>
+        <div class="property-grid">
+          <div class="label">Description</div><div class="value">Deletes a chosen number of recent messages from the current channel for quick moderation cleanup.</div>
+          <div class="label">Permissions</div><div class="value"><span class="pill">⚙ Manage Messages</span></div>
+          <div class="label">Arguments</div>
+          <div class="value">
+            <div class="command-arg-row">
+              <div class="usage-pills">
+                <span class="pill-blue command-root">/purge</span>
+                <span class="usage-item" role="button" tabindex="0" onclick="toggleHelpHint(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleHelpHint(this);}">amount<span class="help-popover" role="tooltip">Required amount of messages to delete.</span></span>
+                <span class="usage-item command-note" role="button" tabindex="0" onclick="toggleHelpHint(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleHelpHint(this);}">1-100<span class="help-popover" role="tooltip">Allowed range for the amount argument.</span></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="command-media">
+        <img class="command-gif" src="https://picsum.photos/seed/purge-command/640/420" alt="Purge command placeholder preview">
+      </div>
+    </div>
+  </section>
+
+  <section id="reactionrole">
+    <div class="section-title"><h2>Reaction Roles</h2></div>
+    <div class="command-box has-media">
+      <div class="command-box-body">
+        <div class="command-header">reactionrole</div>
+        <div class="property-grid">
+          <div class="label">Description</div><div class="value">Creates an interactive setup flow that posts role buttons in a chosen channel so members can self-assign roles without staff involvement.</div>
+          <div class="label">Permissions</div><div class="value"><span class="pill">⚙ Manage Roles</span></div>
+          <div class="label">Arguments</div>
+          <div class="value">
+            <div class="command-arg-row">
+              <div class="usage-pills">
+                <span class="pill-blue command-root">/reactionrole</span>
+                <span class="usage-item" role="button" tabindex="0" onclick="toggleHelpHint(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleHelpHint(this);}">channel<span class="help-popover" role="tooltip">Destination text channel for the button panel.</span></span>
+                <span class="usage-item" role="button" tabindex="0" onclick="toggleHelpHint(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleHelpHint(this);}">role<span class="help-popover" role="tooltip">Role assigned when a member clicks the button.</span></span>
+                <span class="usage-item" role="button" tabindex="0" onclick="toggleHelpHint(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleHelpHint(this);}">emoji<span class="help-popover" role="tooltip">Emoji shown on the role button.</span></span>
+              </div>
+            </div>
+          </div>
+          <div class="label">Actions</div>
+          <div class="value">
+            <div class="usage-pills">
+              <span class="usage-item command-note" role="button" tabindex="0" onclick="toggleHelpHint(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleHelpHint(this);}">select channel<span class="help-popover" role="tooltip">Pick the destination channel for the setup wizard.</span></span>
+              <span class="usage-item command-note" role="button" tabindex="0" onclick="toggleHelpHint(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleHelpHint(this);}">type message<span class="help-popover" role="tooltip">Enter the embed or panel message content.</span></span>
+              <span class="usage-item command-note" role="button" tabindex="0" onclick="toggleHelpHint(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleHelpHint(this);}">select role<span class="help-popover" role="tooltip">Choose the role the button will grant.</span></span>
+              <span class="usage-item command-note" role="button" tabindex="0" onclick="toggleHelpHint(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleHelpHint(this);}">enter label<span class="help-popover" role="tooltip">Set the text shown on the button.</span></span>
+              <span class="usage-item command-note" role="button" tabindex="0" onclick="toggleHelpHint(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleHelpHint(this);}">add emoji<span class="help-popover" role="tooltip">Add the emoji shown alongside the label.</span></span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="command-media">
+        <img class="command-gif" src="https://picsum.photos/seed/reactionrole-command/640/420" alt="Reaction role placeholder preview">
       </div>
     </div>
   </section>
 
   <section id="event">
     <div class="section-title"><h2>Event System</h2></div>
-    <div class="command-box">
-      <div class="command-header">event</div>
-      <div class="property-grid">
-        <div class="label">Description</div><div class="value">Creates and manages temporary event channels. Channels are automatically archived or removed after the event concludes.</div>
-        <div class="label">Permissions</div><div class="value"><span class="pill">⚙ Manage Channels</span></div>
-        <div class="label">Usage</div>
-        <div class="value">
-          <div class="usage-wrap">
-            <span>/event create [name] [date]</span>
-            <button class="copy-btn" onclick="copyUsage(this, '/event create [name] [date]')">Copy</button>
+    <div class="command-box has-media">
+      <div class="command-box-body">
+        <div class="command-header">event</div>
+        <div class="property-grid">
+          <div class="label">Description</div><div class="value">Creates and manages temporary event voice channels. Channels are automatically archived or removed after the event concludes.</div>
+          <div class="label">Permissions</div><div class="value"><span class="pill">⚙ Manage Channels</span></div>
+          <div class="label">Arguments</div>
+          <div class="value">
+            <div class="command-arg-row">
+              <div class="usage-pills">
+                <span class="pill-blue command-root">/event</span>
+                <span class="usage-item" role="button" tabindex="0" onclick="toggleHelpHint(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleHelpHint(this);}">action<span class="help-popover" role="tooltip">Choose start, append, or end.</span></span>
+                <span class="usage-item" role="button" tabindex="0" onclick="toggleHelpHint(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleHelpHint(this);}">category<span class="help-popover" role="tooltip">Select the voice channel category.</span></span>
+                <span class="usage-item" role="button" tabindex="0" onclick="toggleHelpHint(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleHelpHint(this);}">count<span class="help-popover" role="tooltip">Set how many voice channels to create.</span></span>
+                <span class="usage-item" role="button" tabindex="0" onclick="toggleHelpHint(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleHelpHint(this);}">limit<span class="help-popover" role="tooltip">Optional user limit for appended channels.</span></span>
+              </div>
+            </div>
+          </div>
+          <div class="label">Actions</div>
+          <div class="value">
+            <div class="usage-pills">
+              <span class="usage-item command-note" role="button" tabindex="0" onclick="toggleHelpHint(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleHelpHint(this);}">start<span class="help-popover" role="tooltip">Create the initial event channels.</span></span>
+              <span class="usage-item command-note" role="button" tabindex="0" onclick="toggleHelpHint(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleHelpHint(this);}">append<span class="help-popover" role="tooltip">Add more event voice channels.</span></span>
+              <span class="usage-item command-note" role="button" tabindex="0" onclick="toggleHelpHint(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleHelpHint(this);}">end<span class="help-popover" role="tooltip">Delete event channels and stop the event.</span></span>
+            </div>
           </div>
         </div>
+      </div>
+      <div class="command-media">
+        <img class="command-gif" src="https://picsum.photos/seed/event-command/640/420" alt="Event command placeholder preview">
       </div>
     </div>
   </section>
 
-  <section id="ticket">
-    <div class="section-title"><h2>Ticket System</h2></div>
-    <div class="command-box">
-      <div class="command-header">ticket</div>
-      <div class="property-grid">
-        <div class="label">Description</div><div class="value">Opens a private support ticket channel for the member. Staff can view and respond to tickets, and close them once resolved.</div>
-        <div class="label">Permissions</div><div class="value"><span class="pill">⚙ Manage Channels</span></div>
-        <div class="label">Usage</div>
-        <div class="value">
-          <div class="usage-wrap">
-            <span>/ticket</span>
-            <button class="copy-btn" onclick="copyUsage(this, '/ticket')">Copy</button>
+  <section id="ticketpanel">
+    <div class="section-title"><h2>Ticket Panel</h2></div>
+    <div class="command-box has-media">
+      <div class="command-box-body">
+        <div class="command-header">ticketpanel</div>
+        <div class="property-grid">
+          <div class="label">Description</div><div class="value">Sends the support panel that lets members open a ticket for general help or purchase support.</div>
+          <div class="label">Permissions</div><div class="value"><span class="pill">⚙ Send Messages</span></div>
+          <div class="label">Arguments</div>
+          <div class="value">
+            <div class="command-arg-row">
+              <div class="usage-pills">
+                <span class="pill-blue command-root">/ticketpanel</span>
+                <span class="pill-blue command-note">no arguments</span>
+              </div>
+            </div>
           </div>
         </div>
+      </div>
+      <div class="command-media">
+        <img class="command-gif" src="https://picsum.photos/seed/ticketpanel-command/640/420" alt="Ticket panel placeholder preview">
       </div>
     </div>
   </section>
@@ -429,18 +816,34 @@ footer {
 
   <section id="aichat">
     <div class="section-title"><h2>AI Chat Bot</h2></div>
-    <div class="command-box">
-      <div class="command-header auto">AI Chat</div>
-      <div class="property-grid">
-        <div class="label">Description</div><div class="value">An AI bot that listens in designated channels and replies to messages automatically. No command needed — just type and it will respond.</div>
-        <div class="label">Trigger</div><div class="value">Any message in the designated channel</div>
-        <div class="label">Usage</div><div class="value">Just type a message</div>
-        <div class="label">Note</div><div class="value"><span class="pill-blue">ℹ Availability depends on bot uptime</span></div>
+    <div class="command-box has-media">
+      <div class="command-box-body">
+        <div class="command-header auto">AI Chat</div>
+        <div class="property-grid">
+          <div class="label">Description</div><div class="value">An AI bot that listens in designated channels and replies to messages automatically. No command needed — just type and it will respond.</div>
+          <div class="label">Trigger</div><div class="value">Any message in the designated channel</div>
+          <div class="label">Arguments</div><div class="value">Just type a message</div>
+          <div class="label">Note</div><div class="value"><span class="pill-blue">ℹ Availability depends on bot uptime</span></div>
+        </div>
+      </div>
+      <div class="command-media">
+        <img class="command-gif" src="https://picsum.photos/seed/ai-chat-bot/640/420" alt="AI chat placeholder preview">
       </div>
     </div>
   </section>
 
 </main>
+
+<div class="image-overlay" id="imageOverlay" aria-hidden="true">
+  <div class="image-overlay-panel" role="dialog" aria-modal="true" aria-label="Image preview">
+    <button type="button" class="image-overlay-close" id="imageOverlayClose" aria-label="Close image preview">&times;</button>
+    <img class="image-overlay-img" id="imageOverlayImg" alt="Expanded preview">
+  </div>
+</div>
+
+<div class="help-tooltip-overlay" id="helpTooltipOverlay" aria-hidden="true">
+  <div class="help-tooltip" id="helpTooltip" role="tooltip"></div>
+</div>
 
 <div id="site-footer"></div>
 
@@ -510,17 +913,139 @@ footer {
   }, { rootMargin: '-30% 0px -60% 0px' });
   sections.forEach(s => { if (s.id) secObs.observe(s); });
 
-  // Copy button
-  function copyUsage(btn, text) {
-    navigator.clipboard.writeText(text).then(() => {
-      btn.textContent = '✓ Copied';
-      btn.classList.add('copied');
-      setTimeout(() => {
-        btn.textContent = 'Copy';
-        btn.classList.remove('copied');
-      }, 2000);
+  const helpTooltipOverlay = document.getElementById('helpTooltipOverlay');
+  const helpTooltip = document.getElementById('helpTooltip');
+
+  function closeHelpTooltip() {
+    document.querySelectorAll('.usage-item.is-open').forEach(item => {
+      item.classList.remove('is-open');
+      item.setAttribute('aria-expanded', 'false');
+    });
+    if (helpTooltipOverlay) helpTooltipOverlay.classList.remove('open');
+    if (helpTooltip) helpTooltip.classList.remove('open');
+    if (helpTooltipOverlay) helpTooltipOverlay.setAttribute('aria-hidden', 'true');
+  }
+
+  function positionHelpTooltip(item) {
+    if (!helpTooltip) return;
+    const itemRect = item.getBoundingClientRect();
+    const tooltipRect = helpTooltip.getBoundingClientRect();
+    const gap = 12;
+    let top = itemRect.bottom + gap;
+    let left = itemRect.left;
+
+    if (left + tooltipRect.width > window.innerWidth - 16) {
+      left = Math.max(16, window.innerWidth - tooltipRect.width - 16);
+    }
+
+    if (top + tooltipRect.height > window.innerHeight - 16) {
+      top = Math.max(16, itemRect.top - tooltipRect.height - gap);
+    }
+
+    helpTooltip.style.top = `${top}px`;
+    helpTooltip.style.left = `${left}px`;
+  }
+
+  function toggleHelpHint(button) {
+    const item = button.classList && button.classList.contains('usage-item') ? button : button.closest('.usage-item');
+    if (!item) return;
+
+    const isOpen = item.classList.contains('is-open');
+    closeHelpTooltip();
+
+    if (isOpen) {
+      return;
+    }
+
+    item.classList.add('is-open');
+    item.setAttribute('aria-expanded', 'true');
+
+    const source = item.querySelector('.help-popover');
+    if (!helpTooltip || !helpTooltipOverlay || !source) return;
+
+    helpTooltip.textContent = source.textContent.trim();
+    helpTooltipOverlay.classList.add('open');
+    helpTooltipOverlay.setAttribute('aria-hidden', 'false');
+    requestAnimationFrame(() => {
+      helpTooltip.classList.add('open');
+      positionHelpTooltip(item);
     });
   }
+
+  document.addEventListener('click', event => {
+    if (event.target.closest('.usage-item')) return;
+    closeHelpTooltip();
+  });
+
+  window.addEventListener('resize', closeHelpTooltip);
+  window.addEventListener('scroll', closeHelpTooltip, true);
+
+  const imageOverlay = document.getElementById('imageOverlay');
+  const imageOverlayImg = document.getElementById('imageOverlayImg');
+  const imageOverlayClose = document.getElementById('imageOverlayClose');
+
+  function openImageOverlay(src, alt) {
+    if (!imageOverlay || !imageOverlayImg) return;
+    imageOverlayImg.classList.remove('ready');
+    imageOverlayImg.src = src;
+    imageOverlayImg.alt = alt || 'Expanded preview';
+    imageOverlayImg.setAttribute('draggable', 'false');
+    imageOverlay.classList.add('open');
+    imageOverlay.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+    requestAnimationFrame(() => {
+      imageOverlayImg.classList.add('ready');
+    });
+  }
+
+  function closeImageOverlay() {
+    if (!imageOverlay || !imageOverlayImg) return;
+
+    if (!imageOverlay.classList.contains('open')) {
+      return;
+    }
+
+    imageOverlay.classList.remove('open');
+    imageOverlay.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+
+    const clearOverlayImage = () => {
+      if (!imageOverlay.classList.contains('open')) {
+        imageOverlayImg.src = '';
+        imageOverlayImg.classList.remove('ready');
+      }
+    };
+
+    imageOverlay.addEventListener('transitionend', clearOverlayImage, { once: true });
+    window.setTimeout(clearOverlayImage, 300);
+  }
+
+  document.querySelectorAll('.command-gif').forEach(img => {
+    img.style.cursor = 'zoom-in';
+    img.setAttribute('draggable', 'false');
+    img.addEventListener('dragstart', event => event.preventDefault());
+    img.addEventListener('click', () => openImageOverlay(img.src, img.alt));
+  });
+
+  if (imageOverlayImg) {
+    imageOverlayImg.addEventListener('dragstart', event => event.preventDefault());
+  }
+
+  if (imageOverlay) {
+    imageOverlay.addEventListener('click', event => {
+      if (event.target === imageOverlay) closeImageOverlay();
+    });
+  }
+
+  if (imageOverlayClose) {
+    imageOverlayClose.addEventListener('click', closeImageOverlay);
+  }
+
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Escape') {
+      closeImageOverlay();
+    }
+  });
 
   // Mobile hamburger — opens sidebar as drawer
   function initSidebarDrawer() {
