@@ -134,62 +134,6 @@ main {
 .submitted-msg { display:none; align-items:center; justify-content:center; gap:8px; color:var(--green); font-weight:700; font-size:15px; margin-top:16px; }
 
 
-footer {
-  border-top: 1px solid var(--border);
-  background: var(--surface);
-  position: relative;
-  z-index: 1;
-}
-
-.footer-inner {
-  width:min(1680px, calc(100vw - 64px));
-  padding:52px clamp(20px, 4vw, 60px) 32px;
-  margin:0 auto;
-}
-
-.footer-top {
-  display: grid;
-  grid-template-columns: 1.6fr 1fr 1fr;
-  gap: 48px;
-  margin-bottom: 40px;
-}
-
-.footer-brand .logo { margin-bottom: 16px; }
-
-.footer-brand p {
-  font-size: 14px; color: var(--muted);
-  line-height: 1.75; max-width: 280px; margin-bottom: 22px;
-}
-
-.discord-btn {
-  display: inline-flex; align-items: center; gap: 8px;
-  background: rgba(74,222,128,.1); border: 1px solid rgba(74,222,128,.25);
-  color: var(--green); text-decoration: none;
-  padding: 9px 20px; border-radius: 9px;
-  font-size: 13px; font-weight: 700;
-  transition: background .2s, border-color .2s;
-}
-.discord-btn:hover { background: rgba(74,222,128,.18); border-color: rgba(74,222,128,.5); }
-
-.footer-col h4 {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 10px; letter-spacing: 2px;
-  text-transform: uppercase; color: var(--muted); margin-bottom: 18px;
-}
-.footer-col a {
-  display: block; color: var(--text); text-decoration: none;
-  font-size: 14px; font-weight: 600; margin-bottom: 11px; transition: color .2s;
-}
-.footer-col a:hover { color: var(--green); }
-
-.footer-bottom {
-  border-top: 1px solid var(--border); padding-top: 28px;
-  display: flex; align-items: center; justify-content: space-between;
-  flex-wrap: wrap; gap: 10px;
-}
-.footer-bottom p { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--muted); }
-.footer-bottom span { color: var(--green); }
-
 @keyframes fadeUp { from{opacity:0;transform:translateY(30px)} to{opacity:1;transform:translateY(0)} }
 @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
 
@@ -200,8 +144,6 @@ footer {
 
 @media (max-width:640px) {
   main { width:100%; padding:calc(var(--header-h) + 40px) 24px 60px; }
-  .footer-inner { width:100%; padding:40px 24px 24px; }
-  .footer-top { grid-template-columns:1fr; gap:32px; }
   .idea-form input { width:100%; }
   .idea-box { padding:36px 24px; }
 }
