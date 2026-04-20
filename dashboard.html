@@ -11,6 +11,24 @@
 <style>
 .sidebar-section { margin-bottom: 26px; }
 
+.sidebar-status-box {
+  margin-bottom: 18px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--card);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+#bot-status,
+#session-info {
+  font-family:'JetBrains Mono', monospace;
+  font-size:11px;
+  color:var(--muted);
+}
+
 .sidebar-help-row {
   display:flex;
   align-items:center;
@@ -338,17 +356,13 @@ td code { background: #08101a; padding: 4px 8px; border-radius: 4px; color: var(
 
 <div id="site-header"></div>
 
-<div style="position:fixed; top:14px; right:24px; display:flex; align-items:center; gap:16px; z-index:250;">
-  <div id="bot-status" style="font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--muted);">
-    Checking Bot...
-  </div>
-  <div id="session-info" style="font-family:'JetBrains Mono', monospace; font-size:12px; color:var(--muted);">
-    Verifying session...
-  </div>
-</div>
-
 
 <div class="sidebar">
+  <div class="sidebar-status-box">
+    <div id="bot-status">Checking Bot...</div>
+    <div id="session-info">Verifying session...</div>
+  </div>
+
   <div class="sidebar-section">
     <div class="sidebar-label">Live</div>
     <button class="nav-tab active" onclick="switchTab('tab-minecraft', this)">
@@ -438,6 +452,7 @@ td code { background: #08101a; padding: 4px 8px; border-radius: 4px; color: var(
     <span class="pill">$GUILD</span> 
     <span class="pill">$MEMBER_COUNT</span> 
     <span class="pill">$INVITE</span> 
+    <span class="pill">$AGE</span> 
     <span class="pill">$TIME</span>
   </p>
 
@@ -447,7 +462,7 @@ td code { background: #08101a; padding: 4px 8px; border-radius: 4px; color: var(
     </div>
     <div class="input-group">
         <label>Description <span style="color: #ef4444;">(Required)</span></label>
-        <textarea id="emb-desc" placeholder="Hello $USER, welcome to the server!&#10;Joined via: $INVITE $INVITER&#10;Time: $TIME" oninput="updatePreview()"></textarea>
+        <textarea id="emb-desc" placeholder="Hello $USER, welcome to the server!&#10;Joined via: $INVITE $INVITER&#10;Account age: $AGE&#10;Time: $TIME" oninput="updatePreview()"></textarea>
     </div>
     <div class="input-group">
         <label>Sidebar Color (Hex)</label>

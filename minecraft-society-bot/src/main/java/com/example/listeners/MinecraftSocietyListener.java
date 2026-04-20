@@ -151,6 +151,7 @@ public class MinecraftSocietyListener extends ListenerAdapter {
         }
 
         String timeVar = "<t:" + (System.currentTimeMillis() / 1000) + ":f>";
+        String ageVar = "<t:" + event.getUser().getTimeCreated().toEpochSecond() + ":R>";
 
         String desc = embedData.optString("desc", "");
         
@@ -160,6 +161,7 @@ public class MinecraftSocietyListener extends ListenerAdapter {
         desc = desc.replaceAll("(?i)\\$MEMBER_COUNT\\b", String.valueOf(guild.getMemberCount()));
         desc = desc.replaceAll("(?i)\\$INVITER\\b", java.util.regex.Matcher.quoteReplacement(inviterVar));
         desc = desc.replaceAll("(?i)\\$INVITE\\b", java.util.regex.Matcher.quoteReplacement(inviteVar));
+        desc = desc.replaceAll("(?i)\\$AGE\\b", java.util.regex.Matcher.quoteReplacement(ageVar));
         desc = desc.replaceAll("(?i)\\$TIME\\b", java.util.regex.Matcher.quoteReplacement(timeVar));
 
         if (restoredRoles != null && !restoredRoles.isEmpty()) {

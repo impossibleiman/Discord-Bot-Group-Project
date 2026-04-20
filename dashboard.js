@@ -61,6 +61,7 @@ function initEmbedBuilders() {
             '$MEMBER_COUNT': '42',
             '$INVITER': '<span style="color:#c9cdfb; background:rgba(88,101,242,.3); padding:0 2px; border-radius:3px;">@Friend</span>',
             '$INVITE': 'discord.gg/abcd123',
+            '$AGE': '2 years, 3 months',
             '$TIME': 'Today at 12:00 PM'
         },
         defaultBotName: 'Society Bot',
