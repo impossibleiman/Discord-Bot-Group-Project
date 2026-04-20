@@ -258,6 +258,59 @@ section.visible { opacity:1; transform:translateY(0); }
   transform:rotate(45deg);
 }
 
+.dashboard-hint {
+  position:relative;
+  display:inline-flex;
+  align-items:center;
+  color:#dbeafe;
+  text-decoration:underline dotted;
+  text-underline-offset:2px;
+}
+
+.dashboard-hint-tooltip {
+  position:absolute;
+  left:0;
+  bottom:calc(100% + 10px);
+  width:max-content;
+  max-width:min(320px, 75vw);
+  padding:10px 12px;
+  border-radius:12px;
+  background:linear-gradient(180deg, rgba(15,23,42,.98), rgba(9,20,35,.98));
+  border:1px solid rgba(147,197,253,.22);
+  box-shadow:0 16px 40px rgba(0,0,0,.38);
+  color:var(--text);
+  font-size:12px;
+  line-height:1.5;
+  opacity:0;
+  transform:translateY(6px) scale(.98);
+  pointer-events:none;
+  transition:opacity .18s ease, transform .18s ease;
+  z-index:10;
+}
+
+.dashboard-hint-tooltip::after {
+  content:'';
+  position:absolute;
+  left:18px;
+  bottom:-6px;
+  width:10px;
+  height:10px;
+  background:linear-gradient(180deg, rgba(15,23,42,.98), rgba(9,20,35,.98));
+  border-right:1px solid rgba(147,197,253,.22);
+  border-bottom:1px solid rgba(147,197,253,.22);
+  transform:rotate(45deg);
+}
+
+.dashboard-hint:hover .dashboard-hint-tooltip,
+.dashboard-hint:focus-visible .dashboard-hint-tooltip {
+  opacity:1;
+  transform:translateY(0) scale(1);
+}
+
+.dashboard-hint:focus-visible {
+  outline:none;
+}
+
 .help-tooltip .required-text {
   color:#f87171;
   font-weight:700;
@@ -499,7 +552,7 @@ section.visible { opacity:1; transform:translateY(0); }
 .command-header::before { content:''; }
 .command-header.auto::before { content:'⚡'; font-style:normal; opacity:.7; font-size:13px; }
 
-.property-grid { display:grid; grid-template-columns:130px 1fr; gap:12px 16px; }
+.property-grid { display:grid; grid-template-columns:130px 1fr; gap:18px 16px; }
 
 .label {
   font-family:'JetBrains Mono', monospace; font-size:12px;
@@ -555,7 +608,6 @@ section.visible { opacity:1; transform:translateY(0); }
   height:clamp(120px, 20vh, 220px);
 }
 
-/* ─── FOOTER ─────────────────────────────────────────────── */
 footer {
   margin-left: var(--sidebar-w);
 }
@@ -665,14 +717,24 @@ footer {
   </div>
 
   <section id="welcome">
-    <div class="command-box has-media" data-role-key="welcomeMessage">
+    <div class="command-box has-media no-role-switch" data-role-key="welcomeMessage">
       <div class="command-box-body">
         <div class="command-header">Welcome Message</div>
         <div class="property-grid">
-          <div class="label">Description</div><div class="value">Automatically sends a welcome embed to <strong>#test-welcome</strong> when a new member joins so the onboarding moment is immediate and clear.</div>
-          <div class="label">Trigger</div><div class="value">Member joins the server</div>
-          <div class="label">Channel</div><div class="value">#test-welcome</div>
-          <div class="label">Info shown</div><div class="value">Welcome details · New member mention · Quick onboarding context</div>
+          <div class="label">Description</div><div class="value">A customisable embed to greet new members.<br><span class="dashboard-hint" tabindex="0" aria-describedby="welcome-dashboard-hint">Configurable in your dashboard...<span class="dashboard-hint-tooltip" id="welcome-dashboard-hint">You need to be an administrator to access the dashboard settings.</span></span></div>
+          <div class="label">Trigger</div><div class="value">Member joins the server.</div>
+          <div class="label">Variables</div>
+          <div class="value">
+            <div class="usage-pills">
+              <span class="usage-item pill-blue command-note" role="button" tabindex="0" onclick="toggleHelpHint(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleHelpHint(this);}">$USER<span class="help-popover" role="tooltip">The joining member's Discord mention and display name.</span></span>
+              <span class="usage-item pill-blue command-note" role="button" tabindex="0" onclick="toggleHelpHint(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleHelpHint(this);}">$GUILD<span class="help-popover" role="tooltip">The server name and server context.</span></span>
+              <span class="usage-item pill-blue command-note" role="button" tabindex="0" onclick="toggleHelpHint(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleHelpHint(this);}">$INVITE<span class="help-popover" role="tooltip">The invite code used when the member joined.</span></span>
+              <span class="usage-item pill-blue command-note" role="button" tabindex="0" onclick="toggleHelpHint(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleHelpHint(this);}">$INVITER<span class="help-popover" role="tooltip">The member who invited the new user.</span></span>
+              <span class="usage-item pill-blue command-note" role="button" tabindex="0" onclick="toggleHelpHint(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleHelpHint(this);}">$TIME<span class="help-popover" role="tooltip">The time the member joined the server.</span></span>
+              <span class="usage-item pill-blue command-note" role="button" tabindex="0" onclick="toggleHelpHint(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleHelpHint(this);}">$AGE<span class="help-popover" role="tooltip">The age of the user's Discord account.</span></span>
+              <span class="usage-item pill-blue command-note" role="button" tabindex="0" onclick="toggleHelpHint(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleHelpHint(this);}">$MEMBER_COUNT<span class="help-popover" role="tooltip">The current member count for the server.</span></span>
+            </div>
+          </div>
         </div>
       </div>
       <div class="command-media">
@@ -682,7 +744,7 @@ footer {
   </section>
 
   <section id="magicinvites">
-    <div class="command-box has-media" data-role-key="magicInvites">
+    <div class="command-box has-media no-role-switch" data-role-key="magicInvites">
       <div class="command-box-body">
         <div class="command-header">Magic Invites</div>
         <div class="property-grid">
@@ -699,7 +761,7 @@ footer {
   </section>
 
   <section id="verification">
-    <div class="command-box has-media">
+    <div class="command-box has-media no-role-switch">
       <div class="command-box-body">
         <div class="command-header">Verification &amp; Autoroles</div>
         <div class="property-grid">
@@ -716,7 +778,7 @@ footer {
   </section>
 
   <section id="stickyroles">
-    <div class="command-box has-media" data-role-key="stickyRoles">
+    <div class="command-box has-media no-role-switch" data-role-key="stickyRoles">
       <div class="command-box-body">
         <div class="command-header">Sticky Roles</div>
         <div class="property-grid">
@@ -733,7 +795,7 @@ footer {
   </section>
 
   <section id="leave">
-    <div class="command-box has-media" data-role-key="leaveListener">
+    <div class="command-box has-media no-role-switch" data-role-key="leaveListener">
       <div class="command-box-body">
         <div class="command-header">Leave Listener</div>
         <div class="property-grid">
@@ -1253,7 +1315,7 @@ footer {
   }
 
   function initCardRoleSwitches() {
-    const cards = document.querySelectorAll('.command-box.has-media');
+    const cards = document.querySelectorAll('.command-box.has-media:not(.no-role-switch)');
     cards.forEach(card => {
       const header = card.querySelector('.command-header');
       if (!header || header.dataset.roleBound === '1') return;
