@@ -506,6 +506,33 @@ section.visible { opacity:1; transform:translateY(0); }
   border:1px solid rgba(74,222,128,.18);
   border-radius:8px; padding:6px 14px; margin-bottom:20px;
 }
+
+.command-header-row {
+  display:inline-flex;
+  align-items:center;
+  gap:10px;
+  margin-bottom:20px;
+}
+
+.command-header-row .command-header {
+  margin-bottom:0;
+}
+
+.magic-new-badge {
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding:5px 10px;
+  border-radius:999px;
+  background:linear-gradient(135deg, rgba(251,191,36,.92), rgba(249,115,22,.82) 55%, rgba(239,68,68,.78));
+  color:#fffdf8;
+  font-size:12px;
+  font-weight:800;
+  letter-spacing:1px;
+  text-transform:uppercase;
+  box-shadow:0 0 0 1px rgba(255,255,255,.14) inset, 0 8px 18px rgba(249,115,22,.18);
+  animation:badgePulse 2s ease-in-out infinite;
+}
 .command-toolbar {
   display:flex;
   align-items:center;
@@ -615,6 +642,7 @@ footer {
 /* ANIMATIONS */
 @keyframes fadeUp { from{opacity:0;transform:translateY(30px)} to{opacity:1;transform:translateY(0)} }
 @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+@keyframes badgePulse { 0%,100%{transform:translateY(0) scale(1); filter:saturate(1)} 50%{transform:translateY(-1px) scale(1.04); filter:saturate(1.2)} }
 
 ::-webkit-scrollbar { width:6px; }
 ::-webkit-scrollbar-track { background:var(--bg); }
@@ -721,7 +749,7 @@ footer {
       <div class="command-box-body">
         <div class="command-header">Welcome Message</div>
         <div class="property-grid">
-          <div class="label">Description</div><div class="value">A customisable embed to greet new members.<br><span class="dashboard-hint" tabindex="0" aria-describedby="welcome-dashboard-hint">Configurable in your dashboard...<span class="dashboard-hint-tooltip" id="welcome-dashboard-hint">You need to be an administrator to access the dashboard settings.</span></span></div>
+          <div class="label">Description</div><div class="value">A <span class="dashboard-hint" tabindex="0" aria-describedby="welcome-dashboard-hint">configurable<span class="dashboard-hint-tooltip" id="welcome-dashboard-hint">You need to be an administrator to configure the dashboard.</span></span> embed to greet new members.</div>
           <div class="label">Trigger</div><div class="value">Member joins the server.</div>
           <div class="label">Variables</div>
           <div class="value">
@@ -746,12 +774,18 @@ footer {
   <section id="magicinvites">
     <div class="command-box has-media no-role-switch" data-role-key="magicInvites">
       <div class="command-box-body">
-        <div class="command-header">Magic Invites</div>
+        <div class="command-header-row">
+          <div class="command-header">Magic Invites</div>
+          <span class="magic-new-badge">new!</span>
+        </div>
         <div class="property-grid">
-          <div class="label">Description</div><div class="value">Tracks which invite brought a member in, who created it, and account-age context so join activity is transparent from day one.</div>
-          <div class="label">Trigger</div><div class="value">Member joins through an invite link</div>
-          <div class="label">Channel</div><div class="value">#test-welcome</div>
-          <div class="label">Info shown</div><div class="value">Invite code · Inviter · Discord account age</div>
+          <div class="label">Description</div><div class="value">Keep track of which invite brought a member in using aliases!</div>
+          <div class="label">Trigger</div>
+          <div class="value">
+            <div class="usage-pills">
+              <span class="usage-item pill-blue command-note" role="button" tabindex="0" onclick="toggleHelpHint(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleHelpHint(this);}">$INVITE<span class="help-popover" role="tooltip">When using an alias, it will replace the invite code with the name you gave it.</span></span>
+            </div>
+          </div>
         </div>
       </div>
       <div class="command-media">
@@ -765,10 +799,16 @@ footer {
       <div class="command-box-body">
         <div class="command-header">Verification &amp; Autoroles</div>
         <div class="property-grid">
-          <div class="label">Description</div><div class="value">Sends a verification embed in <strong>#verify</strong>. New members click the <em>Enter Server</em> button to receive the <strong>Member</strong> role and unlock full server access.</div>
-          <div class="label">Trigger</div><div class="value">Member clicks the verify button</div>
-          <div class="label">Channel</div><div class="value">#verify</div>
-          <div class="label">Role granted</div><div class="value">Member</div>
+          <div class="label">Description</div><div class="value"><span class="dashboard-hint" tabindex="0" aria-describedby="verification-dashboard-hint">Configurable<span class="dashboard-hint-tooltip" id="verification-dashboard-hint">You need to be an administrator to configure the dashboard.</span></span> verification process with automatic role assignment. <span style="font-size:12px; color:var(--muted); font-weight:500;">Similar: <a href="#reactionrole" style="color:inherit; text-decoration:underline; text-underline-offset:2px;">Reaction Roles</a></span></div>
+          <div class="label">Trigger</div><div class="value">User clicks the verify button.</div>
+          <div class="label">Variables</div>
+          <div class="value">
+            <div class="usage-pills">
+              <span class="usage-item pill-blue command-note" role="button" tabindex="0" onclick="toggleHelpHint(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleHelpHint(this);}">$ROLE<span class="help-popover" role="tooltip">The role granted when the button is clicked.</span></span>
+              <span class="usage-item pill-blue command-note" role="button" tabindex="0" onclick="toggleHelpHint(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleHelpHint(this);}">$CHANNEL<span class="help-popover" role="tooltip">The channel where the verification panel is posted.</span></span>
+              <span class="usage-item pill-blue command-note" role="button" tabindex="0" onclick="toggleHelpHint(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleHelpHint(this);}">$MESSAGE<span class="help-popover" role="tooltip">The verification message content shown to users.</span></span>
+            </div>
+          </div>
         </div>
       </div>
       <div class="command-media">
@@ -783,9 +823,13 @@ footer {
         <div class="command-header">Sticky Roles</div>
         <div class="property-grid">
           <div class="label">Description</div><div class="value">Restores a member&apos;s previous server roles when they rejoin, keeping access levels and progression consistent.</div>
-          <div class="label">Trigger</div><div class="value">Member rejoins the server</div>
-          <div class="label">Role behavior</div><div class="value">Reapplies saved roles that are still valid</div>
-          <div class="label">Purpose</div><div class="value">Prevents manual re-role work and preserves member continuity</div>
+          <div class="label">Trigger</div><div class="value">Member rejoins the server.</div>
+          <div class="label">Variables</div>
+          <div class="value">
+            <div class="usage-pills">
+              <span class="usage-item pill-blue command-note" role="button" tabindex="0" onclick="toggleHelpHint(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleHelpHint(this);}">$EXCLUDE_ROLE<span class="help-popover" role="tooltip">Select roles to avoid being reapplied.</span></span>
+            </div>
+          </div>
         </div>
       </div>
       <div class="command-media">
@@ -799,10 +843,18 @@ footer {
       <div class="command-box-body">
         <div class="command-header">Leave Listener</div>
         <div class="property-grid">
-          <div class="label">Description</div><div class="value">Automatically logs when members leave so staff can track churn and keep moderation context accurate.</div>
-          <div class="label">Trigger</div><div class="value">Member leaves the server</div>
-          <div class="label">Channel</div><div class="value">#test-welcome</div>
-          <div class="label">Info shown</div><div class="value">Member tag · Leave timestamp · Account snapshot</div>
+          <div class="label">Description</div><div class="value">Logs user's information when they leave the server.</div>
+          <div class="label">Trigger</div><div class="value">User leaves the server.</div>
+          <div class="label">Variables</div>
+          <div class="value">
+            <div class="usage-pills">
+              <span class="usage-item pill-blue command-note" role="button" tabindex="0" onclick="toggleHelpHint(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleHelpHint(this);}">$CHANNEL<span class="help-popover" role="tooltip">The channel where the leave log is posted.</span></span>
+              <span class="usage-item pill-blue command-note" role="button" tabindex="0" onclick="toggleHelpHint(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleHelpHint(this);}">$USER<span class="help-popover" role="tooltip">The member who left the server.</span></span>
+              <span class="usage-item pill-blue command-note" role="button" tabindex="0" onclick="toggleHelpHint(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleHelpHint(this);}">$MEMBER_COUNT<span class="help-popover" role="tooltip">The current member count after they leave.</span></span>
+              <span class="usage-item pill-blue command-note" role="button" tabindex="0" onclick="toggleHelpHint(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleHelpHint(this);}">$AGE<span class="help-popover" role="tooltip">The age of the member's Discord account.</span></span>
+              <span class="usage-item pill-blue command-note" role="button" tabindex="0" onclick="toggleHelpHint(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleHelpHint(this);}">$TIME<span class="help-popover" role="tooltip">The time the member left the server.</span></span>
+            </div>
+          </div>
         </div>
       </div>
       <div class="command-media">
