@@ -1,5 +1,6 @@
 package com.example.listeners;
 
+import com.example.MinecraftSocietyBot;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
@@ -8,6 +9,8 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 
 import com.example.managers.StickyRoleManager;
 import com.example.model.MemberData;
+import com.example.model.ServerConfig;
+import org.json.JSONObject;
 
 import java.awt.Color;
 import java.util.ArrayList;
@@ -69,13 +72,50 @@ public class LeaveListener extends ListenerAdapter {
                         .collect(Collectors.joining(", "));
             }
 
+            String userVar = username + " (" + mention + ")";
+
+            ServerConfig config = MinecraftSocietyBot.getGuildConfig(event.getGuild().getId());
+            JSONObject leaveEmbedData;
+
+            try {
+                leaveEmbedData = new JSONObject(config.leaveMessage);
+            } catch (Exception e) {
+                leaveEmbedData = new JSONObject();
+            }
+
+            String title = replaceLeaveVars(leaveEmbedData.optString("title", "Member Left"), userVar, timeMessage, rolesMessage);
+            String description = replaceLeaveVars(
+                    leaveEmbedData.optString("desc", "$USER left the server.\nTime in server: $TIME_IN_SERVER\nRoles: $ROLES"),
+                    userVar,
+                    timeMessage,
+                    rolesMessage
+            );
+            String footer = replaceLeaveVars(leaveEmbedData.optString("footer", ""), userVar, timeMessage, rolesMessage);
+            String thumbnailUrl = leaveEmbedData.optString("thumb", "").trim();
+            String imageUrl = leaveEmbedData.optString("image", "").trim();
+            Color embedColor = parseColorSafely(leaveEmbedData.optString("color", ""), new Color(239, 68, 68));
+
             EmbedBuilder eb = new EmbedBuilder()
-                    .setTitle("Member Left")
-                    .setColor(new Color(239, 68, 68))
-                    .setThumbnail(event.getUser().getEffectiveAvatarUrl())
-                    .addField("User", username + " (" + mention + ")", false)
-                    .addField("Time in server", timeMessage, false)
-                    .addField("Roles", rolesMessage, false);
+                    .setColor(embedColor)
+                    .setDescription(description);
+
+            if (!title.isEmpty()) {
+                eb.setTitle(title);
+            }
+
+            if (!thumbnailUrl.isEmpty()) {
+                eb.setThumbnail(thumbnailUrl);
+            } else {
+                eb.setThumbnail(event.getUser().getEffectiveAvatarUrl());
+            }
+
+            if (!imageUrl.isEmpty()) {
+                eb.setImage(imageUrl);
+            }
+
+            if (!footer.isEmpty()) {
+                eb.setFooter(footer);
+            }
 
             leaveLogChannel.sendMessageEmbeds(eb.build()).queue();
         } else {
@@ -102,5 +142,34 @@ public class LeaveListener extends ListenerAdapter {
         if (minutes > 0) parts.add(minutes + "m");
 
         return parts.isEmpty() ? "< 1m" : String.join(" ", parts);
+    }
+
+    private String replaceLeaveVars(String input, String user, String timeInServer, String roles) {
+        return input
+                .replaceAll("(?i)\\$USER\\b", user)
+                .replaceAll("(?i)\\$TIME_IN_SERVER\\b", timeInServer)
+                .replaceAll("(?i)\\$ROLES\\b", roles)
+                .replaceAll("(?i)\\$TIME\\b", "<t:" + (System.currentTimeMillis() / 1000L) + ":f>");
+    }
+
+    private Color parseColorSafely(String hex, Color fallback) {
+        if (hex == null || hex.trim().isEmpty()) {
+            return fallback;
+        }
+
+        String clean = hex.trim();
+        if (clean.startsWith("#")) {
+            clean = clean.substring(1);
+        }
+
+        if (clean.length() != 6) {
+            return fallback;
+        }
+
+        try {
+            return new Color(Integer.parseInt(clean, 16));
+        } catch (NumberFormatException ex) {
+            return fallback;
+        }
     }
 }

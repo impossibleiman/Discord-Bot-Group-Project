@@ -398,8 +398,19 @@ public class MinecraftSocietyBot {
             ServerConfig newConfig = ctx.bodyAsClass(ServerConfig.class);
 
             ServerConfig existing = guildConfigs.get(guildId);
-            if (existing != null && (newConfig.inviteAliases == null || newConfig.inviteAliases.isEmpty())) {
-                newConfig.inviteAliases = existing.inviteAliases;
+            if (existing != null) {
+                if (newConfig.inviteAliases == null || newConfig.inviteAliases.isEmpty()) {
+                    newConfig.inviteAliases = existing.inviteAliases;
+                }
+                if (newConfig.welcomeMessage == null) {
+                    newConfig.welcomeMessage = existing.welcomeMessage;
+                }
+                if (newConfig.leaveMessage == null) {
+                    newConfig.leaveMessage = existing.leaveMessage;
+                }
+                if (newConfig.nickname == null) {
+                    newConfig.nickname = existing.nickname;
+                }
             }
 
             guildConfigs.put(guildId, newConfig);
