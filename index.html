@@ -49,11 +49,6 @@ main {
   }
 }
 
-@media (max-width:1200px) {
-  .command-box.has-media { grid-template-columns:1fr; }
-  .command-media { order:2; }
-}
-
 /* HERO */
 .hero { margin-bottom:72px; animation:fadeUp .8s ease both; }
 
@@ -422,6 +417,11 @@ section.visible { opacity:1; transform:translateY(0); }
 }
 .command-box:hover { border-color:rgba(74,222,128,.3); box-shadow:0 8px 40px rgba(74,222,128,.07); transform:translateY(-3px); }
 .command-box:hover::before { opacity:1; }
+
+@media (max-width:1200px) {
+  .command-box.has-media { grid-template-columns:1fr; }
+  .command-media { order:2; }
+}
 
 .command-header {
   display:inline-flex; align-items:center; gap:8px;
