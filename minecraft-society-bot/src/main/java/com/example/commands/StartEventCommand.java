@@ -70,6 +70,11 @@ public class StartEventCommand implements ICommand {
 
     @Override
     public void execute(SlashCommandInteractionEvent event) {
+        if (event.getMember() == null || !event.getMember().hasPermission(net.dv8tion.jda.api.Permission.MANAGE_CHANNEL)) {
+            event.reply("You need the 'Manage Channels' permission to use this command.").setEphemeral(true).queue();
+            return;
+        }
+
         OptionMapping actionOption = event.getOption("action");
         if (actionOption == null) {
             event.reply("You must specify an action (start, end, or append).").setEphemeral(true).queue();
