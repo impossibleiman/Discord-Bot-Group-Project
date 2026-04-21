@@ -38,6 +38,7 @@ import com.example.commands.RestrictCommand;
 import com.example.commands.StartEventCommand;
 import com.example.commands.TicketPanelCommand;
 import com.example.commands.UnbanCommand;
+import com.example.commands.CatCommand;
 import com.example.commands.UnrestrictCommand;
 import com.example.listeners.LeaveListener;
 import com.example.listeners.MinecraftSocietyListener;
@@ -150,6 +151,7 @@ public class MinecraftSocietyBot {
         manager.addCommand(new Purgecommand());
         manager.addCommand(new TicketPanelCommand());
         manager.addCommand(new BanCommand());
+        manager.addCommand(new CatCommand());
         manager.addCommand(new UnbanCommand());
         manager.addCommand(new RestrictCommand());
         manager.addCommand(new UnrestrictCommand());
