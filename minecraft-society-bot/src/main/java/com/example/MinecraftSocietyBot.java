@@ -29,12 +29,15 @@ import org.json.JSONObject;
 import org.json.JSONArray;
 
 import com.google.gson.Gson;
+import com.example.commands.BanCommand;
 import com.example.commands.CommandManager;
 import com.example.commands.PingCommand;
 import com.example.commands.Purgecommand;
 import com.example.commands.ReactionRoleCommand;
+import com.example.commands.RestrictCommand;
 import com.example.commands.StartEventCommand;
 import com.example.commands.TicketPanelCommand;
+import com.example.commands.UnbanCommand;
 import com.example.listeners.LeaveListener;
 import com.example.listeners.MinecraftSocietyListener;
 import com.example.listeners.RoleUpdateListener;

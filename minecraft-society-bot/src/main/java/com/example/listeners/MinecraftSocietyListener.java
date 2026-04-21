@@ -7,6 +7,8 @@ import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent;
+import net.dv8tion.jda.api.events.message.MessageDeleteEvent;
+import net.dv8tion.jda.api.events.message.MessageUpdateEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.json.JSONObject;
 
@@ -16,6 +18,7 @@ import com.example.model.MemberData;
 import com.example.model.ServerConfig;
 
 import java.awt.Color;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -214,8 +217,7 @@ public class MinecraftSocietyListener extends ListenerAdapter {
 
         channel.sendMessageEmbeds(eb.build()).queue();
     }
-    channel.sendMessageEmbeds(eb.build()).queue();
-}
+
 
 //  HELPER — GET AUDIT LOG CHANNEL
 private TextChannel getAuditChannel(Guild guild) {
@@ -261,4 +263,5 @@ public void onMessageUpdate(MessageUpdateEvent event) {
     audit.setFooter("Minecraft Society • Audit Log");
     audit.setTimestamp(Instant.now());
     auditChannel.sendMessageEmbeds(audit.build()).queue();
+    }
 }
