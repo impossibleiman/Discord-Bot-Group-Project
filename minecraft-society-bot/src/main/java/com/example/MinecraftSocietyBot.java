@@ -145,6 +145,7 @@ public class MinecraftSocietyBot {
         manager.addCommand(new ReactionRoleCommand());
         manager.addCommand(new Purgecommand());
         manager.addCommand(new TicketPanelCommand());
+        manager.addCommand(new BanCommand());
         return manager;
     }
 
