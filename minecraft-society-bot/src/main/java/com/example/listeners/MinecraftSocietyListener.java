@@ -214,4 +214,15 @@ public class MinecraftSocietyListener extends ListenerAdapter {
 
         channel.sendMessageEmbeds(eb.build()).queue();
     }
+    channel.sendMessageEmbeds(eb.build()).queue();
+}
+
+//  HELPER — GET AUDIT LOG CHANNEL
+private TextChannel getAuditChannel(Guild guild) {
+    var channels = guild.getTextChannelsByName("audit-logs", true);
+    if (channels.isEmpty()) return null;
+    return channels.get(0);
+}
+
+
 }
