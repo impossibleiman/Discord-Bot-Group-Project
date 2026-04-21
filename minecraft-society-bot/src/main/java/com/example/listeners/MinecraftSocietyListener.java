@@ -242,3 +242,23 @@ public void onMessageDelete(MessageDeleteEvent event) {
 
 
 }
+
+//  MESSAGE EDITED
+@Override
+public void onMessageUpdate(MessageUpdateEvent event) {
+    if (!event.isFromGuild()) return;
+    if (event.getAuthor().isBot()) return;
+    Guild guild = event.getGuild();
+    TextChannel auditChannel = getAuditChannel(guild);
+    if (auditChannel == null) return;
+
+    EmbedBuilder audit = new EmbedBuilder();
+    audit.setColor(Color.ORANGE);
+    audit.setTitle("✏️ Message Edited");
+    audit.addField("Author", event.getAuthor().getAsTag(), true);
+    audit.addField("Channel", event.getChannel().getAsMention(), true);
+    audit.addField("New Content", event.getMessage().getContentRaw(), false);
+    audit.setFooter("Minecraft Society • Audit Log");
+    audit.setTimestamp(Instant.now());
+    auditChannel.sendMessageEmbeds(audit.build()).queue();
+}
