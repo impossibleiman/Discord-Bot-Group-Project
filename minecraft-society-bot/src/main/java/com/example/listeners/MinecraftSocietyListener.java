@@ -223,6 +223,22 @@ private TextChannel getAuditChannel(Guild guild) {
     if (channels.isEmpty()) return null;
     return channels.get(0);
 }
+//  MESSAGE DELETED
+@Override
+public void onMessageDelete(MessageDeleteEvent event) {
+    if (!event.isFromGuild()) return;
+    Guild guild = event.getGuild();
+    TextChannel auditChannel = getAuditChannel(guild);
+    if (auditChannel == null) return;
+
+    EmbedBuilder audit = new EmbedBuilder();
+    audit.setColor(Color.RED);
+    audit.setTitle("🗑️ Message Deleted");
+    audit.addField("Channel", event.getChannel().getAsMention(), true);
+    audit.addField("Message ID", event.getMessageId(), true);
+    audit.setFooter("Minecraft Society • Audit Log");
+    audit.setTimestamp(Instant.now());
+    auditChannel.sendMessageEmbeds(audit.build()).queue();
 
 
 }
