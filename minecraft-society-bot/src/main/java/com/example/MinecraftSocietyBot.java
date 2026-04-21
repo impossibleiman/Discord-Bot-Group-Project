@@ -147,6 +147,7 @@ public class MinecraftSocietyBot {
         manager.addCommand(new TicketPanelCommand());
         manager.addCommand(new BanCommand());
         manager.addCommand(new UnbanCommand());
+        manager.addCommand(new RestrictCommand());
         return manager;
     }
 
