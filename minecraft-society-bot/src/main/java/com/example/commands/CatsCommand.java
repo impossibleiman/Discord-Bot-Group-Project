@@ -9,6 +9,7 @@ import java.awt.*;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
+import java.net.URI;
 import java.net.URL;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -57,7 +58,7 @@ public class CatsCommand implements ICommand {
 
         try {
             // Open a connection to the Reddit API
-            URL url = new URL(REDDIT_URL);
+            URL url = URI.create(REDDIT_URL).toURL();
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("GET");
 
