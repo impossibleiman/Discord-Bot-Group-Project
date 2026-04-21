@@ -5,6 +5,9 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import java.awt.*;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -13,19 +16,13 @@ import java.net.URL;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
-
-// This command fetches a random cat image from the r/cats subreddit
-// It uses Reddit's public JSON API which does not require an API key
+// This command fetches a random cat image using The Cat API (thecatapi.com)
+// It is free to use and does not require an API key for basic requests
 public class CatsCommand implements ICommand {
 
-    // Reddit's JSON API URL for r/cats - fetches the top 50 hot posts
-    private static final String REDDIT_URL = "https://www.reddit.com/r/cats/hot.json?limit=50";
-
-    private final Random random = new Random();
+    // This endpoint returns one random cat image each time it is called
+    private static final String CAT_API_URL = "https://api.thecatapi.com/v1/images/search";
 
     @Override
     public String getName() {
@@ -34,7 +31,7 @@ public class CatsCommand implements ICommand {
 
     @Override
     public String getDescription() {
-        return "Get a random cat picture from r/cats.";
+        return "Get a random cat picture.";
     }
 
     @Override
@@ -52,19 +49,17 @@ public class CatsCommand implements ICommand {
     @Override
     public void execute(SlashCommandInteractionEvent event) {
 
-        // Defer the reply because the HTTP request to Reddit may take a moment
+        // Defer the reply because the HTTP request may take a moment
         event.deferReply().queue();
 
         try {
-            // Open a connection to the Reddit API
-            URL url = new URL(REDDIT_URL);
+            // Open a connection to The Cat API
+            URL url = new URL(CAT_API_URL);
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("GET");
-
-            // Reddit requires a User-Agent header or it will block the request
             connection.setRequestProperty("User-Agent", "DiscordBot/1.0");
 
-            // Read the response from Reddit into a string
+            // Read the response into a string
             BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
             StringBuilder response = new StringBuilder();
             String line;
@@ -73,50 +68,25 @@ public class CatsCommand implements ICommand {
             }
             reader.close();
 
-            // Parse the JSON response
-            JSONObject json = new JSONObject(response.toString());
-            JSONArray posts = json.getJSONObject("data").getJSONArray("children");
+            // The API returns a JSON array with one object inside it
+            JSONArray jsonArray = new JSONArray(response.toString());
+            JSONObject catData = jsonArray.getJSONObject(0);
 
-            // Loop through the posts and collect only ones that have an image
-            List<JSONObject> imagePosts = new ArrayList<>();
-            for (int i = 0; i < posts.length(); i++) {
-                JSONObject postData = posts.getJSONObject(i).getJSONObject("data");
+            // Pull the image URL out of the response
+            String imageUrl = catData.getString("url");
 
-                // Skip posts that are not images or are marked as NSFW
-                String postUrl = postData.optString("url", "");
-                boolean isNsfw = postData.optBoolean("over_18", false);
-
-                if (!isNsfw && (postUrl.endsWith(".jpg") || postUrl.endsWith(".png") || postUrl.endsWith(".gif"))) {
-                    imagePosts.add(postData);
-                }
-            }
-
-            // If no image posts were found, let the user know
-            if (imagePosts.isEmpty()) {
-                event.getHook().editOriginal("Could not find any cat images right now. Try again in a moment.").queue();
-                return;
-            }
-
-            // Pick a random image post from the ones we found
-            JSONObject chosenPost = imagePosts.get(random.nextInt(imagePosts.size()));
-
-            String title = chosenPost.optString("title", "A cat!");
-            String imageUrl = chosenPost.optString("url", "");
-            String postLink = "https://reddit.com" + chosenPost.optString("permalink", "");
-            int upvotes = chosenPost.optInt("ups", 0);
-
-            // Build an embed with the cat image
+            // Build the embed with the cat image
             EmbedBuilder embed = new EmbedBuilder()
-                    .setTitle(title, postLink)
+                    .setTitle("Here is a cat!")
                     .setImage(imageUrl)
                     .setColor(new Color(255, 140, 0))
-                    .setFooter("From r/cats  |  " + upvotes + " upvotes")
+                    .setFooter("Powered by thecatapi.com")
                     .setTimestamp(Instant.now());
 
             event.getHook().editOriginalEmbeds(embed.build()).queue();
 
         } catch (Exception e) {
-            // If anything goes wrong with the request, show a friendly error
+            // If the request fails for any reason, show a friendly error message
             event.getHook().editOriginal("Failed to fetch a cat image: " + e.getMessage()).queue();
         }
     }
