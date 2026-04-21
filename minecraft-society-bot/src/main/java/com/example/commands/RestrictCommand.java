@@ -1,8 +1,11 @@
 package com.example.commands;
 
+import com.example.managers.RestrictionManager;
+import com.example.managers.RestrictionManager.RestrictedChannelState;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.PermissionOverride;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions;
@@ -87,6 +90,14 @@ public class RestrictCommand implements ICommand {
         // Get every text channel in the server
         List<TextChannel> allChannels = event.getGuild().getTextChannels();
 
+        // Snapshot current member-specific view/send states so unrestrict can restore exactly.
+        RestrictionManager.saveRestriction(
+            event.getGuild().getId(),
+            target.getId(),
+            allowedChannel.getId(),
+            buildRestrictionSnapshot(allChannels, target)
+        );
+
         // We use this counter to know when all the permission changes are done
         final int[] completed = {0};
         int total = allChannels.size();
@@ -129,5 +140,33 @@ public class RestrictCommand implements ICommand {
 
         // Send the embed in the channel for everyone to see
         event.getChannel().sendMessageEmbeds(embed.build()).queue();
+    }
+
+    private List<RestrictedChannelState> buildRestrictionSnapshot(List<TextChannel> channels, Member target) {
+        List<RestrictedChannelState> snapshot = new ArrayList<>();
+        for (TextChannel channel : channels) {
+            RestrictedChannelState state = new RestrictedChannelState();
+            state.channelId = channel.getId();
+            state.viewState = getPermissionState(channel, target, Permission.VIEW_CHANNEL);
+            state.sendState = getPermissionState(channel, target, Permission.MESSAGE_SEND);
+            snapshot.add(state);
+        }
+        return snapshot;
+    }
+
+    private int getPermissionState(TextChannel channel, Member target, Permission permission) {
+        PermissionOverride override = channel.getPermissionOverride(target);
+        if (override == null) {
+            return 0;
+        }
+
+        long mask = permission.getRawValue();
+        if ((override.getAllowedRaw() & mask) != 0L) {
+            return 1;
+        }
+        if ((override.getDeniedRaw() & mask) != 0L) {
+            return -1;
+        }
+        return 0;
     }
 }
