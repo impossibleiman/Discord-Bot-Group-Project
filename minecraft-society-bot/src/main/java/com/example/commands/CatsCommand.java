@@ -23,7 +23,7 @@ import java.util.List;
 public class CatsCommand implements ICommand {
 
     // This endpoint returns one random cat image each time it is called
-    private static final String CAT_API_URL = "https://api.thecatapi.com/v1/images/search";
+    private static final String REDDIT_URL = "https://api.thecatapi.com/v1/images/search";
 
     @Override
     public String getName() {
@@ -55,7 +55,7 @@ public class CatsCommand implements ICommand {
 
         try {
             // Open a connection to the Reddit API
-            URL url = new URL(REDDIT_URL);
+            URL url = URI.create(REDDIT_URL).toURL();
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("GET");
             connection.setRequestProperty("User-Agent", "DiscordBot/1.0");
