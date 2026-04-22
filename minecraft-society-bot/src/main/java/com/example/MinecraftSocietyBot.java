@@ -29,6 +29,7 @@ import org.json.JSONObject;
 import org.json.JSONArray;
 
 import com.google.gson.Gson;
+import com.example.ai.AIChatListener;
 import com.example.commands.BanCommand;
 import com.example.commands.CommandManager;
 import com.example.commands.CatsCommand;
@@ -119,6 +120,7 @@ public class MinecraftSocietyBot {
         // 1) Boot config + env
         Dotenv dotenv = Dotenv.configure().directory("./minecraft-society-bot").load();
         String token = dotenv.get("DISCORD_TOKEN");
+        String openRouterApiKey = dotenv.get("OPENROUTER_API_KEY");
 
         if (token == null) {
             System.err.println("Error: DISCORD_TOKEN is missing from .env file!");
@@ -131,7 +133,7 @@ public class MinecraftSocietyBot {
         CommandManager manager = buildCommandManager();
 
         MinecraftSocietyListener listener = new MinecraftSocietyListener();
-        JDA jdaHolder = startJda(token, manager, listener);
+        JDA jdaHolder = startJda(token, manager, listener, openRouterApiKey);
         if (jdaHolder == null) {
             return;
         }
@@ -158,9 +160,9 @@ public class MinecraftSocietyBot {
         return manager;
     }
 
-    private static JDA startJda(String token, CommandManager manager, MinecraftSocietyListener listener) {
+    private static JDA startJda(String token, CommandManager manager, MinecraftSocietyListener listener, String openRouterApiKey) {
         try {
-            JDA jda = JDABuilder.createDefault(token)
+            JDABuilder builder = JDABuilder.createDefault(token)
                     .enableIntents(GatewayIntent.MESSAGE_CONTENT, GatewayIntent.GUILD_MEMBERS, GatewayIntent.GUILD_MESSAGES, GatewayIntent.GUILD_PRESENCES)
                     .setMemberCachePolicy(net.dv8tion.jda.api.utils.MemberCachePolicy.ALL)
                     .enableCache(net.dv8tion.jda.api.utils.cache.CacheFlag.ONLINE_STATUS)
@@ -169,8 +171,15 @@ public class MinecraftSocietyBot {
                             listener,
                             new LeaveListener(),
                             new RoleUpdateListener()
-                    )
-                    .build();
+                    );
+
+            if (openRouterApiKey != null && !openRouterApiKey.isBlank()) {
+                builder.addEventListeners(new AIChatListener(openRouterApiKey));
+            } else {
+                System.err.println("OPENROUTER_API_KEY not found. AI chat listener is disabled.");
+            }
+
+            JDA jda = builder.build();
 
             jda.awaitReady();
             System.out.println("Bot is online!");
