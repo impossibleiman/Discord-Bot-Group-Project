@@ -26,6 +26,8 @@ body {
   color: var(--text);
   font-family: 'Inter', sans-serif;
   min-height: 100vh;
+  display: flex;
+  flex-direction: column;
   overflow-x: hidden;
 }
 
@@ -240,6 +242,7 @@ nav a.active {
 main {
   position: relative;
   z-index: 1;
+  flex: 1 0 auto;
 }
 
 .section-title {
