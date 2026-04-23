@@ -1,5 +1,7 @@
 package com.example.ai;
 
+import com.example.MinecraftSocietyBot;
+import com.example.model.ServerConfig;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 
@@ -19,13 +21,18 @@ public class AIChatListener extends ListenerAdapter {
     public void onMessageReceived(MessageReceivedEvent event) {
         // dont respond to other bots or ourselves
         if (event.getAuthor().isBot()) return;
+        if (!event.isFromGuild()) return;
 
         String message = event.getMessage().getContentRaw();
+        ServerConfig config = MinecraftSocietyBot.getGuildConfig(event.getGuild().getId());
 
         // check if the bot was mentioned or if its in the ai channel
         boolean isMentioned = event.getMessage().getMentions().isMentioned(
                 event.getJDA().getSelfUser());
         boolean isAIChannel = event.getChannel().getName().equalsIgnoreCase(AI_CHANNEL_NAME);
+        if (config.aiChannelId != null && !config.aiChannelId.isBlank()) {
+            isAIChannel = event.getChannel().getId().equals(config.aiChannelId);
+        }
 
         if (!isMentioned && !isAIChannel) return;
 

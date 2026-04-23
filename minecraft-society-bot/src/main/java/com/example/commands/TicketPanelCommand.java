@@ -9,6 +9,8 @@ import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.components.actionrow.ActionRow;
 import net.dv8tion.jda.api.components.buttons.Button;
 
+import com.example.MinecraftSocietyBot;
+import com.example.model.ServerConfig;
 import com.example.managers.TicketManager;
 
 import java.util.Collections;
@@ -17,7 +19,6 @@ import java.util.List;
 public class TicketPanelCommand implements ICommand {
 
     private static final String STAFF_ROLE_NAME = "Admin";
-    private static final String TICKET_LOG_CHANNEL_ID = "1494041507441934547";
 
     @Override
     public String getName() {
@@ -95,7 +96,11 @@ public class TicketPanelCommand implements ICommand {
                 return;
             }
 
-            TextChannel logChannel = event.getGuild().getTextChannelById(TICKET_LOG_CHANNEL_ID);
+            ServerConfig config = MinecraftSocietyBot.getGuildConfig(event.getGuild().getId());
+            TextChannel logChannel = null;
+            if (config.ticketLogChannelId != null && !config.ticketLogChannelId.isBlank()) {
+                logChannel = event.getGuild().getTextChannelById(config.ticketLogChannelId);
+            }
 
             String closedBy = event.getUser().getAsTag();
             String ticketName = event.getChannel().getName();

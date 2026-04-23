@@ -19,8 +19,6 @@ import java.util.stream.Collectors;
 
 public class LeaveListener extends ListenerAdapter {
 
-    private static final String LEAVE_LOG_CHANNEL_ID = "1487929990413684929"; 
-
     @Override
     public void onGuildMemberRemove(GuildMemberRemoveEvent event) {
         System.out.println("LEAVE EVENT TRIGGERED");
@@ -57,7 +55,11 @@ public class LeaveListener extends ListenerAdapter {
             }
         }
 
-        TextChannel leaveLogChannel = event.getGuild().getTextChannelById(LEAVE_LOG_CHANNEL_ID);
+        ServerConfig config = MinecraftSocietyBot.getGuildConfig(event.getGuild().getId());
+        TextChannel leaveLogChannel = null;
+        if (config.leaveChannelId != null && !config.leaveChannelId.isBlank()) {
+            leaveLogChannel = event.getGuild().getTextChannelById(config.leaveChannelId);
+        }
 
         if (leaveLogChannel != null) {
             String username = event.getUser().getName();
@@ -76,7 +78,6 @@ public class LeaveListener extends ListenerAdapter {
             String pfpVar = event.getUser().getEffectiveAvatarUrl();
             String memberCountVar = String.valueOf(event.getGuild().getMemberCount());
 
-            ServerConfig config = MinecraftSocietyBot.getGuildConfig(event.getGuild().getId());
             JSONObject leaveEmbedData;
 
             try {

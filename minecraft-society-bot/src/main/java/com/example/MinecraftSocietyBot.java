@@ -37,6 +37,7 @@ import com.example.commands.PingCommand;
 import com.example.commands.Purgecommand;
 import com.example.commands.ReactionRoleCommand;
 import com.example.commands.RestrictCommand;
+import com.example.commands.SetupCommand;
 import com.example.commands.StartEventCommand;
 import com.example.commands.TicketPanelCommand;
 import com.example.commands.UnbanCommand;
@@ -148,6 +149,7 @@ public class MinecraftSocietyBot {
     private static CommandManager buildCommandManager() {
         CommandManager manager = new CommandManager();
         manager.addCommand(new PingCommand());
+        manager.addCommand(new SetupCommand());
         manager.addCommand(new StartEventCommand());
         manager.addCommand(new ReactionRoleCommand());
         manager.addCommand(new Purgecommand());
@@ -425,8 +427,19 @@ public class MinecraftSocietyBot {
                 return;
             }
 
-            var channels = guild.getTextChannels().stream()
-                    .map(ch -> Map.of("id", ch.getId(), "name", ch.getName()))
+                    var channels = guild.getTextChannels().stream()
+                        .sorted(java.util.Comparator
+                            .comparingInt((net.dv8tion.jda.api.entities.channel.concrete.TextChannel ch) ->
+                                ch.getParentCategory() != null ? ch.getParentCategory().getPositionRaw() : -1)
+                            .thenComparingInt(net.dv8tion.jda.api.entities.channel.concrete.TextChannel::getPositionRaw)
+                            .thenComparing(net.dv8tion.jda.api.entities.channel.concrete.TextChannel::getName, String.CASE_INSENSITIVE_ORDER))
+                    .map(ch -> {
+                    Map<String, String> channelData = new HashMap<>();
+                    channelData.put("id", ch.getId());
+                    channelData.put("name", ch.getName());
+                    channelData.put("category", ch.getParentCategory() != null ? ch.getParentCategory().getName() : "Uncategorized");
+                    return channelData;
+                    })
                     .toList();
 
             var selfMember = guild.getSelfMember();
@@ -485,6 +498,24 @@ public class MinecraftSocietyBot {
                 }
                 if (newConfig.leaveMessage == null) {
                     newConfig.leaveMessage = existing.leaveMessage;
+                }
+                if (newConfig.welcomeChannelId == null) {
+                    newConfig.welcomeChannelId = existing.welcomeChannelId;
+                }
+                if (newConfig.leaveChannelId == null) {
+                    newConfig.leaveChannelId = existing.leaveChannelId;
+                }
+                if (newConfig.auditEditChannelId == null) {
+                    newConfig.auditEditChannelId = existing.auditEditChannelId;
+                }
+                if (newConfig.auditDeleteChannelId == null) {
+                    newConfig.auditDeleteChannelId = existing.auditDeleteChannelId;
+                }
+                if (newConfig.aiChannelId == null) {
+                    newConfig.aiChannelId = existing.aiChannelId;
+                }
+                if (newConfig.ticketLogChannelId == null) {
+                    newConfig.ticketLogChannelId = existing.ticketLogChannelId;
                 }
                 if (newConfig.nickname == null) {
                     newConfig.nickname = existing.nickname;
@@ -942,6 +973,11 @@ public class MinecraftSocietyBot {
 
     public static ServerConfig getGuildConfig(String guildId) {
         return guildConfigs.getOrDefault(guildId, new ServerConfig());
+    }
+
+    public static void saveGuildConfig(String guildId, ServerConfig config) {
+        guildConfigs.put(guildId, config);
+        saveConfigs();
     }
 
     public static void updateInviteCache(net.dv8tion.jda.api.entities.Guild guild) {

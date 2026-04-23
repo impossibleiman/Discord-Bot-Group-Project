@@ -46,6 +46,7 @@ public class MinecraftSocietyListener extends ListenerAdapter {
  @Override
     public void onGuildMemberJoin(GuildMemberJoinEvent event) {
         Guild guild = event.getGuild();
+        ServerConfig config = MinecraftSocietyBot.getGuildConfig(guild.getId());
 
         List<Role> restoredRoles = restoreStickyRoles(event);
 
@@ -53,11 +54,19 @@ public class MinecraftSocietyListener extends ListenerAdapter {
         StickyRoleManager.saveJoinTime(event.getUser().getId(), System.currentTimeMillis());
 
         TextChannel welcomeChannel = null;
-        for (TextChannel c : guild.getTextChannels()) {
-            if (c.getName().toLowerCase().contains("welcome")) {
-                welcomeChannel = c; break;
+        if (config.welcomeChannelId != null && !config.welcomeChannelId.isBlank()) {
+            welcomeChannel = guild.getTextChannelById(config.welcomeChannelId);
+        }
+
+        if (welcomeChannel == null) {
+            for (TextChannel c : guild.getTextChannels()) {
+                if (c.getName().toLowerCase().contains("welcome")) {
+                    welcomeChannel = c;
+                    break;
+                }
             }
         }
+
         if (welcomeChannel == null) welcomeChannel = guild.getSystemChannel();
         if (welcomeChannel == null) return; 
         
@@ -220,7 +229,14 @@ public class MinecraftSocietyListener extends ListenerAdapter {
 
 
 //  HELPER — GET AUDIT LOG CHANNEL
-private TextChannel getAuditChannel(Guild guild) {
+private TextChannel getAuditChannel(Guild guild, boolean isDeleteEvent) {
+    ServerConfig config = MinecraftSocietyBot.getGuildConfig(guild.getId());
+    String configuredId = isDeleteEvent ? config.auditDeleteChannelId : config.auditEditChannelId;
+
+    if (configuredId != null && !configuredId.isBlank()) {
+        return guild.getTextChannelById(configuredId);
+    }
+
     var channels = guild.getTextChannelsByName("audit-logs", true);
     if (channels.isEmpty()) return null;
     return channels.get(0);
@@ -230,7 +246,7 @@ private TextChannel getAuditChannel(Guild guild) {
 public void onMessageDelete(MessageDeleteEvent event) {
     if (!event.isFromGuild()) return;
     Guild guild = event.getGuild();
-    TextChannel auditChannel = getAuditChannel(guild);
+    TextChannel auditChannel = getAuditChannel(guild, true);
     if (auditChannel == null) return;
 
     EmbedBuilder audit = new EmbedBuilder();
@@ -251,7 +267,7 @@ public void onMessageUpdate(MessageUpdateEvent event) {
     if (!event.isFromGuild()) return;
     if (event.getAuthor().isBot()) return;
     Guild guild = event.getGuild();
-    TextChannel auditChannel = getAuditChannel(guild);
+    TextChannel auditChannel = getAuditChannel(guild, false);
     if (auditChannel == null) return;
 
     EmbedBuilder audit = new EmbedBuilder();
