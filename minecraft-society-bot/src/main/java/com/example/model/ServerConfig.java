@@ -12,6 +12,9 @@ public class ServerConfig {
     public String auditDeleteChannelId;
     public String aiChannelId;
     public String ticketLogChannelId;
+    public String activeAiProfileName;
+    public Map<String, String> aiProfiles;
+    public Map<String, String> aiProfileDescriptions;
     public Map<String, String> inviteAliases;
     public Map<String, ReactionRoleConfig> reactionRoleConfigs;
 }

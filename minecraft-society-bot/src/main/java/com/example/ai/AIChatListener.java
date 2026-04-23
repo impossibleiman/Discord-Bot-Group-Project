@@ -56,10 +56,30 @@ public class AIChatListener extends ListenerAdapter {
 
         // get channel id for conversation memory
         String channelId = event.getChannel().getId();
+        String resolvedProfileName = OpenRouterService.DEFAULT_PROFILE_NAME;
+        String resolvedSystemPrompt = OpenRouterService.DEFAULT_PROFILE_PROMPT;
+
+        if (config != null && config.aiProfiles != null && !config.aiProfiles.isEmpty()) {
+            String activeProfileName = config.activeAiProfileName;
+            if (activeProfileName == null || activeProfileName.isBlank() || !config.aiProfiles.containsKey(activeProfileName)) {
+                activeProfileName = config.aiProfiles.containsKey(OpenRouterService.DEFAULT_PROFILE_NAME)
+                        ? OpenRouterService.DEFAULT_PROFILE_NAME
+                        : config.aiProfiles.keySet().iterator().next();
+            }
+
+            String configuredPrompt = config.aiProfiles.get(activeProfileName);
+            if (configuredPrompt != null && !configuredPrompt.isBlank()) {
+                resolvedProfileName = activeProfileName;
+                resolvedSystemPrompt = configuredPrompt;
+            }
+        }
+
+        final String profileName = resolvedProfileName;
+        final String systemPrompt = resolvedSystemPrompt;
 
         // use a virtual thread so we dont block the bot while waiting for the api response
         Thread.startVirtualThread(() -> {
-            String reply = aiService.chat(fullPrompt, channelId);
+            String reply = aiService.chat(fullPrompt, channelId, profileName, systemPrompt);
 
             // cut off the message if its too long for discord
             if (reply.length() > MAX_LENGTH) {

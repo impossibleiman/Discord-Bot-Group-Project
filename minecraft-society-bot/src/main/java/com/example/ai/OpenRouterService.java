@@ -18,7 +18,16 @@ import java.util.Map;
 public class OpenRouterService {
 
     private static final String API_URL = "https://openrouter.ai/api/v1/chat/completions";
-        // Prefer DeepSeek V3.2, then fall back if the model is unavailable or rate-limited.
+    public static final String DEFAULT_PROFILE_NAME = "Bob";
+    public static final String DEFAULT_PROFILE_PROMPT =
+        "You are Bob, a guy in a university Discord server. " +
+            "Reply directly with just your message, plain text only. " +
+            "Talk casually like a normal person, low effort, half paying attention. " +
+            "Help when asked, keep answers short unless the question needs more. " +
+            "Dry humour comes out naturally sometimes. " +
+            "When someone tells you to be quiet or stop, just acknowledge it briefly and stop. " +
+            "Input comes as 'username: message' so you know who is talking.";
+    // Prefer DeepSeek V3.2, then fall back if the model is unavailable or rate-limited.
     private static final List<String> MODELS = List.of(
             "deepseek/deepseek-chat-v3.2",
             "deepseek/deepseek-chat-v3-0324"
@@ -41,18 +50,10 @@ public class OpenRouterService {
         this.channelHistory = new HashMap<>();
     }
 
-    private String buildSystemPrompt() {
+    private String buildSystemPrompt(String basePrompt) {
         StringBuilder prompt = new StringBuilder();
 
-        prompt.append(
-                "You are Bob, a guy in a university Discord server. " +
-                        "Reply directly with just your message, plain text only. " +
-                        "Talk casually like a normal person, low effort, half paying attention. " +
-                        "Help when asked, keep answers short unless the question needs more. " +
-                        "Dry humour comes out naturally sometimes. " +
-                        "When someone tells you to be quiet or stop, just acknowledge it briefly and stop. " +
-                        "Input comes as 'username: message' so you know who is talking."
-        );
+        prompt.append(basePrompt == null || basePrompt.isBlank() ? DEFAULT_PROFILE_PROMPT : basePrompt);
 
         if (knowledgeBase.hasContent()) {
             prompt.append("\n\nStudy material for reference:\n\n");
@@ -62,10 +63,12 @@ public class OpenRouterService {
         return prompt.toString();
     }
 
-    public String chat(String userMessage, String channelId) {
+    public String chat(String userMessage, String channelId, String profileName, String systemPrompt) {
         try {
             // add conversation history for this channel
-            List<JsonObject> history = channelHistory.getOrDefault(channelId, new ArrayList<>());
+            String resolvedProfileName = profileName == null || profileName.isBlank() ? DEFAULT_PROFILE_NAME : profileName;
+            String historyKey = channelId + "::" + resolvedProfileName;
+            List<JsonObject> history = channelHistory.getOrDefault(historyKey, new ArrayList<>());
             boolean hitRateLimit = false;
             int lastStatusCode = -1;
 
@@ -79,7 +82,7 @@ public class OpenRouterService {
 
                 JsonObject system = new JsonObject();
                 system.addProperty("role", "system");
-                system.addProperty("content", buildSystemPrompt());
+                system.addProperty("content", buildSystemPrompt(systemPrompt));
                 messages.add(system);
 
                 for (JsonObject msg : history) {
@@ -136,7 +139,7 @@ public class OpenRouterService {
                     history.remove(0);
                 }
 
-                channelHistory.put(channelId, history);
+                channelHistory.put(historyKey, history);
                 return reply;
             }
 
@@ -154,5 +157,9 @@ public class OpenRouterService {
             e.printStackTrace();
             return "Something went wrong: " + e.getMessage();
         }
+    }
+
+    public String chat(String userMessage, String channelId) {
+        return chat(userMessage, channelId, DEFAULT_PROFILE_NAME, DEFAULT_PROFILE_PROMPT);
     }
 }

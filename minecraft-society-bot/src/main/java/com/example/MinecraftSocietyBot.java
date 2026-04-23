@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.HashSet;
@@ -30,6 +31,8 @@ import org.json.JSONArray;
 
 import com.google.gson.Gson;
 import com.example.ai.AIChatListener;
+import com.example.ai.OpenRouterService;
+import com.example.commands.AiProfileCommand;
 import com.example.commands.BanCommand;
 import com.example.commands.CommandManager;
 import com.example.commands.CatsCommand;
@@ -55,6 +58,7 @@ public class MinecraftSocietyBot {
     private static final String CORS_ALLOW_HOST = "https://mmuminecraftsociety.co.uk";
     private static final String OAUTH_REDIRECT_URI = "https://api.mmuminecraftsociety.co.uk/callback";
     private static final String DASHBOARD_URL = "https://mmuminecraftsociety.co.uk/dashboard";
+    public static final String DASHBOARD_LOGIN_URL = "https://api.mmuminecraftsociety.co.uk/login";
 
     private static final String MC_SYNC_AUTH_HEADER = "X-MC-Auth";
     private static final String MC_SYNC_SECRET = "MMU_Soc_7721_x92_SecretSync_!99";
@@ -111,6 +115,9 @@ public class MinecraftSocietyBot {
             try (FileReader reader = new FileReader(file)) {
                 java.lang.reflect.Type type = new com.google.gson.reflect.TypeToken<Map<String, ServerConfig>>(){}.getType();
                 guildConfigs = new Gson().fromJson(reader, type);
+                if (guildConfigs != null) {
+                    guildConfigs.values().forEach(MinecraftSocietyBot::ensureAiProfileDefaults);
+                }
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -150,6 +157,7 @@ public class MinecraftSocietyBot {
         CommandManager manager = new CommandManager();
         manager.addCommand(new PingCommand());
         manager.addCommand(new SetupCommand());
+        manager.addCommand(new AiProfileCommand());
         manager.addCommand(new StartEventCommand());
         manager.addCommand(new ReactionRoleCommand());
         manager.addCommand(new Purgecommand());
@@ -517,10 +525,21 @@ public class MinecraftSocietyBot {
                 if (newConfig.ticketLogChannelId == null) {
                     newConfig.ticketLogChannelId = existing.ticketLogChannelId;
                 }
+                if (newConfig.activeAiProfileName == null) {
+                    newConfig.activeAiProfileName = existing.activeAiProfileName;
+                }
+                if (newConfig.aiProfiles == null || newConfig.aiProfiles.isEmpty()) {
+                    newConfig.aiProfiles = existing.aiProfiles;
+                }
+                if (newConfig.aiProfileDescriptions == null || newConfig.aiProfileDescriptions.isEmpty()) {
+                    newConfig.aiProfileDescriptions = existing.aiProfileDescriptions;
+                }
                 if (newConfig.nickname == null) {
                     newConfig.nickname = existing.nickname;
                 }
             }
+
+            ensureAiProfileDefaults(newConfig);
 
             guildConfigs.put(guildId, newConfig);
             saveConfigs();
@@ -972,12 +991,77 @@ public class MinecraftSocietyBot {
     }
 
     public static ServerConfig getGuildConfig(String guildId) {
-        return guildConfigs.getOrDefault(guildId, new ServerConfig());
+        ServerConfig config = guildConfigs.get(guildId);
+        if (config == null) {
+            config = new ServerConfig();
+            guildConfigs.put(guildId, config);
+        }
+
+        ensureAiProfileDefaults(config);
+        return config;
     }
 
     public static void saveGuildConfig(String guildId, ServerConfig config) {
+        ensureAiProfileDefaults(config);
         guildConfigs.put(guildId, config);
         saveConfigs();
+    }
+
+    private static void ensureAiProfileDefaults(ServerConfig config) {
+        if (config == null) {
+            return;
+        }
+
+        if (config.aiProfiles == null || config.aiProfiles.isEmpty()) {
+            Map<String, String> profiles = new LinkedHashMap<>();
+            profiles.put(OpenRouterService.DEFAULT_PROFILE_NAME, OpenRouterService.DEFAULT_PROFILE_PROMPT);
+            config.aiProfiles = profiles;
+            config.activeAiProfileName = OpenRouterService.DEFAULT_PROFILE_NAME;
+            return;
+        }
+
+        if (config.aiProfiles.get(OpenRouterService.DEFAULT_PROFILE_NAME) == null
+                || config.aiProfiles.get(OpenRouterService.DEFAULT_PROFILE_NAME).isBlank()) {
+            config.aiProfiles.put(OpenRouterService.DEFAULT_PROFILE_NAME, OpenRouterService.DEFAULT_PROFILE_PROMPT);
+        }
+
+        if (config.aiProfileDescriptions == null) {
+            config.aiProfileDescriptions = new LinkedHashMap<>();
+        }
+
+        for (Map.Entry<String, String> entry : config.aiProfiles.entrySet()) {
+            config.aiProfileDescriptions.putIfAbsent(
+                    entry.getKey(),
+                    defaultProfileDescription(entry.getKey(), entry.getValue())
+            );
+        }
+        config.aiProfileDescriptions.keySet().removeIf(profileName -> !config.aiProfiles.containsKey(profileName));
+
+        if (config.activeAiProfileName == null
+                || config.activeAiProfileName.isBlank()
+                || !config.aiProfiles.containsKey(config.activeAiProfileName)) {
+            config.activeAiProfileName = config.aiProfiles.containsKey(OpenRouterService.DEFAULT_PROFILE_NAME)
+                    ? OpenRouterService.DEFAULT_PROFILE_NAME
+                    : config.aiProfiles.keySet().iterator().next();
+        }
+    }
+
+    private static String defaultProfileDescription(String profileName, String prompt) {
+        if (OpenRouterService.DEFAULT_PROFILE_NAME.equalsIgnoreCase(profileName)) {
+            return "Default Bob persona";
+        }
+
+        if (prompt == null || prompt.isBlank()) {
+            return "No description";
+        }
+
+        String normalized = prompt.replace('\n', ' ').trim();
+        int periodIndex = normalized.indexOf('.');
+        String summary = periodIndex > 0 ? normalized.substring(0, periodIndex + 1) : normalized;
+        if (summary.length() > 60) {
+            summary = summary.substring(0, 57) + "...";
+        }
+        return summary;
     }
 
     public static void updateInviteCache(net.dv8tion.jda.api.entities.Guild guild) {

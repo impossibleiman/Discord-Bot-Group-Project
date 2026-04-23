@@ -1,8 +1,10 @@
 package com.example.commands;
 
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.EntitySelectInteractionEvent;
+import net.dv8tion.jda.api.events.interaction.component.StringSelectInteractionEvent;
 import net.dv8tion.jda.api.events.session.ReadyEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
@@ -43,6 +45,14 @@ public class CommandManager extends ListenerAdapter {
         }
     }
 
+    @Override
+    public void onCommandAutoCompleteInteraction(CommandAutoCompleteInteractionEvent event) {
+        ICommand command = commands.get(event.getName());
+        if (command != null) {
+            command.onAutoCompleteInteraction(event);
+        }
+    }
+
     // Route Entity Selects
     @Override
     public void onEntitySelectInteraction(EntitySelectInteractionEvent event) {
@@ -51,6 +61,8 @@ public class CommandManager extends ListenerAdapter {
             ICommand command = commands.get(parts[0]);
             if (command instanceof ReactionRoleCommand) {
                 ((ReactionRoleCommand) command).handleEntitySelect(event);
+            } else if (command != null && "setup".equals(parts[0])) {
+                command.onChannelSelectInteraction(event);
             }
         }
     }
@@ -65,6 +77,17 @@ public class CommandManager extends ListenerAdapter {
             ICommand command = commands.get(commandName);
             if (command != null) {
                 command.onButtonInteraction(event);
+            }
+        }
+    }
+
+    @Override
+    public void onStringSelectInteraction(StringSelectInteractionEvent event) {
+        String[] parts = event.getComponentId().split(":", 4);
+        if (parts.length > 0) {
+            ICommand command = commands.get(parts[0]);
+            if (command != null) {
+                command.onStringSelectInteraction(event);
             }
         }
     }
