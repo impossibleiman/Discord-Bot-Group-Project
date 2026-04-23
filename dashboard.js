@@ -414,7 +414,8 @@ function renderSetupChannelOptions(config = {}) {
         { id: 'route-leave-channel', value: config.leaveChannelId || '' },
         { id: 'route-audit-edit-channel', value: config.auditEditChannelId || '' },
         { id: 'route-audit-delete-channel', value: config.auditDeleteChannelId || '' },
-        { id: 'route-ai-channel', value: config.aiChannelId || '' }
+        { id: 'route-ai-channel', value: config.aiChannelId || '' },
+        { id: 'route-ticket-log-channel', value: config.ticketLogChannelId || '' }
     ];
 
     fields.forEach(field => {
@@ -431,7 +432,8 @@ async function saveChannelRoutingConfig() {
             leaveChannelId: document.getElementById('route-leave-channel')?.value || null,
             auditEditChannelId: document.getElementById('route-audit-edit-channel')?.value || null,
             auditDeleteChannelId: document.getElementById('route-audit-delete-channel')?.value || null,
-            aiChannelId: document.getElementById('route-ai-channel')?.value || null
+            aiChannelId: document.getElementById('route-ai-channel')?.value || null,
+            ticketLogChannelId: document.getElementById('route-ticket-log-channel')?.value || null
         },
         {
             btnId: 'save-routing-btn',
