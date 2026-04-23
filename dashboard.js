@@ -6,6 +6,7 @@ let reactionRoleConfigsById = {};
 let currentGuildChannels = [];
 let currentGuildRoles = [];
 let currentAiProfiles = {};
+let currentAiProfileDescriptions = {};
 let currentAiActiveProfileName = 'Bob';
 let selectedAiProfileName = 'Bob';
 let activeReactionRoleId = null;
@@ -495,6 +496,20 @@ function normalizeAiProfiles(rawProfiles = {}) {
     return normalized;
 }
 
+function normalizeAiProfileDescriptions(rawDescriptions = {}) {
+    const normalized = {};
+
+    if (rawDescriptions && typeof rawDescriptions === 'object') {
+        Object.entries(rawDescriptions).forEach(([profileName, description]) => {
+            const trimmedName = (profileName || '').trim();
+            if (!trimmedName) return;
+            normalized[trimmedName] = typeof description === 'string' ? description : '';
+        });
+    }
+
+    return normalized;
+}
+
 function resolveAiProfileName(preferredName, profiles = {}) {
     if (preferredName && profiles[preferredName]) {
         return preferredName;
@@ -517,10 +532,22 @@ function resolveAiProfileName(preferredName, profiles = {}) {
 
 function renderAIProfiles(config = {}) {
     currentAiProfiles = normalizeAiProfiles(config.aiProfiles);
+    currentAiProfileDescriptions = normalizeAiProfileDescriptions(config.aiProfileDescriptions);
 
     if (Object.keys(currentAiProfiles).length === 0) {
         currentAiProfiles = { Bob: '' };
     }
+
+    Object.keys(currentAiProfiles).forEach(profileName => {
+        if (currentAiProfileDescriptions[profileName] === undefined) {
+            currentAiProfileDescriptions[profileName] = '';
+        }
+    });
+    Object.keys(currentAiProfileDescriptions).forEach(profileName => {
+        if (currentAiProfiles[profileName] === undefined) {
+            delete currentAiProfileDescriptions[profileName];
+        }
+    });
 
     currentAiActiveProfileName = resolveAiProfileName(config.activeAiProfileName || 'Bob', currentAiProfiles);
     selectedAiProfileName = resolveAiProfileName(currentAiActiveProfileName, currentAiProfiles);
@@ -584,12 +611,14 @@ function renderAIProfileSelect() {
 
 function loadAIProfileIntoEditor(profileName) {
     const nameInput = document.getElementById('ai-profile-name');
+    const descriptionInput = document.getElementById('ai-profile-description');
     const promptInput = document.getElementById('ai-profile-prompt');
-    if (!nameInput || !promptInput) return;
+    if (!nameInput || !descriptionInput || !promptInput) return;
 
     const resolvedName = resolveAiProfileName(profileName, currentAiProfiles);
     selectedAiProfileName = resolvedName;
     nameInput.value = resolvedName;
+    descriptionInput.value = currentAiProfileDescriptions[resolvedName] || '';
     promptInput.value = currentAiProfiles[resolvedName] || '';
     renderAIProfileSelect();
     renderAIProfileList();
@@ -602,19 +631,23 @@ function selectAIProfile(profileName) {
 
 function createNewAIProfile() {
     const nameInput = document.getElementById('ai-profile-name');
+    const descriptionInput = document.getElementById('ai-profile-description');
     const promptInput = document.getElementById('ai-profile-prompt');
-    if (!nameInput || !promptInput) return;
+    if (!nameInput || !descriptionInput || !promptInput) return;
 
     selectedAiProfileName = '';
     nameInput.value = '';
+    descriptionInput.value = '';
     promptInput.value = '';
     nameInput.focus();
 }
 
 async function saveAIProfile() {
     const nameInput = document.getElementById('ai-profile-name');
+    const descriptionInput = document.getElementById('ai-profile-description');
     const promptInput = document.getElementById('ai-profile-prompt');
     const profileName = nameInput ? nameInput.value.trim() : '';
+    const profileDescription = descriptionInput ? descriptionInput.value.trim() : '';
     const profilePrompt = promptInput ? promptInput.value.trim() : '';
 
     if (!profileName) {
@@ -630,9 +663,11 @@ async function saveAIProfile() {
     const previousName = selectedAiProfileName;
     if (previousName && previousName !== profileName && currentAiProfiles[previousName] !== undefined) {
         delete currentAiProfiles[previousName];
+        delete currentAiProfileDescriptions[previousName];
     }
 
     currentAiProfiles[profileName] = profilePrompt;
+    currentAiProfileDescriptions[profileName] = profileDescription;
     selectedAiProfileName = profileName;
 
     if (!currentAiProfiles[currentAiActiveProfileName]) {
@@ -642,6 +677,7 @@ async function saveAIProfile() {
     await postConfigUpdate(
         {
             aiProfiles: currentAiProfiles,
+            aiProfileDescriptions: currentAiProfileDescriptions,
             activeAiProfileName: currentAiActiveProfileName
         },
         {
@@ -671,6 +707,7 @@ async function setActiveAIProfile(profileName = null) {
     await postConfigUpdate(
         {
             aiProfiles: currentAiProfiles,
+            aiProfileDescriptions: currentAiProfileDescriptions,
             activeAiProfileName: currentAiActiveProfileName
         },
         {
@@ -700,6 +737,7 @@ async function deleteAIProfile() {
     }
 
     delete currentAiProfiles[targetProfileName];
+    delete currentAiProfileDescriptions[targetProfileName];
 
     if (!currentAiProfiles[currentAiActiveProfileName]) {
         currentAiActiveProfileName = Object.keys(currentAiProfiles)[0];
@@ -710,6 +748,7 @@ async function deleteAIProfile() {
     await postConfigUpdate(
         {
             aiProfiles: currentAiProfiles,
+            aiProfileDescriptions: currentAiProfileDescriptions,
             activeAiProfileName: currentAiActiveProfileName
         },
         {
