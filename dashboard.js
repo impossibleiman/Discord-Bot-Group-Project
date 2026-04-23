@@ -139,7 +139,7 @@ function initEmbedBuilders() {
     }
 }
 
-// Toast System (Replaces Alerts)
+// Toast System
 function showToast(message, type = 'success') {
     const container = document.getElementById('toast-container');
     const toast = document.createElement('div');
