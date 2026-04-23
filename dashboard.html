@@ -229,7 +229,12 @@ input[type="text"], textarea {
   padding: 12px 16px; border-radius: 8px; font-family: 'JetBrains Mono', monospace; font-size: 13px;
   width: 100%; transition: border-color 0.2s;
 }
-input[type="text"]:focus, textarea:focus { outline: none; border-color: var(--green); }
+select {
+  background: #08101a; border: 1px solid var(--border); color: var(--white);
+  padding: 12px 16px; border-radius: 8px; font-family: 'JetBrains Mono', monospace; font-size: 13px;
+  width: 100%; transition: border-color 0.2s;
+}
+input[type="text"]:focus, textarea:focus, select:focus { outline: none; border-color: var(--green); }
 textarea { resize: vertical; min-height: 100px; }
 
 /* BUTTONS */
@@ -456,6 +461,38 @@ td code { background: #08101a; padding: 4px 8px; border-radius: 4px; color: var(
           <input type="text" id="config-nickname" placeholder="e.g. Society Bot" oninput="updateWelcomePreview(); updateLeavePreview()">
         </div>
         <button id="save-identity-btn" class="btn-primary" onclick="saveServerIdentity()">Save Server Identity</button>
+      </div>
+
+      <div class="command-box">
+        <h3>Channel Routing</h3>
+        <p style="color: var(--muted); font-size: 13px; margin-bottom: 16px;">Configure where setup features post in this guild.</p>
+
+        <div class="input-group">
+          <label>Welcome Channel</label>
+          <select id="route-welcome-channel"></select>
+        </div>
+
+        <div class="input-group">
+          <label>Leave Channel</label>
+          <select id="route-leave-channel"></select>
+        </div>
+
+        <div class="input-group">
+          <label>Audit Edit Channel</label>
+          <select id="route-audit-edit-channel"></select>
+        </div>
+
+        <div class="input-group">
+          <label>Audit Delete Channel</label>
+          <select id="route-audit-delete-channel"></select>
+        </div>
+
+        <div class="input-group">
+          <label>AI Chat Channel</label>
+          <select id="route-ai-channel"></select>
+        </div>
+
+        <button id="save-routing-btn" class="btn-primary" onclick="saveChannelRoutingConfig()">Save Channel Routing</button>
       </div>
     </div>
 

@@ -314,6 +314,7 @@ async function loadServerConfig() {
 
     reactionRoleConfigsById = config.reactionRoleConfigs || {};
     await loadGuildMetadata();
+    renderSetupChannelOptions(config);
     renderReactionRoleLiveList();
     hideReactionRoleEditor();
     activeReactionRoleId = null;
@@ -403,6 +404,65 @@ async function saveServerIdentity() {
             savingText: 'Saving Identity...',
             idleText: 'Save Server Identity',
             successMessage: 'Server identity saved successfully!'
+        }
+    );
+}
+
+function renderSetupChannelOptions(config = {}) {
+    const fields = [
+        { id: 'route-welcome-channel', value: config.welcomeChannelId || '' },
+        { id: 'route-leave-channel', value: config.leaveChannelId || '' },
+        { id: 'route-audit-edit-channel', value: config.auditEditChannelId || '' },
+        { id: 'route-audit-delete-channel', value: config.auditDeleteChannelId || '' },
+        { id: 'route-ai-channel', value: config.aiChannelId || '' }
+    ];
+
+    fields.forEach(field => {
+        const select = document.getElementById(field.id);
+        if (!select) return;
+
+        select.innerHTML = '';
+
+        const unsetOption = document.createElement('option');
+        unsetOption.value = '';
+        unsetOption.textContent = 'Not set';
+        select.appendChild(unsetOption);
+
+        (currentGuildChannels || []).forEach(channel => {
+            const option = document.createElement('option');
+            option.value = channel.id;
+            option.textContent = `#${channel.name}`;
+            select.appendChild(option);
+        });
+
+        if (field.value) {
+            const exists = (currentGuildChannels || []).some(channel => channel.id === field.value);
+            if (!exists) {
+                const unknown = document.createElement('option');
+                unknown.value = field.value;
+                unknown.textContent = `Unknown channel (${field.value})`;
+                select.appendChild(unknown);
+            }
+        }
+
+        select.value = field.value;
+    });
+}
+
+async function saveChannelRoutingConfig() {
+    await postConfigUpdate(
+        {
+            welcomeChannelId: document.getElementById('route-welcome-channel')?.value || null,
+            leaveChannelId: document.getElementById('route-leave-channel')?.value || null,
+            auditEditChannelId: document.getElementById('route-audit-edit-channel')?.value || null,
+            auditDeleteChannelId: document.getElementById('route-audit-delete-channel')?.value || null,
+            aiChannelId: document.getElementById('route-ai-channel')?.value || null
+        },
+        {
+            btnId: 'save-routing-btn',
+            savingText: 'Saving Channel Routing...',
+            idleText: 'Save Channel Routing',
+            successMessage: 'Channel routing saved successfully!'
         }
     );
 }
