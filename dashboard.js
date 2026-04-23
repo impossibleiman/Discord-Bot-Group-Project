@@ -420,32 +420,7 @@ function renderSetupChannelOptions(config = {}) {
     fields.forEach(field => {
         const select = document.getElementById(field.id);
         if (!select) return;
-
-        select.innerHTML = '';
-
-        const unsetOption = document.createElement('option');
-        unsetOption.value = '';
-        unsetOption.textContent = 'Not set';
-        select.appendChild(unsetOption);
-
-        (currentGuildChannels || []).forEach(channel => {
-            const option = document.createElement('option');
-            option.value = channel.id;
-            option.textContent = `#${channel.name}`;
-            select.appendChild(option);
-        });
-
-        if (field.value) {
-            const exists = (currentGuildChannels || []).some(channel => channel.id === field.value);
-            if (!exists) {
-                const unknown = document.createElement('option');
-                unknown.value = field.value;
-                unknown.textContent = `Unknown channel (${field.value})`;
-                select.appendChild(unknown);
-            }
-        }
-
-        select.value = field.value;
+        populateChannelSelect(select, field.value, { includeNotSet: true });
     });
 }
 
@@ -777,16 +752,60 @@ function renderReactionRoleChannelOptions(selectedChannelId = '') {
     const channelSelect = document.getElementById('rr-channel-id');
     if (!channelSelect) return;
 
-    const options = ['<option value="">Select a channel...</option>']
-        .concat(currentGuildChannels.map(channel => {
-            const selected = channel.id === selectedChannelId ? ' selected' : '';
-            return `<option value="${sanitize(channel.id)}"${selected}>#${sanitize(channel.name)}</option>`;
-        }))
-        .join('');
+    populateChannelSelect(channelSelect, selectedChannelId, { includeNotSet: false });
+}
 
-    channelSelect.innerHTML = options;
+function getChannelsGroupedByCategory() {
+    const grouped = new Map();
+    (currentGuildChannels || []).forEach(channel => {
+        const categoryName = channel.category || 'Uncategorized';
+        if (!grouped.has(categoryName)) {
+            grouped.set(categoryName, []);
+        }
+        grouped.get(categoryName).push(channel);
+    });
+
+    return Array.from(grouped.entries())
+        .sort((a, b) => a[0].localeCompare(b[0]))
+        .map(([category, channels]) => ({
+            category,
+            channels: channels.sort((a, b) => a.name.localeCompare(b.name))
+        }));
+}
+
+function populateChannelSelect(select, selectedChannelId = '', options = {}) {
+    const includeNotSet = !!options.includeNotSet;
+    select.innerHTML = '';
+
+    const topOption = document.createElement('option');
+    topOption.value = '';
+    topOption.textContent = includeNotSet ? 'Not set' : 'Select a channel...';
+    select.appendChild(topOption);
+
+    const groups = getChannelsGroupedByCategory();
+    groups.forEach(group => {
+        const optgroup = document.createElement('optgroup');
+        optgroup.label = group.category;
+
+        group.channels.forEach(channel => {
+            const option = document.createElement('option');
+            option.value = channel.id;
+            option.textContent = `#${channel.name}`;
+            optgroup.appendChild(option);
+        });
+
+        select.appendChild(optgroup);
+    });
+
     if (selectedChannelId) {
-        channelSelect.value = selectedChannelId;
+        const exists = (currentGuildChannels || []).some(channel => channel.id === selectedChannelId);
+        if (!exists) {
+            const unknown = document.createElement('option');
+            unknown.value = selectedChannelId;
+            unknown.textContent = `Unknown channel (${selectedChannelId})`;
+            select.appendChild(unknown);
+        }
+        select.value = selectedChannelId;
     }
 }
 
