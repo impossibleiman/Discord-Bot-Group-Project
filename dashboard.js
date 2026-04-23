@@ -5,6 +5,9 @@ let leaveEmbedBuilder = null;
 let reactionRoleConfigsById = {};
 let currentGuildChannels = [];
 let currentGuildRoles = [];
+let currentAiProfiles = {};
+let currentAiActiveProfileName = 'Bob';
+let selectedAiProfileName = 'Bob';
 let activeReactionRoleId = null;
 
 const DASHBOARD_ACTIVE_TAB_KEY = 'dashboard_active_tab';
@@ -173,6 +176,7 @@ function updateServerRequiredState(activeTabId) {
     const reactionNote = document.getElementById('reaction-server-note');
     const invitesNote = document.getElementById('invites-server-note');
     const leaveNote = document.getElementById('leave-server-note');
+    const aiNote = document.getElementById('ai-server-note');
 
     if (identityNote) {
         identityNote.classList.toggle('visible', activeTabId === 'tab-identity' && needsServer);
@@ -192,6 +196,10 @@ function updateServerRequiredState(activeTabId) {
 
     if (leaveNote) {
         leaveNote.classList.toggle('visible', activeTabId === 'tab-leave' && needsServer);
+    }
+
+    if (aiNote) {
+        aiNote.classList.toggle('visible', activeTabId === 'tab-ai' && needsServer);
     }
 }
 
@@ -315,6 +323,7 @@ async function loadServerConfig() {
     reactionRoleConfigsById = config.reactionRoleConfigs || {};
     await loadGuildMetadata();
     renderSetupChannelOptions(config);
+    renderAIProfiles(config);
     renderReactionRoleLiveList();
     hideReactionRoleEditor();
     activeReactionRoleId = null;
@@ -470,6 +479,248 @@ async function saveLeaveEmbedConfig() {
             successMessage: 'Leave listener embed saved successfully!'
         }
     );
+}
+
+function normalizeAiProfiles(rawProfiles = {}) {
+    const normalized = {};
+
+    if (rawProfiles && typeof rawProfiles === 'object') {
+        Object.entries(rawProfiles).forEach(([profileName, prompt]) => {
+            const trimmedName = (profileName || '').trim();
+            if (!trimmedName) return;
+            normalized[trimmedName] = typeof prompt === 'string' ? prompt : '';
+        });
+    }
+
+    return normalized;
+}
+
+function resolveAiProfileName(preferredName, profiles = {}) {
+    if (preferredName && profiles[preferredName]) {
+        return preferredName;
+    }
+
+    const profileNames = Object.keys(profiles);
+    if (profileNames.length === 0) {
+        return 'Bob';
+    }
+
+    if (preferredName) {
+        const match = profileNames.find(name => name.toLowerCase() === preferredName.toLowerCase());
+        if (match) {
+            return match;
+        }
+    }
+
+    return profileNames[0];
+}
+
+function renderAIProfiles(config = {}) {
+    currentAiProfiles = normalizeAiProfiles(config.aiProfiles);
+
+    if (Object.keys(currentAiProfiles).length === 0) {
+        currentAiProfiles = { Bob: '' };
+    }
+
+    currentAiActiveProfileName = resolveAiProfileName(config.activeAiProfileName || 'Bob', currentAiProfiles);
+    selectedAiProfileName = resolveAiProfileName(currentAiActiveProfileName, currentAiProfiles);
+
+    renderAIProfileList();
+    renderAIProfileSelect();
+    loadAIProfileIntoEditor(selectedAiProfileName);
+}
+
+function renderAIProfileList() {
+    const list = document.getElementById('ai-profile-list');
+    if (!list) return;
+
+    const profileNames = Object.keys(currentAiProfiles || {});
+    if (profileNames.length === 0) {
+        list.innerHTML = '<div style="color: var(--muted); font-size: 13px;">No profiles found.</div>';
+        return;
+    }
+
+    list.innerHTML = profileNames.map(profileName => {
+        const isActive = profileName === currentAiActiveProfileName;
+        const activeStyles = isActive
+            ? 'border-color: var(--green); color: var(--green); background: rgba(74,222,128,.1);'
+            : '';
+
+        return `
+            <div style="display:flex; gap:8px; align-items:center;">
+                <button type="button" class="server-pill" data-ai-profile="${sanitize(profileName)}" style="${activeStyles}; flex:1;">${sanitize(profileName)}${isActive ? ' (active)' : ''}</button>
+            </div>
+        `;
+    }).join('');
+
+    list.querySelectorAll('[data-ai-profile]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const profileName = btn.getAttribute('data-ai-profile');
+            if (profileName) {
+                selectAIProfile(profileName);
+            }
+        });
+    });
+}
+
+function renderAIProfileSelect() {
+    const select = document.getElementById('ai-active-profile');
+    if (!select) return;
+
+    const profileNames = Object.keys(currentAiProfiles || {});
+    select.innerHTML = profileNames.map(profileName => {
+        const selected = profileName === currentAiActiveProfileName ? ' selected' : '';
+        return `<option value="${sanitize(profileName)}"${selected}>${sanitize(profileName)}</option>`;
+    }).join('');
+
+    select.value = currentAiActiveProfileName || profileNames[0] || 'Bob';
+    select.onchange = () => {
+        const nextProfile = select.value;
+        if (nextProfile) {
+            setActiveAIProfile(nextProfile);
+        }
+    };
+}
+
+function loadAIProfileIntoEditor(profileName) {
+    const nameInput = document.getElementById('ai-profile-name');
+    const promptInput = document.getElementById('ai-profile-prompt');
+    if (!nameInput || !promptInput) return;
+
+    const resolvedName = resolveAiProfileName(profileName, currentAiProfiles);
+    selectedAiProfileName = resolvedName;
+    nameInput.value = resolvedName;
+    promptInput.value = currentAiProfiles[resolvedName] || '';
+    renderAIProfileSelect();
+    renderAIProfileList();
+}
+
+function selectAIProfile(profileName) {
+    if (!profileName) return;
+    loadAIProfileIntoEditor(profileName);
+}
+
+function createNewAIProfile() {
+    const nameInput = document.getElementById('ai-profile-name');
+    const promptInput = document.getElementById('ai-profile-prompt');
+    if (!nameInput || !promptInput) return;
+
+    selectedAiProfileName = '';
+    nameInput.value = '';
+    promptInput.value = '';
+    nameInput.focus();
+}
+
+async function saveAIProfile() {
+    const nameInput = document.getElementById('ai-profile-name');
+    const promptInput = document.getElementById('ai-profile-prompt');
+    const profileName = nameInput ? nameInput.value.trim() : '';
+    const profilePrompt = promptInput ? promptInput.value.trim() : '';
+
+    if (!profileName) {
+        showToast('Profile name is required.', 'error');
+        return;
+    }
+
+    if (!profilePrompt) {
+        showToast('Profile prompt is required.', 'error');
+        return;
+    }
+
+    const previousName = selectedAiProfileName;
+    if (previousName && previousName !== profileName && currentAiProfiles[previousName] !== undefined) {
+        delete currentAiProfiles[previousName];
+    }
+
+    currentAiProfiles[profileName] = profilePrompt;
+    selectedAiProfileName = profileName;
+
+    if (!currentAiProfiles[currentAiActiveProfileName]) {
+        currentAiActiveProfileName = profileName;
+    }
+
+    await postConfigUpdate(
+        {
+            aiProfiles: currentAiProfiles,
+            activeAiProfileName: currentAiActiveProfileName
+        },
+        {
+            btnId: 'ai-save-profile-btn',
+            savingText: 'Saving Profile...',
+            idleText: 'Save Profile',
+            successMessage: 'AI profile saved successfully!'
+        }
+    );
+
+    renderAIProfileList();
+    renderAIProfileSelect();
+}
+
+async function setActiveAIProfile(profileName = null) {
+    const nameInput = document.getElementById('ai-profile-name');
+    const targetProfileName = (profileName || (nameInput ? nameInput.value.trim() : '') || selectedAiProfileName || '').trim();
+
+    if (!targetProfileName || !currentAiProfiles[targetProfileName]) {
+        showToast('Choose a saved profile first.', 'error');
+        return;
+    }
+
+    currentAiActiveProfileName = targetProfileName;
+    selectedAiProfileName = targetProfileName;
+
+    await postConfigUpdate(
+        {
+            aiProfiles: currentAiProfiles,
+            activeAiProfileName: currentAiActiveProfileName
+        },
+        {
+            btnId: 'ai-set-active-btn',
+            savingText: 'Setting Active...',
+            idleText: 'Set Active',
+            successMessage: `AI profile switched to ${targetProfileName}!`
+        }
+    );
+
+    loadAIProfileIntoEditor(targetProfileName);
+}
+
+async function deleteAIProfile() {
+    const nameInput = document.getElementById('ai-profile-name');
+    const targetProfileName = (nameInput ? nameInput.value.trim() : '') || selectedAiProfileName;
+
+    if (!targetProfileName || !currentAiProfiles[targetProfileName]) {
+        showToast('Choose a saved profile to delete.', 'error');
+        return;
+    }
+
+    const profileNames = Object.keys(currentAiProfiles);
+    if (profileNames.length <= 1) {
+        showToast('At least one AI profile must remain.', 'error');
+        return;
+    }
+
+    delete currentAiProfiles[targetProfileName];
+
+    if (!currentAiProfiles[currentAiActiveProfileName]) {
+        currentAiActiveProfileName = Object.keys(currentAiProfiles)[0];
+    }
+
+    selectedAiProfileName = currentAiActiveProfileName;
+
+    await postConfigUpdate(
+        {
+            aiProfiles: currentAiProfiles,
+            activeAiProfileName: currentAiActiveProfileName
+        },
+        {
+            btnId: 'ai-delete-profile-btn',
+            savingText: 'Deleting Profile...',
+            idleText: 'Delete Profile',
+            successMessage: 'AI profile deleted successfully!'
+        }
+    );
+
+    loadAIProfileIntoEditor(selectedAiProfileName);
 }
 
 function initReactionRoleEditor() {

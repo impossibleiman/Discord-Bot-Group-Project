@@ -394,6 +394,9 @@ td code { background: #08101a; padding: 4px 8px; border-radius: 4px; color: var(
     <button class="nav-tab" onclick="switchTab('tab-leave', this)">
       <span class="sidebar-dot"></span>Leave Listener
     </button>
+    <button class="nav-tab" onclick="switchTab('tab-ai', this)">
+      <span class="sidebar-dot"></span>AI Profiles
+    </button>
     <button class="nav-tab" onclick="switchTab('tab-invites', this)">
       <span class="sidebar-dot"></span>Magic Invites
     </button>
@@ -657,6 +660,43 @@ td code { background: #08101a; padding: 4px 8px; border-radius: 4px; color: var(
           </div>
         </div>
         <button id="save-leave-btn" class="btn-primary" style="margin-top: 20px;" onclick="saveLeaveEmbedConfig()">Save Leave Settings</button>
+      </div>
+    </div>
+
+    <div id="tab-ai" class="tab-content">
+      <div class="requires-server-note" id="ai-server-note">Choose a server from the left sidebar to manage AI prompt profiles.</div>
+      <div class="command-box">
+        <h3>AI Prompt Profiles</h3>
+        <p style="color: var(--muted); font-size: 13px; margin-bottom: 16px; line-height: 1.6;">
+          Create multiple prompt profiles, edit their system prompts here, and use the slash command to switch which one the bot is currently running.
+        </p>
+
+        <div class="input-group">
+          <label>Active Profile</label>
+          <select id="ai-active-profile"></select>
+        </div>
+
+        <div class="input-group" style="margin-bottom: 12px;">
+          <label>Profiles</label>
+          <div id="ai-profile-list" style="display:flex; flex-direction:column; gap:8px; color: var(--muted); font-size: 13px;"></div>
+        </div>
+
+        <div class="input-group">
+          <label>Profile Name</label>
+          <input type="text" id="ai-profile-name" placeholder="Bob">
+        </div>
+
+        <div class="input-group">
+          <label>System Prompt</label>
+          <textarea id="ai-profile-prompt" placeholder="Write the AI personality prompt here..."></textarea>
+        </div>
+
+        <div style="display:flex; gap:10px; flex-wrap: wrap; margin-top: 20px;">
+          <button class="btn-primary" id="ai-new-profile-btn" type="button" onclick="createNewAIProfile()">New Profile</button>
+          <button class="btn-primary" id="ai-save-profile-btn" type="button" onclick="saveAIProfile()">Save Profile</button>
+          <button class="btn-primary" id="ai-set-active-btn" type="button" onclick="setActiveAIProfile()">Set Active</button>
+          <button class="btn-danger" id="ai-delete-profile-btn" type="button" onclick="deleteAIProfile()">Delete Profile</button>
+        </div>
       </div>
     </div>
 
