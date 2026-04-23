@@ -765,12 +765,10 @@ function getChannelsGroupedByCategory() {
         grouped.get(categoryName).push(channel);
     });
 
-    return Array.from(grouped.entries())
-        .sort((a, b) => a[0].localeCompare(b[0]))
-        .map(([category, channels]) => ({
-            category,
-            channels: channels.sort((a, b) => a.name.localeCompare(b.name))
-        }));
+    return Array.from(grouped.entries()).map(([category, channels]) => ({
+        category,
+        channels
+    }));
 }
 
 function populateChannelSelect(select, selectedChannelId = '', options = {}) {
