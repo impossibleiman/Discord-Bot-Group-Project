@@ -1555,5 +1555,49 @@ async function refreshMinecraftData() {
     }
 }
 
+async function sendToGame() {
+    const input = document.getElementById('mc-chat-input');
+    if (!input) {
+        showToast('Chat input is unavailable.', 'error');
+        return;
+    }
+
+    const message = input.value.trim();
+    if (!message) {
+        return;
+    }
+
+    const token = localStorage.getItem('admin_session');
+    if (!token) {
+        showToast('Please sign in again before sending chat.', 'error');
+        return;
+    }
+
+    try {
+        const response = await fetch(`${API_BASE}/mc-send-chat`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': token
+            },
+            body: JSON.stringify({ message })
+        });
+
+        if (!response.ok) {
+            if (response.status === 401) {
+                showToast('Session expired. Please log in again.', 'error');
+            } else {
+                showToast('Failed to send message to the game.', 'error');
+            }
+            return;
+        }
+
+        input.value = '';
+        await refreshMinecraftData();
+    } catch (err) {
+        showToast('Network error while sending message.', 'error');
+    }
+}
+
 // Start the auto-refresh loop
 setInterval(refreshMinecraftData, 2000);
