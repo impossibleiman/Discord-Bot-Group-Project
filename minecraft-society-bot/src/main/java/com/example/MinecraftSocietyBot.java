@@ -98,6 +98,51 @@ public class MinecraftSocietyBot {
     }
     
     private static final Map<String, SessionData> activeSessions = new ConcurrentHashMap<>();
+    // Simple in-memory rate limiter buckets keyed by session, guild, or endpoint
+    private static final Map<String, TokenBucket> rateBuckets = new ConcurrentHashMap<>();
+
+    private static class TokenBucket {
+        private final double capacity;
+        private final double refillPerSecond;
+        private double tokens;
+        private long lastRefillNanos;
+
+        TokenBucket(double capacity, double refillPerSecond) {
+            this.capacity = capacity;
+            this.refillPerSecond = refillPerSecond;
+            this.tokens = capacity;
+            this.lastRefillNanos = System.nanoTime();
+        }
+
+        private void refill() {
+            long now = System.nanoTime();
+            double elapsed = (now - lastRefillNanos) / 1e9;
+            if (elapsed <= 0) return;
+            double add = elapsed * refillPerSecond;
+            if (add > 0) {
+                tokens = Math.min(capacity, tokens + add);
+                lastRefillNanos = now;
+            }
+        }
+
+        synchronized boolean tryConsume(double amount) {
+            refill();
+            if (tokens >= amount) {
+                tokens -= amount;
+                return true;
+            }
+            return false;
+        }
+    }
+
+    private static boolean isRateLimited(Context ctx, String key, double capacity, double refillPerSecond) {
+        TokenBucket bucket = rateBuckets.computeIfAbsent(key, k -> new TokenBucket(capacity, refillPerSecond));
+        boolean ok = bucket.tryConsume(1.0);
+        if (!ok) {
+            ctx.status(429).header("Retry-After", "5").result("Rate limit exceeded. Try again later.");
+        }
+        return !ok;
+    }
     
     private static Map<String, ServerConfig> guildConfigs = new HashMap<>();
 
@@ -359,6 +404,11 @@ public class MinecraftSocietyBot {
                 return;
             }
 
+            // Rate-limit magic invite creation per user
+            if (isRateLimited(ctx, "magic-invite:user:" + session.userId, 3, 0.05)) {
+                return;
+            }
+
             String requestedAlias = ctx.formParam("alias");
             if (requestedAlias == null || requestedAlias.trim().isEmpty()) {
                 requestedAlias = ctx.queryParam("alias");
@@ -491,6 +541,11 @@ public class MinecraftSocietyBot {
                 return;
             }
 
+            // Rate-limit config POSTs per guild to avoid excessive writes
+            if (isRateLimited(ctx, "config:guild:" + guildId, 10, 0.2)) {
+                return;
+            }
+
             ServerConfig newConfig = ctx.bodyAsClass(ServerConfig.class);
 
             ServerConfig existing = guildConfigs.get(guildId);
@@ -560,6 +615,11 @@ public class MinecraftSocietyBot {
 
             String guildId = ctx.pathParam("guildId");
             if (!requireGuildAccess(ctx, session, guildId)) {
+                return;
+            }
+
+            // Rate-limit reaction role publishes per guild
+            if (isRateLimited(ctx, "rr:publish:guild:" + guildId, 2, 0.033)) {
                 return;
             }
 
@@ -887,6 +947,11 @@ public class MinecraftSocietyBot {
             String sessionId = ctx.header("Authorization");
             if (!activeSessions.containsKey(sessionId)) {
                 ctx.status(401);
+                return;
+            }
+
+            // Rate-limit chat sends per session to avoid flooding the game bridge
+            if (isRateLimited(ctx, "mc-send-chat:session:" + sessionId, 5, 0.5)) {
                 return;
             }
 
